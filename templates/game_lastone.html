@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.lo{max-width:760px;margin:1.5rem auto}
+.lo-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:1.5rem;margin:1rem auto}
+.lo-btn{padding:.7rem 1.2rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);cursor:pointer;font-size:1rem}
+.lo-btn.primary{background:var(--accent-blue);color:#fff;border:none}
+.lo-btn.gold{background:var(--accent-gold);color:#000;border:none}
+.lo-timer{font-size:2.5rem;font-weight:800;text-align:center;color:var(--accent-gold)}
+.lo-log{max-height:220px;overflow:auto;background:var(--bg-inset);border-radius:10px;padding:.8rem;margin:.8rem 0}
+.lo-log div{padding:.25rem 0;border-bottom:1px solid var(--border-color)}
+</style>
+
+<h1 style="text-align:center">🏆 آخر واحد!</h1>
+<p style="text-align:center;color:var(--text-secondary)">أعطِ إجابات صحيحة ومختلفة ضمن التصنيف المحدد — من يتعثر يخسر!</p>
+
+<div id="setup" class="lo lo-card" style="margin:1.5rem auto;max-width:760px;">
+  <h3>⚙️ الإعدادات</h3>
+  <div style="display:grid;gap:.8rem;margin-top:1rem">
+    <label>نمط اللعب:
+      <select id="loMode" class="lo-btn" style="width:100%">
+        <option value="solo">فردي</option>
+        <option value="multi">جماعي (2-8)</option>
+      </select>
+    </label>
+    <div id="loPlayersBox"></div>
+    <label>عدد الجولات:
+      <select id="loRounds" class="lo-btn" style="width:100%">
+        <option value="3" selected>3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+    </label>
+    <label>وقت الإجابة (ث):
+      <select id="loTime" class="lo-btn" style="width:100%">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+      </select>
+    </label>
+    <label>نمط المنافسة:
+      <select id="loComp" class="lo-btn" style="width:100%">
+        <option value="elim">الإقصاء</option>
+        <option value="points">النقاط</option>
+      </select>
+    </label>
+    <label>الأرواح (إقصاء):
+      <select id="loLives" class="lo-btn" style="width:100%">
+        <option value="1" selected>1</option>
+        <option value="3">3</option>
+      </select>
+    </label>
+    <label>التصنيف:
+      <input type="hidden" id="loCat" value="">
+      <div id="loCatPick"></div>
+    </label>
+    <button class="lo-btn primary" onclick="startMatch()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ</button>
+  </div>
+</div>
+
+<div id="play" class="lo" style="display:none">
+  <div class="lo-card" style="text-align:center">
+    <div>الجولة <b id="loRound">1</b> — التصنيف: <b id="loCatName"></b></div>
+    <div class="lo-timer" id="loTimer">10</div>
+    <div>الدور: <b id="loCur">-</b> | أرواح/نقاط: <b id="loStatus">-</b></div>
+  </div>
+  <div class="lo-card">
+    <div style="display:flex;gap:.5rem">
+      <input id="loAns" class="lo-btn" style="flex:1" placeholder="أدخل إجابة..." onkeydown="if(event.key==='Enter')submitAns()">
+      <button class="lo-btn gold" onclick="submitAns()">إرسال</button>
+    </div>
+    <div id="loFeedback" style="text-align:center;margin:.8rem 0;font-weight:800"></div>
+    <div class="lo-log" id="loLog"></div>
+  </div>
+  <div style="text-align:center">
+    <button class="lo-btn" onclick="endMatch()"><svg class="ico" aria-hidden="true"><use href="#i-close"></use></svg> إنهاء</button>
+  </div>
+</div>
+
+<div id="result" class="lo lo-card" style="display:none;text-align:center">
+  <h2><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> النتائج</h2>
+  <div id="loResultBody"></div>
+  <div style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
+    <button class="lo-btn gold" onclick="location.reload()">🔁 العب مرة أخرى</button>
+    <button class="lo-btn" onclick="location.href='/games'">🏠 العودة</button>
+  </div>
+</div>
+
+<script>
+let CATS={}, STATE=null, timer=null;
+
+async function loadCats(){
+  const r=await fetch('/static/lastone_categories.json').catch(()=>null);
+  // fallback fetch from data? serve via a route? We'll embed fetch to /api? Instead load from a global injected.
+}
+// We'll load categories from a JS object generated server-side? Simpler: fetch a static file. Need route. We'll instead fetch /api/content? Not. Let's load via inline by reading file through a small endpoint? 
+// Fallback: define CATS inline from server template? We'll fetch /static/data/lastone_categories.json
+</script>
+
+<!-- We need categories available. Let's load them via fetch to a simple endpoint we'll add, or embed. We'll fetch /static/lastone_categories.json after copying file to static. -->
+<script>
+async function init(){
+  try {
+    const r=await fetch('/static/lastone_categories.json');
+    CATS=await r.json();
+  } catch(e){ CATS={}; }
+  const keys=Object.keys(CATS);
+  const hid=document.getElementById('loCat');
+  if(hid && keys.length) hid.value=keys[0];
+  // catalogue picker, same look as the other games
+  UI.renderCategoryPicker(document.getElementById('loCatPick'),{
+    categories:keys.map(function(k){
+      return {id:k,name:k,icon:'🗂️',group:'التصنيفات',group_color:'#4f8cff',group_icon:'🗂️',
+              description:k+' — '+(CATS[k]||[]).length+' إجابة جاهزة',
+              approved_count:(CATS[k]||[]).length};
+    }),
+    showCount:true,
+    searchPlaceholder:'ابحث عن تصنيف...',
+    selected:keys.slice(0,1),
+    onPick:function(c){ document.getElementById('loCat').value=c.id; }
+  });
+  renderPlayers();
+}
+document.getElementById('loMode').addEventListener('change',renderPlayers);
+function renderPlayers(){
+  const box=document.getElementById('loPlayersBox');
+  if(document.getElementById('loMode').value==='solo'){ box.innerHTML=''; return; }
+  box.innerHTML='<label>عدد اللاعبين: <input id="loN" type="number" min="2" max="8" value="2" class="lo-btn" style="width:100%"></label><div id="loNames"></div>';
+  const nInput=document.getElementById('loN');
+  function draw(){
+    const n=parseInt(nInput.value)||2;
+    const nd=document.getElementById('loNames'); nd.innerHTML='';
+    for(let i=0;i<n;i++){ const inp=document.createElement('input'); inp.className='lo-btn'; inp.style.width='100%'; inp.placeholder='لاعب '+(i+1); inp.value='لاعب '+(i+1); inp.id='loName'+i; nd.appendChild(inp); }
+  }
+  nInput.addEventListener('input',draw); draw();
+}
+init();
+
+function norm(t){ return (t||'').trim().replace(/\s+/g,' ').toLowerCase(); }
+
+function startMatch(){
+  const mode=document.getElementById('loMode').value;
+  const rounds=parseInt(document.getElementById('loRounds').value);
+  const time=parseInt(document.getElementById('loTime').value);
+  const comp=document.getElementById('loComp').value;
+  const lives=parseInt(document.getElementById('loLives').value);
+  const cat=document.getElementById('loCat').value;
+  let players=[];
+  if(mode==='solo'){ players=[{name:'أنت',score:0,lives:1,eliminated:false}]; }
+  else {
+    const n=parseInt(document.getElementById('loN').value)||2;
+    for(let i=0;i<n;i++){ players.push({name:document.getElementById('loName'+i).value.trim()||('لاعب '+(i+1)),score:0,lives:lives,eliminated:false}); }
+  }
+  STATE={mode,rounds,time,comp,lives,cat,players,round:0,used:new Set(),cur:0,done:false,timerId:null};
+  document.getElementById('setup').style.display='none';
+  nextRound();
+}
+
+function nextRound(){
+  if(STATE.round>=STATE.rounds){ endMatch(); return; }
+  STATE.round++;
+  // pick category (same or random? use selected)
+  STATE.roundCat=STATE.cat;
+  STATE.used=new Set();
+  STATE.players.forEach(p=>{ p.lives=STATE.lives; p.eliminated=false; });
+  // find first active
+  STATE.cur=STATE.players.findIndex(p=>!p.eliminated);
+  document.getElementById('play').style.display='block';
+  document.getElementById('result').style.display='none';
+  startTurn();
+}
+
+function activePlayers(){ return STATE.players.filter(p=>!p.eliminated); }
+
+function startTurn(){
+  if(activePlayers().length<=1 && STATE.comp==='elim'){ endRound(); return; }
+  // find next active from cur
+  while(STATE.players[STATE.cur].eliminated){ STATE.cur=(STATE.cur+1)%STATE.players.length; }
+  const p=STATE.players[STATE.cur];
+  document.getElementById('loRound').textContent=STATE.round+'/'+STATE.rounds;
+  document.getElementById('loCatName').textContent=STATE.roundCat;
+  document.getElementById('loCur').textContent=p.name;
+  document.getElementById('loStatus').textContent = STATE.comp==='elim' ? ('أرواح: '+p.lives) : ('نقاط: '+p.score);
+  document.getElementById('loFeedback').textContent='';
+  document.getElementById('loAns').value='';
+  document.getElementById('loLog').innerHTML=[...STATE.used].map(x=>'<div>'+x+'</div>').join('');
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(STATE.timerId);
+  let t=STATE.time;
+  document.getElementById('loTimer').textContent=t;
+  STATE.timerId=setInterval(()=>{
+    t--;
+    document.getElementById('loTimer').textContent=t;
+    if(t<=0){ clearInterval(STATE.timerId); timeUp(); }
+  },1000);
+}
+
+function timeUp(){
+  const p=STATE.players[STATE.cur];
+  document.getElementById('loFeedback').textContent='⏰ انتهى الوقت';
+  document.getElementById('loFeedback').style.color='var(--accent-red)';
+  penalize(p);
+}
+
+function penalize(p){
+  if(STATE.comp==='elim'){
+    p.lives--;
+    if(p.lives<=0){ p.eliminated=true; }
+  }
+  // move next
+  STATE.cur=(STATE.cur+1)%STATE.players.length;
+  setTimeout(()=>{ if(checkRoundEnd()) endRound(); else startTurn(); }, 900);
+}
+
+function checkRoundEnd(){
+  if(STATE.comp==='elim'){
+    if(activePlayers().length<=1) return true;
+  }
+  return false;
+}
+
+function submitAns(){
+  const inp=document.getElementById('loAns');
+  const val=norm(inp.value);
+  if(!val){ document.getElementById('loFeedback').textContent='إجابة فارغة'; return; }
+  const answers=CATS[STATE.roundCat]||[];
+  const ok=answers.some(a=>norm(a)===val);
+  if(!ok){ document.getElementById('loFeedback').textContent='❌ غير مقبولة'; document.getElementById('loFeedback').style.color='var(--accent-red)'; penalize(STATE.players[STATE.cur]); return; }
+  if(STATE.used.has(val)){ document.getElementById('loFeedback').textContent='🔁 مكررة'; document.getElementById('loFeedback').style.color='var(--accent-red)'; penalize(STATE.players[STATE.cur]); return; }
+  // correct new
+  STATE.used.add(val);
+  const p=STATE.players[STATE.cur];
+  if(STATE.comp==='points'){ p.score+=1; }
+  document.getElementById('loFeedback').textContent='✅ صحيحة';
+  document.getElementById('loFeedback').style.color='var(--accent-green)';
+  clearInterval(STATE.timerId);
+  STATE.cur=(STATE.cur+1)%STATE.players.length;
+  setTimeout(()=>{ if(checkRoundEnd()) endRound(); else startTurn(); }, 700);
+}
+
+function endRound(){
+  clearInterval(STATE.timerId);
+  let winner=null;
+  if(STATE.comp==='elim'){
+    const act=activePlayers();
+    if(act.length===1) winner=act[0];
+    else if(act.length===0) winner=null;
+    else winner=act[0];
+    if(winner){ winner.score+=5; }
+  }
+  // next round
+  STATE.round++;
+  if(STATE.round>=STATE.rounds){ endMatch(); }
+  else { nextRound(); }
+}
+
+function endMatch(){
+  STATE.done=true;
+  clearInterval(STATE.timerId);
+  document.getElementById('play').style.display='none';
+  document.getElementById('result').style.display='block';
+  const sorted=[...STATE.players].sort((a,b)=>b.score-a.score);
+  let html='<table style="margin:0 auto;border-collapse:collapse"><tr><th style="padding:.5rem">#</th><th style="padding:.5rem">اللاعب</th><th style="padding:.5rem">النقاط</th></tr>';
+  sorted.forEach((p,i)=>{ html+=`<tr><td style="padding:.5rem">${i+1}</td><td style="padding:.5rem">${p.name}</td><td style="padding:.5rem">${p.score}</td></tr>`; });
+  html+='</table>';
+  document.getElementById('loResultBody').innerHTML=html;
+}
+</script>
+{% endblock %}

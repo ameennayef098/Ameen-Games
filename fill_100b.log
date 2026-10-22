@@ -1,0 +1,50 @@
+model: nvidia/nemotron-3-ultra-550b-a55b   workers: 4
+targets (30):
+   health         الصحة والطب              hard      1
+   food           الطعام والشراب           hard      1
+   arts           الفنون                   hard      1
+   economy        الاقتصاد                 hard      1
+   politics       السياسة                  medium    9
+   politics       السياسة                  hard     10
+   transport      النقل والمواصلات         easy      1
+   transport      النقل والمواصلات         medium    3
+   transport      النقل والمواصلات         hard      1
+   agriculture    الزراعة والبيئة          easy     15
+   agriculture    الزراعة والبيئة          medium    2
+   inventions     الاختراعات والمخترعون    medium   10
+   currencies     العملات والبنوك          easy      1
+   currencies     العملات والبنوك          medium    3
+   currencies     العملات والبنوك          hard      1
+   internet       الإنترنت والشبكات        easy      5
+   internet       الإنترنت والشبكات        medium    5
+   internet       الإنترنت والشبكات        hard     32
+   energy         الطاقة والكهرباء         easy      2
+   energy         الطاقة والكهرباء         medium   12
+   energy         الطاقة والكهرباء         hard      1
+   tourism        السياحة والآثار          easy      3
+   tourism        السياحة والآثار          medium    1
+   tourism        السياحة والآثار          hard      1
+   basketball     كرة السلة والرياضات      easy      7
+   basketball     كرة السلة والرياضات      medium    3
+   basketball     كرة السلة والرياضات      hard      7
+   human_body     جسم الإنسان              easy      1
+   human_body     جسم الإنسان              medium    1
+   human_body     جسم الإنسان              hard      2
+total need: 143
+    +  1  الصحة والطب              hard     (cat total so far saved)
+    +  1  الطعام والشراب           hard     (cat total so far saved)
+    +  1  الفنون                   hard     (cat total so far saved)
+    +  1  الاقتصاد                 hard     (cat total so far saved)
+    +  9  السياسة                  medium   (cat total so far saved)
+    + 10  السياسة                  hard     (cat total so far saved)
+    +  1  النقل والمواصلات         easy     (cat total so far saved)
+    +  3  النقل والمواصلات         medium   (cat total so far saved)
+    +  1  النقل والمواصلات         hard     (cat total so far saved)
+    + 14  الزراعة والبيئة          easy     (cat total so far saved)
+    + 10  الاختراعات والمخترعون    medium   (cat total so far saved)
+    +  4  الإنترنت والشبكات        easy     (cat total so far saved)
+    + 12  الطاقة والكهرباء         medium   (cat total so far saved)
+    +  6  كرة السلة والرياضات      easy     (cat total so far saved)
+  round  1: +74
+    +  1  الزراعة والبيئة          easy     (cat total so far saved)
+    +  7  كرة السلة والرياضات      hard     (cat total so far saved)

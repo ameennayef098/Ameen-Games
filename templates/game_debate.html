@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.debate-header{display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;background:var(--bg-card);border-radius:var(--radius);margin-bottom:1rem}
+.debate-header h1{font-size:1.8rem;margin:0}
+.debate-container{max-width:1200px;margin:0 auto;padding:1rem}
+.criteria-box{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem}
+.criteria-box h3{color:var(--accent-gold);margin-bottom:.8rem}
+.criteria-list{display:flex;gap:.8rem;flex-wrap:wrap}
+.criteria-item{background:var(--bg-secondary);padding:.4rem 1rem;border-radius:20px;font-size:.9rem;color:var(--text-secondary)}
+.topic-actions{display:flex;gap:1rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1rem}
+.topic-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1.2rem;cursor:pointer;transition:var(--transition)}
+.topic-card:hover{border-color:var(--accent-gold);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.topic-card h4{color:var(--text-primary);margin-bottom:.5rem}
+.topic-card .topic-meta{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.ai-topic-preview{background:var(--bg-card);border:2px solid var(--accent-gold);border-radius:var(--radius-lg);padding:1.5rem;margin:1.5rem 0;display:none}
+.ai-topic-preview h3{color:var(--accent-gold);margin-bottom:1rem}
+.ai-topic-preview .preview-actions{display:flex;gap:1rem;margin-top:1rem}
+.play-area{background:var(--bg-card);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border-color)}
+.timer-config{display:flex;gap:1rem;align-items:center;justify-content:center;margin:1rem 0;flex-wrap:wrap}
+.timer-config select{padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-family:inherit}
+.timer-display{text-align:center;font-size:3.5rem;font-weight:900;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius);margin:1rem auto;max-width:250px;font-variant-numeric:tabular-nums}
+.timer-display.warning{color:var(--accent-gold)}
+.timer-display.danger{color:var(--accent-red);animation:pulse 1s infinite}
+.phase-label{text-align:center;font-size:1.3rem;font-weight:800;margin:.8rem 0}
+.teams-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem}
+.team-card{background:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--radius);padding:1.2rem;transition:var(--transition)}
+.team-card.active-pro{border-color:var(--accent-green);box-shadow:0 0 20px rgba(16,185,129,.15)}
+.team-card.active-con{border-color:var(--accent-red);box-shadow:0 0 20px rgba(239,68,68,.15)}
+.team-card h4{margin-bottom:.5rem}
+.team-card .team-side{color:var(--text-secondary);font-size:.9rem;margin-bottom:.8rem}
+.arg-list{margin:.8rem 0;max-height:200px;overflow-y:auto}
+.arg-item{background:var(--bg-card);border-right:3px solid var(--accent);border-radius:6px;padding:.5rem .8rem;margin:.3rem 0;font-size:.9rem}
+.arg-input{width:100%;padding:.7rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);min-height:70px;resize:vertical;margin:.5rem 0;font-family:inherit;font-size:.95rem}
+.arg-input:focus{outline:none;border-color:var(--accent-gold)}
+.arg-input:disabled{opacity:.4;cursor:not-allowed}
+.results-area{background:var(--bg-card);border:2px solid var(--accent-gold);border-radius:var(--radius-lg);padding:2rem;margin-top:1.5rem;display:none}
+.winner-banner{text-align:center;font-size:1.5rem;font-weight:900;color:var(--accent-gold);margin-bottom:1.5rem}
+.score-table{width:100%;border-collapse:collapse;margin:1rem 0}
+.score-table th,.score-table td{padding:.8rem;text-align:center;border-bottom:1px solid var(--border-color)}
+.score-table th{background:var(--bg-secondary);font-weight:700}
+.score-table .criterion-name{text-align:right;color:var(--text-secondary)}
+.feedback-box{background:var(--bg-secondary);border-radius:var(--radius);padding:1rem;margin:.8rem 0;text-align:right}
+.feedback-box h5{color:var(--accent-gold);margin-bottom:.5rem}
+.btn-fullscreen{background:var(--bg-card);border:1px solid var(--border-color);color:var(--text-primary);border-radius:8px;padding:.5rem 1rem;cursor:pointer;font-size:1.2rem;transition:var(--transition)}
+.btn-fullscreen:hover{background:var(--bg-card-hover)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@media(max-width:768px){.teams-layout{grid-template-columns:1fr}.debate-header{flex-direction:column;gap:.5rem}}
+</style>
+
+<div class="debate-container">
+  <div class="debate-header">
+    <button class="btn-fullscreen" onclick="toggleFullscreen()" title="ملء الشاشة">⛶</button>
+    <h1>💬 أقنعني!</h1>
+    <button class="btn btn-secondary" onclick="location.href='/games'">→ العودة</button>
+  </div>
+
+  <div id="topicSelect">
+    <div class="criteria-box">
+      <h3>📋 معايير التقييم</h3>
+      <div class="criteria-list">
+        <span class="criteria-item">وضوح الفكرة</span>
+        <span class="criteria-item">الترابط المنطقي</span>
+        <span class="criteria-item">قوة الأدلة</span>
+        <span class="criteria-item">الاستجابة للاعتراضات</span>
+        <span class="criteria-item">الدقة</span>
+      </div>
+    </div>
+
+    <div class="topic-actions">
+      <button class="btn btn-gold" onclick="randomTopic()"><svg class="ico" aria-hidden="true"><use href="#i-dice"></use></svg> موضوع عشوائي</button>
+      <button class="btn btn-primary" onclick="generateAiTopic()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> توليد موضوع بالذكاء الاصطناعي</button>
+    </div>
+
+    <div id="aiTopicPreview" class="ai-topic-preview">
+      <h3>🤖 موضوع مقترح</h3>
+      <p id="aiTopicText" style="font-size:1.1rem;font-weight:700"></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+        <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-green)">المؤيد:</b> <span id="aiSideA"></span></div>
+        <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-red)">المعارض:</b> <span id="aiSideB"></span></div>
+      </div>
+      <div class="preview-actions" style="display:flex;gap:1rem;margin-top:1rem">
+        <button class="btn btn-success" onclick="approveAiTopic()">✅ قبول والبدء</button>
+        <button class="btn btn-secondary" onclick="generateAiTopic()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> توليد آخر</button>
+        <button class="btn btn-secondary" onclick="closeAiTopic()">❌ إلغاء</button>
+      </div>
+    </div>
+
+    <div class="topic-grid" id="topicGrid"></div>
+  </div>
+
+  <div id="playArea" class="play-area" style="display:none">
+    <h2 id="debateTopic" style="text-align:center;color:var(--accent-gold);margin-bottom:1rem"></h2>
+
+    <div class="timer-config">
+      <label>⏱️ مدة التقديم:</label>
+      <select id="timerDuration" onchange="updateTimerDuration()">
+        <option value="30">30 ثانية</option>
+        <option value="60">دقيقة واحدة</option>
+        <option value="90" selected>دقيقة ونصف</option>
+        <option value="120">دقيقتان</option>
+        <option value="180">3 دقائق</option>
+      </select>
+    </div>
+
+    <div class="timer-display" id="timerDisplay">01:30</div>
+    <div class="phase-label" id="phaseLabel"></div>
+
+    <div class="teams-layout">
+      <div class="team-card" id="proCard">
+        <h4 style="color:var(--accent-green)">✅ الفريق الأول — المؤيد</h4>
+        <p class="team-side" id="proSide"></p>
+        <div class="arg-list" id="proArgs"></div>
+        <textarea class="arg-input" id="proInput" placeholder="اكتب حجة الفريق المؤيد..." disabled></textarea>
+        <button class="btn btn-primary" style="width:100%" id="proSubmit" onclick="submitArg('pro')" disabled>📤 تقديم الحجة</button>
+      </div>
+      <div class="team-card" id="conCard">
+        <h4 style="color:var(--accent-red)">❌ الفريق الثاني — المعارض</h4>
+        <p class="team-side" id="conSide"></p>
+        <div class="arg-list" id="conArgs"></div>
+        <textarea class="arg-input" id="conInput" placeholder="اكتب حجة الفريق المعارض..." disabled></textarea>
+        <button class="btn btn-danger" style="width:100%" id="conSubmit" onclick="submitArg('con')" disabled>📤 تقديم الحجة</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
+      <button class="btn btn-secondary" id="nextPhaseBtn" onclick="nextPhase()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> التالي</button>
+      <button class="btn btn-gold" id="evaluateBtn" onclick="evaluateDebate()" style="display:none;font-size:1.1rem">📤 تقييم بالذكاء الاصطناعي</button>
+    </div>
+  </div>
+
+  <div id="resultArea" class="results-area"></div>
+</div>
+
+<script>
+let currentTopic=null, allTopics=[], currentPhase='select';
+let timerInterval=null, timeLeft=90, timerDuration=90;
+let proArgs=[], conArgs=[], aiGeneratedTopic=null;
+
+async function loadTopics(){
+  try{
+    const r=await fetch('/api/content/debate?status=approved&per_page=100');
+    const d=await r.json();
+    allTopics=d.items||[];
+    displayTopics();
+  }catch(e){console.error(e)}
+}
+
+function displayTopics(){
+  const grid=document.getElementById('topicGrid');
+  if(!allTopics.length){grid.innerHTML='<p style="text-align:center;color:var(--text-muted)">لا توجد موضوعات بعد</p>';return}
+  grid.innerHTML=allTopics.map(t=>'<div class="topic-card" onclick="selectTopic(\''+t.id+'\')"><h4>'+t.topic+'</h4><div class="topic-meta"><span class="badge '+(t.difficulty==='easy'?'badge-green':t.difficulty==='medium'?'badge-gold':'badge-red')+'">'+(t.difficulty||'')+'</span>'+(t.category?'<span style="font-size:.8rem;color:var(--text-muted)">'+t.category+'</span>':'')+'</div></div>').join('');
+}
+
+function selectTopic(id){
+  currentTopic=allTopics.find(t=>t.id===id);
+  if(!currentTopic)return;
+  startDebate();
+}
+
+function randomTopic(){
+  if(!allTopics.length){alert('لا توجد موضوعات');return}
+  const idx=Math.floor(Math.random()*allTopics.length);
+  selectTopic(allTopics[idx].id);
+}
+
+async function generateAiTopic(){
+  const preview=document.getElementById('aiTopicPreview');
+  preview.style.display='block';
+  document.getElementById('aiTopicText').textContent='⏳ جاري التوليد...';
+  try{
+    const r=await fetch('/api/ai/generate-debate-topic',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    const d=await r.json();
+    if(d.error){alert(d.error);return}
+    aiGeneratedTopic=d;
+    document.getElementById('aiTopicText').textContent=d.topic||'';
+    document.getElementById('aiSideA').textContent=d.side_a||'';
+    document.getElementById('aiSideB').textContent=d.side_b||'';
+  }catch(e){alert('تعذّر توليد الموضوع: '+e.message)}
+}
+
+function approveAiTopic(){
+  if(!aiGeneratedTopic)return;
+  currentTopic={id:'ai-'+Date.now(),topic:aiGeneratedTopic.topic,side_a:aiGeneratedTopic.side_a,side_b:aiGeneratedTopic.side_b,category:'AI',difficulty:'medium'};
+  closeAiTopic();
+  startDebate();
+}
+
+function closeAiTopic(){
+  document.getElementById('aiTopicPreview').style.display='none';
+  aiGeneratedTopic=null;
+}
+
+function startDebate(){
+  currentPhase='team1';
+  proArgs=[];conArgs=[];
+  timerDuration=parseInt(document.getElementById('timerDuration').value)||90;
+  timeLeft=timerDuration;
+  document.getElementById('topicSelect').style.display='none';
+  document.getElementById('playArea').style.display='block';
+  document.getElementById('resultArea').style.display='none';
+  document.getElementById('debateTopic').textContent=currentTopic.topic;
+  document.getElementById('proSide').textContent=currentTopic.side_a||'';
+  document.getElementById('conSide').textContent=currentTopic.side_b||'';
+  document.getElementById('proArgs').innerHTML='';
+  document.getElementById('conArgs').innerHTML='';
+  document.getElementById('proInput').value='';
+  document.getElementById('conInput').value='';
+  document.getElementById('evaluateBtn').style.display='none';
+  document.getElementById('nextPhaseBtn').style.display='inline-flex';
+  updatePhaseUI();
+  startTimer();
+}
+
+function updateTimerDuration(){
+  if(currentPhase==='select')return;
+  const newDur=parseInt(document.getElementById('timerDuration').value)||90;
+  if(newDur>timerDuration){timeLeft+=newDur-timerDuration}
+  else{timeLeft=Math.min(timeLeft,newDur)}
+  timerDuration=newDur;
+  updateTimerDisplay();
+}
+
+function updatePhaseUI(){
+  const label=document.getElementById('phaseLabel');
+  const proCard=document.getElementById('proCard');
+  const conCard=document.getElementById('conCard');
+  if(currentPhase==='team1'){
+    label.textContent='🎤 الفريق الأول (المؤيد) يقدم حججه';
+    label.style.color='var(--accent-green)';
+    proCard.className='team-card active-pro';
+    conCard.className='team-card';
+    document.getElementById('proInput').disabled=false;
+    document.getElementById('proSubmit').disabled=false;
+    document.getElementById('conInput').disabled=true;
+    document.getElementById('conSubmit').disabled=true;
+  }else if(currentPhase==='team2'){
+    label.textContent='🎤 الفريق الثاني (المعارض) يقدم حججه';
+    label.style.color='var(--accent-red)';
+    proCard.className='team-card';
+    conCard.className='team-card active-con';
+    document.getElementById('proInput').disabled=true;
+    document.getElementById('proSubmit').disabled=true;
+    document.getElementById('conInput').disabled=false;
+    document.getElementById('conSubmit').disabled=false;
+  }else if(currentPhase==='eval'){
+    label.textContent='📊 جاهز للتقييم';
+    label.style.color='var(--accent-gold)';
+    proCard.className='team-card';
+    conCard.className='team-card';
+    document.getElementById('proInput').disabled=true;
+    document.getElementById('proSubmit').disabled=true;
+    document.getElementById('conInput').disabled=true;
+    document.getElementById('conSubmit').disabled=true;
+  }
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft<=0){nextPhase()}
+  },1000);
+}
+
+function updateTimerDisplay(){
+  const m=String(Math.floor(timeLeft/60)).padStart(2,'0');
+  const s=String(timeLeft%60).padStart(2,'0');
+  const display=document.getElementById('timerDisplay');
+  display.textContent=m+':'+s;
+  if(timeLeft<=10){display.className='timer-display danger'}
+  else if(timeLeft<=30){display.className='timer-display warning'}
+  else{display.className='timer-display'}
+}
+
+function nextPhase(){
+  clearInterval(timerInterval);
+  if(currentPhase==='team1'){
+    currentPhase='team2';
+    timeLeft=timerDuration;
+    updatePhaseUI();
+    startTimer();
+  }else if(currentPhase==='team2'){
+    currentPhase='eval';
+    updatePhaseUI();
+    document.getElementById('evaluateBtn').style.display='inline-flex';
+    document.getElementById('nextPhaseBtn').style.display='none';
+  }
+}
+
+function submitArg(side){
+  const input=document.getElementById(side+'Input');
+  const text=input.value.trim();
+  if(!text)return;
+  if(side==='pro'){proArgs.push(text)}else{conArgs.push(text)}
+  const list=document.getElementById(side+'Args');
+  const div=document.createElement('div');
+  div.className='arg-item';
+  div.textContent=text;
+  list.appendChild(div);
+  input.value='';
+}
+
+async function evaluateDebate(){
+  if(!proArgs.length&&!conArgs.length){alert('أضف حجة واحدة على الأقل لكل فريق');return}
+  const btn=document.getElementById('evaluateBtn');
+  btn.disabled=true;
+  btn.textContent='⏳ جاري التقييم...';
+  try{
+    const r=await fetch('/api/ai/evaluate-debate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({topic:currentTopic.topic,side_a_args:proArgs,side_b_args:conArgs})
+    });
+    const data=await r.json();
+    if(data.error){alert(data.error);btn.disabled=false;btn.textContent='📤 تقييم بالذكاء الاصطناعي';return}
+    showResults(data);
+  }catch(e){
+    alert('تعذّر التقييم: '+e.message);
+    btn.disabled=false;
+    btn.textContent='📤 تقييم بالذكاء الاصطناعي';
+  }
+}
+
+function showResults(data){
+  document.getElementById('playArea').style.display='none';
+  const area=document.getElementById('resultArea');
+  area.style.display='block';
+
+  const criteria=['وضوح الفكرة','الترابط المنطقي','قوة الأدلة','الاستجابة للاعتراضات','الدقة'];
+  const aScores=data.side_a&&data.side_a.scores?data.side_a.scores:{};
+  const bScores=data.side_b&&data.side_b.scores?data.side_b.scores:{};
+  const aTotal=data.side_a&&data.side_a.total?data.side_a.total:0;
+  const bTotal=data.side_b&&data.side_b.total?data.side_b.total:0;
+  let winnerText='🤝 تعادل!';
+  if(data.winner==='side_a'){winnerText='🏆 الفائز: الفريق المؤيد'}
+  else if(data.winner==='side_b'){winnerText='🏆 الفائز: الفريق المعارض'}
+
+  let tableRows=criteria.map(c=>{
+    const a=aScores[c]||'-';
+    const b=bScores[c]||'-';
+    return '<tr><td class="criterion-name">'+c+'</td><td>'+a+'</td><td>'+b+'</td></tr>';
+  }).join('');
+
+  area.innerHTML='<div class="winner-banner">'+winnerText+'</div>'
+    +'<h3 style="text-align:center;margin-bottom:1rem">📊 تفاصيل التقييم</h3>'
+    +'<table class="score-table"><thead><tr><th>المعيار</th><th style="color:var(--accent-green)">المؤيد</th><th style="color:var(--accent-red)">المعارض</th></tr></thead>'
+    +'<tbody>'+tableRows
+    +'<tr><td class="criterion-name"><b>المجموع</b></td><td><b style="color:var(--accent-green)">'+aTotal+'</b></td><td><b style="color:var(--accent-red)">'+bTotal+'</b></td></tr>'
+    +'</tbody></table>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">'
+    +'<div class="feedback-box"><h5>💬 تقييم المؤيد</h5><p>'+(data.side_a&&data.side_a.feedback?data.side_a.feedback:'')+'</p></div>'
+    +'<div class="feedback-box"><h5>💬 تقييم المعارض</h5><p>'+(data.side_b&&data.side_b.feedback?data.side_b.feedback:'')+'</p></div>'
+    +'</div>'
+    +'<div style="text-align:center;margin-top:1.5rem;display:flex;gap:1rem;justify-content:center">'
+    +'<button class="btn btn-primary" onclick="showTopicSelect()">🔄 موضوع آخر</button>'
+    +'<button class="btn btn-secondary" onclick="restartSameTopic()">🔁 إعادة بنفس الموضوع</button>'
+    +'</div>';
+
+  area.scrollIntoView({behavior:'smooth'});
+}
+
+function showTopicSelect(){
+  clearInterval(timerInterval);
+  document.getElementById('topicSelect').style.display='block';
+  document.getElementById('playArea').style.display='none';
+  document.getElementById('resultArea').style.display='none';
+  currentPhase='select';
+}
+
+function restartSameTopic(){
+  if(currentTopic)startDebate();
+}
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement){document.documentElement.requestFullscreen()}
+  else{document.exitFullscreen()}
+}
+
+loadTopics();
+</script>
+{% endblock %}

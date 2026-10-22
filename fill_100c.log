@@ -1,0 +1,36 @@
+model: nvidia/nemotron-3-ultra-550b-a55b   workers: 5
+targets (15):
+   food           الطعام والشراب           hard      1
+   politics       السياسة                  hard      1
+   transport      النقل والمواصلات         medium    1
+   agriculture    الزراعة والبيئة          easy      1
+   inventions     الاختراعات والمخترعون    medium    1
+   internet       الإنترنت والشبكات        medium    2
+   internet       الإنترنت والشبكات        hard     24
+   energy         الطاقة والكهرباء         easy      2
+   energy         الطاقة والكهرباء         medium    1
+   energy         الطاقة والكهرباء         hard      1
+   tourism        السياحة والآثار          easy      3
+   tourism        السياحة والآثار          medium    1
+   tourism        السياحة والآثار          hard      1
+   basketball     كرة السلة والرياضات      easy      1
+   basketball     كرة السلة والرياضات      medium    2
+total need: 43
+  round  1: +0
+  no progress this round — stopping
+DONE: 0 accepted in 143s
+   ! short: الطعام والشراب           hard    0 of 1
+   ! short: السياسة                  hard    0 of 1
+   ! short: النقل والمواصلات         medium  0 of 1
+   ! short: الزراعة والبيئة          easy    0 of 1
+   ! short: الاختراعات والمخترعون    medium  0 of 1
+   ! short: الإنترنت والشبكات        medium  0 of 2
+   ! short: الإنترنت والشبكات        hard    0 of 24
+   ! short: الطاقة والكهرباء         easy    0 of 2
+   ! short: الطاقة والكهرباء         medium  0 of 1
+   ! short: الطاقة والكهرباء         hard    0 of 1
+   ! short: السياحة والآثار          easy    0 of 3
+   ! short: السياحة والآثار          medium  0 of 1
+   ! short: السياحة والآثار          hard    0 of 1
+   ! short: كرة السلة والرياضات      easy    0 of 1
+   ! short: كرة السلة والرياضات      medium  0 of 2

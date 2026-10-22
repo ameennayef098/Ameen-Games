@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> | ألعاب أمين</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">🎮</span>
+            <span class="logo-text">ألعاب أمين</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">الرئيسية</a>
+            <a href="/games" class="nav-link">الألعاب</a>
+            <a href="/how-to-play" class="nav-link">طريقة اللعب</a>
+            <a href="/about" class="nav-link">عن الموقع</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-primary" onclick="window.location.href='/games'">🎮 ابدأ اللعب</button>
+            <a href="/admin" class="nav-link" style="opacity:.4;font-size:1.1rem;" title="لوحة الإدارة">🔒</a>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/">الرئيسية</a>
+        <a href="/games">الألعاب</a>
+        <a href="/how-to-play">طريقة اللعب</a>
+        <a href="/about">عن الموقع</a>
+        <a href="/admin" style="opacity:.5">🔒 لوحة الإدارة</a>
+    </div>
+    
+    <main class="main-content">
+        
+<div class="game-container" style="max-width: 900px;">
+    <div class="page-header">
+        <h1>🎯 طريقة اللعب</h1>
+        <p>تعلم كيف تلعب كل لعبة</p>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <!-- Letters Game -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+            <h2>🔤 حروف مع أمين</h2>
+            <ol style="padding-right: 1.5rem; line-height: 2;">
+                <li>يقوم المضيف باختيار خلية متاحة من اللوحة السداسية</li>
+                <li>يظهر سؤال مرتبط بالحرف الموجود في الخلية</li>
+                <li>يضغط الفريق على الجرس للإجابة</li>
+                <li>إذا كانت الإجابة صحيحة، يستحوذ الفريق على الخلية</li>
+                <li>الفريق الأول يحاول تكوين مسار أفقي من اليمين لليسار</li>
+                <li>الفريق الثاني يحاول تكوين مسار عمودي من الأعلى للأسفل</li>
+                <li>الفريق الذي يكمل مساره أولاً يفوز</li>
+            </ol>
+        </div>
+        
+        <!-- Quiz Game -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+            <h2>❓ س.ج</h2>
+            <ol style="padding-right: 1.5rem; line-height: 2;">
+                <li>يختار الفريق صاحب الدور فئة ثم قيمة نقاط</li>
+                <li>تظهر السؤال ويبدأ المؤقت</li>
+                <li>يجيب الفريق خلال الوقت المحدد</li>
+                <li>إذا كانت الإجابة صحيحة، يحصل الفريق على النقاط</li>
+                <li>إذا خاطئة، يمكن للفريق الآخر سرقة السؤال (إذا كانت الخاصية مفعلة)</li>
+                <li>تنتهي المباراة عند استهلاك جميع الأسئلة الـ36</li>
+                <li>الفريق صاحب أعلى نقاط يفوز</li>
+            </ol>
+        </div>
+        
+        <!-- Auction Game -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+            <h2>💰 مزاد اللاعبين</h2>
+            <ol style="padding-right: 1.5rem; line-height: 2;">
+                <li>يعرض النظام لاعبًا عشوائيًا</li>
+                <li>يبدأ المزاد بالسعر الافتتاحي</li>
+                <li>يتنافس المشاركون على المزايدة خلال الوقت المحدد</li>
+                <li>عند انتهاء الوقت، يفوز صاحب أعلى مزايدة باللاعب</li>
+                <li>يُخصم السعر من ميزانية الفائز</li>
+                <li>يتكرر المزاد حتى اكتمال عدد اللاعبين المطلوب</li>
+                <li>في النهاية، تُقارن التشكيلات ويُعلن الفائز</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+    </main>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon">🎮</span>
+                <span>ألعاب أمين</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">الرئيسية</a>
+                <a href="/games">الألعاب</a>
+                <a href="/library">مكتبة الأسئلة</a>
+                <a href="/about">عن الموقع</a>
+            </div>
+            <div class="footer-version">الإصدار 1.0.0</div>
+            <div class="footer-rights">© 2024 ألعاب أمين — جميع الحقوق محفوظة</div>
+        </div>
+    </footer>
+    
+    <script src="/static/js/main.js"></script>
+    
+</body>
+</html>

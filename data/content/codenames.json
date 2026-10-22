@@ -1,0 +1,2230 @@
+[
+  {
+    "id": "cn000",
+    "word": "قمر",
+    "meaning": "جسم سماوي يدور حول الأرض",
+    "category": "طبيعة",
+    "related": [
+      "ليل",
+      "نجوم",
+      "مدار",
+      "هلال"
+    ],
+    "ambiguous": [
+      "قهوة",
+      "قصر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn001",
+    "word": "طبيب",
+    "meaning": "شخص يعالج المرضى",
+    "category": "مهن",
+    "related": [
+      "مستشفى",
+      "مرض",
+      "دواء",
+      "عيادة"
+    ],
+    "ambiguous": [
+      "طباخ",
+      "مهندس"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn002",
+    "word": "سيارة",
+    "meaning": "وسيلة أربع عجلات",
+    "category": "مواصلات",
+    "related": [
+      "طريق",
+      "قيادة",
+      "وقود",
+      "عجلة"
+    ],
+    "ambiguous": [
+      "دراجة",
+      "طائرة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn003",
+    "word": "مدرسة",
+    "meaning": "مكان للتعليم",
+    "category": "أماكن",
+    "related": [
+      "طالب",
+      "كتاب",
+      "معلم",
+      "قلم"
+    ],
+    "ambiguous": [
+      "جامعة",
+      "ملعب"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn004",
+    "word": "بحر",
+    "meaning": "مسطح مائي واسع",
+    "category": "طبيعة",
+    "related": [
+      "ماء",
+      "سمك",
+      "موجة",
+      "شاطئ"
+    ],
+    "ambiguous": [
+      "نهر",
+      "صحراء"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn005",
+    "word": "كتاب",
+    "meaning": "مجموعة مطبوعة مقروءة",
+    "category": "ثقافة",
+    "related": [
+      "صفحة",
+      "قراءة",
+      "مكتبة",
+      "قصة"
+    ],
+    "ambiguous": [
+      "صحيفة",
+      "حاسوب"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn006",
+    "word": "شمس",
+    "meaning": "نجم يضيء نهارنا",
+    "category": "طبيعة",
+    "related": [
+      "حرارة",
+      "ضوء",
+      "نهار",
+      "صيف"
+    ],
+    "ambiguous": [
+      "قمر",
+      "نار"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn007",
+    "word": "طعام",
+    "meaning": "ما نأكله",
+    "category": "طعام",
+    "related": [
+      "جوع",
+      "طبخ",
+      "مائدة",
+      "مطعم"
+    ],
+    "ambiguous": [
+      "شراب",
+      "نوم"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn008",
+    "word": "مال",
+    "meaning": "عملات وثروة",
+    "category": "معلومات عامة",
+    "related": [
+      "بنك",
+      "نقود",
+      "ثروة",
+      "دفع"
+    ],
+    "ambiguous": [
+      "وقت",
+      "صحة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn009",
+    "word": "ملعب",
+    "meaning": "مكان للرياضة",
+    "category": "أماكن",
+    "related": [
+      "كرة",
+      "حكم",
+      "فريق",
+      "جماهير"
+    ],
+    "ambiguous": [
+      "مسرح",
+      "سوق"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn010",
+    "word": "مدينة",
+    "meaning": "تجمع سكاني كبير",
+    "category": "أماكن",
+    "related": [
+      "شارع",
+      "بناء",
+      "حي",
+      "مواصلات"
+    ],
+    "ambiguous": [
+      "قرية",
+      "غابة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn011",
+    "word": "صحراء",
+    "meaning": "أرض قاحلة رملية",
+    "category": "طبيعة",
+    "related": [
+      "رمل",
+      "جمل",
+      "واحة",
+      "حرارة"
+    ],
+    "ambiguous": [
+      "غابة",
+      "بحر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn012",
+    "word": "مطر",
+    "meaning": "ماء يسقط من السماء",
+    "category": "طبيعة",
+    "related": [
+      "سحاب",
+      "شتاء",
+      "مظلة",
+      "رذاذ"
+    ],
+    "ambiguous": [
+      "ثلج",
+      "شمس"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn013",
+    "word": "طائر",
+    "meaning": "حيوان يطير",
+    "category": "طبيعة",
+    "related": [
+      "جناح",
+      "عش",
+      "بيضة",
+      "تغريد"
+    ],
+    "ambiguous": [
+      "سمك",
+      "حصان"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn014",
+    "word": "نبات",
+    "meaning": "كائن حي ينمو",
+    "category": "طبيعة",
+    "related": [
+      "ورقة",
+      "جذر",
+      "زهرة",
+      "تربة"
+    ],
+    "ambiguous": [
+      "حيوان",
+      "حجر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn015",
+    "word": "حاسوب",
+    "meaning": "آلة إلكترونية",
+    "category": "تقنية",
+    "related": [
+      "شاشة",
+      "لوحة مفاتيح",
+      "برنامج",
+      "إنترنت"
+    ],
+    "ambiguous": [
+      "هاتف",
+      "كتاب"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn016",
+    "word": "هاتف",
+    "meaning": "جهاز اتصال محمول",
+    "category": "تقنية",
+    "related": [
+      "مكالمة",
+      "رسالة",
+      "شاشة",
+      "رقم"
+    ],
+    "ambiguous": [
+      "حاسوب",
+      "تلغراف"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn017",
+    "word": "فضاء",
+    "meaning": "ما وراء الغلاف الجوي",
+    "category": "علوم",
+    "related": [
+      "كوكب",
+      "نجوم",
+      "صاروخ",
+      "رائد فضاء"
+    ],
+    "ambiguous": [
+      "بحر",
+      "جبل"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn018",
+    "word": "رياضة",
+    "meaning": "نشاط بدني منظم",
+    "category": "رياضة",
+    "related": [
+      "ملعب",
+      "فريق",
+      "بطولة",
+      "لياقة"
+    ],
+    "ambiguous": [
+      "قراءة",
+      "رسم"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn019",
+    "word": "رسم",
+    "meaning": "فن الخطوط والألوان",
+    "category": "فنون",
+    "related": [
+      "لون",
+      "لوحة",
+      "فنان",
+      "فرشاة"
+    ],
+    "ambiguous": [
+      "موسيقى",
+      "رياضة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn020",
+    "word": "موسيقى",
+    "meaning": "فن الألحان",
+    "category": "فنون",
+    "related": [
+      "صوت",
+      "أغنية",
+      "آلة",
+      "لحن"
+    ],
+    "ambiguous": [
+      "رسم",
+      "صمت"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn021",
+    "word": "تاريخ",
+    "meaning": "سجل الأحداث الماضية",
+    "category": "معلومات عامة",
+    "related": [
+      "ماضي",
+      "حضارة",
+      "أثر",
+      "حرب"
+    ],
+    "ambiguous": [
+      "مستقبل",
+      "جغرافيا"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn022",
+    "word": "جغرافيا",
+    "meaning": "دراسة الأرض وظواهرها",
+    "category": "معلومات عامة",
+    "related": [
+      "خريطة",
+      "دولة",
+      "تضاريس",
+      "مناخ"
+    ],
+    "ambiguous": [
+      "تاريخ",
+      "رياضيات"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn023",
+    "word": "لغة",
+    "meaning": "وسيلة التواصل كلاماً وكتابة",
+    "category": "أدب",
+    "related": [
+      "كلمة",
+      "حرف",
+      "نحو",
+      "لهجة"
+    ],
+    "ambiguous": [
+      "رياضة",
+      "طعام"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn024",
+    "word": "علم",
+    "meaning": "معرفة منظمة",
+    "category": "علوم",
+    "related": [
+      "تجربة",
+      "بحث",
+      "نظرية",
+      "مختبر"
+    ],
+    "ambiguous": [
+      "فن",
+      "رياضة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn025",
+    "word": "مشكلة",
+    "meaning": "وضع يحتاج حلاً",
+    "category": "معلومات عامة",
+    "related": [
+      "حل",
+      "صعوبة",
+      "قرار",
+      "نتيجة"
+    ],
+    "ambiguous": [
+      "سؤال",
+      "إجابة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn026",
+    "word": "حل",
+    "meaning": "ما يعالج المشكلة",
+    "category": "معلومات عامة",
+    "related": [
+      "مشكلة",
+      "قرار",
+      "نتيجة",
+      "خطوة"
+    ],
+    "ambiguous": [
+      "بداية",
+      "سؤال"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn027",
+    "word": "قوة",
+    "meaning": "قدرة على التأثير",
+    "category": "معلومات عامة",
+    "related": [
+      "طاقة",
+      "عضلة",
+      "سلطة",
+      "تأثير"
+    ],
+    "ambiguous": [
+      "ضعف",
+      "هدوء"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn028",
+    "word": "ضعف",
+    "meaning": "انعدام القوة",
+    "category": "معلومات عامة",
+    "related": [
+      "عجز",
+      "تعب",
+      "هشاشة",
+      "احتياج"
+    ],
+    "ambiguous": [
+      "قوة",
+      "صحة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn029",
+    "word": "سرعة",
+    "meaning": "معدل الحركة",
+    "category": "معلومات عامة",
+    "related": [
+      "سريع",
+      "سباق",
+      "وقت"
+    ],
+    "ambiguous": [
+      "بطء",
+      "هدوء"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn030",
+    "word": "بطء",
+    "meaning": "انعدام السرعة",
+    "category": "معلومات عامة",
+    "related": [
+      "بطيء",
+      "وقت",
+      "صبر",
+      "هدوء"
+    ],
+    "ambiguous": [
+      "سرعة",
+      "حماس"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn031",
+    "word": "ضوء",
+    "meaning": "إشعاع يُمكّن الرؤية",
+    "category": "علوم",
+    "related": [
+      "شمس",
+      "مصباح",
+      "ظل",
+      "لون"
+    ],
+    "ambiguous": [
+      "ظلام",
+      "صوت"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn032",
+    "word": "ظلام",
+    "meaning": "غياب الضوء",
+    "category": "طبيعة",
+    "related": [
+      "ليل",
+      "صمت",
+      "خوف"
+    ],
+    "ambiguous": [
+      "ضوء",
+      "نهار"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn033",
+    "word": "حرارة",
+    "meaning": "ارتفاع درجة الحرارة",
+    "category": "طبيعة",
+    "related": [
+      "نار",
+      "صيف",
+      "جسم ساخن",
+      "تعرق"
+    ],
+    "ambiguous": [
+      "برودة",
+      "ثلج"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn034",
+    "word": "برودة",
+    "meaning": "انخفاض درجة الحرارة",
+    "category": "طبيعة",
+    "related": [
+      "ثلج",
+      "شتاء",
+      "مشروب بارد"
+    ],
+    "ambiguous": [
+      "حرارة",
+      "صيف"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn035",
+    "word": "لون",
+    "meaning": "خاصية بصرية",
+    "category": "فنون",
+    "related": [
+      "أحمر",
+      "أزرق",
+      "قوس قزح",
+      "طلاء"
+    ],
+    "ambiguous": [
+      "صوت",
+      "رائحة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn036",
+    "word": "صوت",
+    "meaning": "ما يُسمع",
+    "category": "معلومات عامة",
+    "related": [
+      "سمع",
+      "ضوضاء",
+      "غناء",
+      "صدى"
+    ],
+    "ambiguous": [
+      "صورة",
+      "لون"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn037",
+    "word": "رائحة",
+    "meaning": "ما يُشمّ",
+    "category": "معلومات عامة",
+    "related": [
+      "أنف",
+      "عطر",
+      "زهرة"
+    ],
+    "ambiguous": [
+      "صوت",
+      "لون"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn038",
+    "word": "طعم",
+    "meaning": "ما يُذوق",
+    "category": "معلومات عامة",
+    "related": [
+      "لسان",
+      "حلو",
+      "حامض",
+      "مر"
+    ],
+    "ambiguous": [
+      "صوت",
+      "رائحة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn039",
+    "word": "ملمس",
+    "meaning": "ما يُلمس",
+    "category": "معلومات عامة",
+    "related": [
+      "يد",
+      "ناعم",
+      "خشن",
+      "بارد"
+    ],
+    "ambiguous": [
+      "صوت",
+      "لون"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn040",
+    "word": "زمن",
+    "meaning": "مدة وقوع الأحداث",
+    "category": "معلومات عامة",
+    "related": [
+      "ساعة",
+      "دقيقة",
+      "تاريخ",
+      "أمس"
+    ],
+    "ambiguous": [
+      "مكان",
+      "كتلة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn041",
+    "word": "مكان",
+    "meaning": "موقع الشيء",
+    "category": "معلومات عامة",
+    "related": [
+      "هنا",
+      "هناك",
+      "عنوان",
+      "موقع"
+    ],
+    "ambiguous": [
+      "زمن",
+      "وزن"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn042",
+    "word": "عدد",
+    "meaning": "كمية رقمية",
+    "category": "علوم",
+    "related": [
+      "رقم",
+      "جمع",
+      "عدد صحيح",
+      "كسر"
+    ],
+    "ambiguous": [
+      "لون",
+      "صوت"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn043",
+    "word": "خط",
+    "meaning": "سلسلة نقاط مستقيمة",
+    "category": "علوم",
+    "related": [
+      "مستقيم",
+      "منحنى",
+      "زاوية",
+      "طول"
+    ],
+    "ambiguous": [
+      "صوت",
+      "رائحة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn044",
+    "word": "دائرة",
+    "meaning": "شكل هندسي منحنٍ",
+    "category": "علوم",
+    "related": [
+      "نصف قطر",
+      "محيط",
+      "قرص",
+      "زاوية"
+    ],
+    "ambiguous": [
+      "مربع",
+      "مثلث"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn045",
+    "word": "مربع",
+    "meaning": "شكل بأربعة أضلاع متساوية",
+    "category": "علوم",
+    "related": [
+      "ضلع",
+      "زاوية",
+      "مستطيل",
+      "مساحة"
+    ],
+    "ambiguous": [
+      "دائرة",
+      "مثلث"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn046",
+    "word": "مثلث",
+    "meaning": "شكل بثلاثة أضلاع",
+    "category": "علوم",
+    "related": [
+      "ضلع",
+      "زاوية",
+      "رأس",
+      "مساحة"
+    ],
+    "ambiguous": [
+      "مربع",
+      "دائرة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn047",
+    "word": "وزن",
+    "meaning": "ثقل الجسم",
+    "category": "علوم",
+    "related": [
+      "كتلة",
+      "ميزان",
+      "ثقيل",
+      "خفيف"
+    ],
+    "ambiguous": [
+      "طول",
+      "زمن"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn048",
+    "word": "طول",
+    "meaning": "المسافة من طرف لآخر",
+    "category": "علوم",
+    "related": [
+      "متر",
+      "قياس",
+      "طويل",
+      "قصير"
+    ],
+    "ambiguous": [
+      "وزن",
+      "زمن"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn049",
+    "word": "مساحة",
+    "meaning": "قياس السطح",
+    "category": "علوم",
+    "related": [
+      "متر مربع",
+      "طول",
+      "عرض",
+      "أرض"
+    ],
+    "ambiguous": [
+      "حجم",
+      "وزن"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn050",
+    "word": "حجم",
+    "meaning": "الحيز الذي يشغله الجسم",
+    "category": "علوم",
+    "related": [
+      "مكعب",
+      "سعة",
+      "صغير",
+      "كبير"
+    ],
+    "ambiguous": [
+      "وزن",
+      "طول"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn051",
+    "word": "أرض",
+    "meaning": "الكوكب الذي نعيش عليه",
+    "category": "طبيعة",
+    "related": [
+      "قارة",
+      "محيط",
+      "دولة"
+    ],
+    "ambiguous": [
+      "قمر",
+      "شمس"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn052",
+    "word": "كوكب",
+    "meaning": "جسم يدور حول نجم",
+    "category": "علوم",
+    "related": [
+      "مريخ",
+      "زحل",
+      "مدار",
+      "مجموعة شمسية"
+    ],
+    "ambiguous": [
+      "نجم",
+      "قمر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn053",
+    "word": "نجم",
+    "meaning": "جسم سماوي متوهج",
+    "category": "علوم",
+    "related": [
+      "شمس",
+      "ليلي",
+      "مجرة",
+      "ضوء"
+    ],
+    "ambiguous": [
+      "كوكب",
+      "محيط"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn054",
+    "word": "مجرة",
+    "meaning": "تجمع هائل من النجوم",
+    "category": "علوم",
+    "related": [
+      "درب التبانة",
+      "نجوم",
+      "فضاء"
+    ],
+    "ambiguous": [
+      "كوكب",
+      "بحر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn055",
+    "word": "عاصفة",
+    "meaning": "رياح شديدة مصحوبة بمطر",
+    "category": "طبيعة",
+    "related": [
+      "رياح",
+      "رعد",
+      "برق",
+      "إعصار"
+    ],
+    "ambiguous": [
+      "هدوء",
+      "شمس"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn056",
+    "word": "رعد",
+    "meaning": "صوت من البرق",
+    "category": "طبيعة",
+    "related": [
+      "برق",
+      "عاصفة",
+      "صوت عالٍ"
+    ],
+    "ambiguous": [
+      "صمت",
+      "همس"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn057",
+    "word": "برق",
+    "meaning": "تفريغ كهربائي في السماء",
+    "category": "علوم",
+    "related": [
+      "رعد",
+      "عاصفة",
+      "ضوء سريع",
+      "كهرباء"
+    ],
+    "ambiguous": [
+      "شمس",
+      "قمر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn058",
+    "word": "ثلج",
+    "meaning": "هطول من بلورات جليدية",
+    "category": "طبيعة",
+    "related": [
+      "شتاء",
+      "برودة",
+      "تلج"
+    ],
+    "ambiguous": [
+      "حرارة",
+      "مطر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn059",
+    "word": "جليد",
+    "meaning": "ماء متجمد",
+    "category": "طبيعة",
+    "related": [
+      "ثلج",
+      "برودة",
+      "قطب"
+    ],
+    "ambiguous": [
+      "نار",
+      "حرارة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn060",
+    "word": "نار",
+    "meaning": "احتراق ينتج ضوءاً وحرارة",
+    "category": "طبيعة",
+    "related": [
+      "لهب",
+      "دخان",
+      "احتراق"
+    ],
+    "ambiguous": [
+      "ماء",
+      "ثلج"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn061",
+    "word": "ماء",
+    "meaning": "سائل الحياة",
+    "category": "طبيعة",
+    "related": [
+      "شرب",
+      "نهر",
+      "بحر",
+      "مطر"
+    ],
+    "ambiguous": [
+      "نار",
+      "تراب"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn062",
+    "word": "تراب",
+    "meaning": "الأرض المفتتة",
+    "category": "طبيعة",
+    "related": [
+      "زراعة",
+      "غبار",
+      "طين"
+    ],
+    "ambiguous": [
+      "ماء",
+      "حجر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn063",
+    "word": "صخرة",
+    "meaning": "مادة صلبة طبيعية",
+    "category": "طبيعة",
+    "related": [
+      "جبل",
+      "حجر",
+      "معدن"
+    ],
+    "ambiguous": [
+      "ماء",
+      "نبات"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn064",
+    "word": "جبل",
+    "meaning": "مرتفع أرضي شاهق",
+    "category": "طبيعة",
+    "related": [
+      "قمة",
+      "صخرة",
+      "ارتفاع"
+    ],
+    "ambiguous": [
+      "سهل",
+      "واد"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn065",
+    "word": "وادي",
+    "meaning": "منخفض بين الجبال",
+    "category": "طبيعة",
+    "related": [
+      "سهل",
+      "مجرى",
+      "زراعة"
+    ],
+    "ambiguous": [
+      "قمة",
+      "تل"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn066",
+    "word": "سهل",
+    "meaning": "أرض منبسطة",
+    "category": "طبيعة",
+    "related": [
+      "مزرعة",
+      "فلاحة",
+      "أرض"
+    ],
+    "ambiguous": [
+      "جبل",
+      "واد"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn067",
+    "word": "نهر",
+    "meaning": "مجرى مائي عذب",
+    "category": "طبيعة",
+    "related": [
+      "ماء",
+      "جسر",
+      "ضفة"
+    ],
+    "ambiguous": [
+      "بحر",
+      "صحراء"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn068",
+    "word": "بحيرة",
+    "meaning": "مسطح مائي محاط باليابسة",
+    "category": "طبيعة",
+    "related": [
+      "ماء",
+      "سمك",
+      "ضفة"
+    ],
+    "ambiguous": [
+      "بحر",
+      "نهر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn069",
+    "word": "واحة",
+    "meaning": "منطقة خضراء في الصحراء",
+    "category": "طبيعة",
+    "related": [
+      "نخيل",
+      "ماء",
+      "صحراء"
+    ],
+    "ambiguous": [
+      "مدينة",
+      "غابة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn070",
+    "word": "غابة",
+    "meaning": "منطقة مليئة بالأشجار",
+    "category": "طبيعة",
+    "related": [
+      "شجرة",
+      "حيوان",
+      "ورقة"
+    ],
+    "ambiguous": [
+      "صحراء",
+      "مدينة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn071",
+    "word": "شجرة",
+    "meaning": "نبات له جذع وأغصان",
+    "category": "طبيعة",
+    "related": [
+      "ورقة",
+      "ثمر",
+      "جذع",
+      "غابة"
+    ],
+    "ambiguous": [
+      "عشب",
+      "حجر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn072",
+    "word": "ورقة",
+    "meaning": "جزء أخضر من الشجرة",
+    "category": "طبيعة",
+    "related": [
+      "شجرة",
+      "خريف",
+      "تساقط"
+    ],
+    "ambiguous": [
+      "جذر",
+      "ثمر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn073",
+    "word": "ثمرة",
+    "meaning": "ناتج النبات الصالح للأكل",
+    "category": "طبيعة",
+    "related": [
+      "شجرة",
+      "فاكهة",
+      "بذر"
+    ],
+    "ambiguous": [
+      "ورقة",
+      "جذر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn074",
+    "word": "بذرة",
+    "meaning": "بداية النبات",
+    "category": "طبيعة",
+    "related": [
+      "زراعة",
+      "تراب",
+      "ماء"
+    ],
+    "ambiguous": [
+      "ثمرة",
+      "ورقة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn075",
+    "word": "جذر",
+    "meaning": "جزء النبات تحت الأرض",
+    "category": "طبيعة",
+    "related": [
+      "شجرة",
+      "تراب",
+      "امتصاص"
+    ],
+    "ambiguous": [
+      "ورقة",
+      "ثمر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn076",
+    "word": "زهرة",
+    "meaning": "جزء ملون من النبات",
+    "category": "طبيعة",
+    "related": [
+      "رائحة",
+      "بتلة",
+      "تلقيح"
+    ],
+    "ambiguous": [
+      "جذر",
+      "ورقة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn077",
+    "word": "عسل",
+    "meaning": "سائل يصنعه النحل",
+    "category": "طعام",
+    "related": [
+      "نحل",
+      "زهرة",
+      "خلية"
+    ],
+    "ambiguous": [
+      "سكر",
+      "ملح"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn078",
+    "word": "نحل",
+    "meaning": "حشرة تصنع العسل",
+    "category": "طبيعة",
+    "related": [
+      "عسل",
+      "خلية",
+      "لقاح"
+    ],
+    "ambiguous": [
+      "نمل",
+      "فراشة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn079",
+    "word": "فراشة",
+    "meaning": "حشرة ملونة الأجنحة",
+    "category": "طبيعة",
+    "related": [
+      "جناح",
+      "يرقة",
+      "زهرة"
+    ],
+    "ambiguous": [
+      "نحل",
+      "نملة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn080",
+    "word": "نملة",
+    "meaning": "حشرة اجتماعية صغيرة",
+    "category": "طبيعة",
+    "related": [
+      "جحر",
+      "عمل",
+      "مستعمرة"
+    ],
+    "ambiguous": [
+      "فراشة",
+      "نحل"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn081",
+    "word": "سمك",
+    "meaning": "حيوان مائي يتنفس بالخياشيم",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "خياشيم",
+      "شبكة"
+    ],
+    "ambiguous": [
+      "طائر",
+      "حصان"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn082",
+    "word": "حصان",
+    "meaning": "حيوان للركوب والجر",
+    "category": "طبيعة",
+    "related": [
+      "جوادة",
+      "ركوب",
+      "صهيل"
+    ],
+    "ambiguous": [
+      "بقرة",
+      "خروف"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn083",
+    "word": "بقرة",
+    "meaning": "حيوان ألبان",
+    "category": "طبيعة",
+    "related": [
+      "حليب",
+      "مراعي"
+    ],
+    "ambiguous": [
+      "حصان",
+      "خروف"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn084",
+    "word": "خروف",
+    "meaning": "حيوان صوفي",
+    "category": "طبيعة",
+    "related": [
+      "صوف",
+      "رعي",
+      "قطيع"
+    ],
+    "ambiguous": [
+      "بقرة",
+      "ماعز"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn085",
+    "word": "دجاجة",
+    "meaning": "طائر منزلي للبيض",
+    "category": "طبيعة",
+    "related": [
+      "بيض",
+      "قفص",
+      "صوص"
+    ],
+    "ambiguous": [
+      "بط",
+      "بطة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn086",
+    "word": "بطة",
+    "meaning": "طائر مائي",
+    "category": "طبيعة",
+    "related": [
+      "ماء",
+      "منقار",
+      "سباحة"
+    ],
+    "ambiguous": [
+      "دجاجة",
+      "صقر"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn087",
+    "word": "صقر",
+    "meaning": "طائر جارح سريع",
+    "category": "طبيعة",
+    "related": [
+      "صيد",
+      "جناح",
+      "حدة البصر"
+    ],
+    "ambiguous": [
+      "حمامة",
+      "بومة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn088",
+    "word": "بومة",
+    "meaning": "طائر جارح ليلي",
+    "category": "طبيعة",
+    "related": [
+      "ليل",
+      "صيد",
+      "حكمة"
+    ],
+    "ambiguous": [
+      "صقر",
+      "عصفور"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn089",
+    "word": "عصفور",
+    "meaning": "طائر صغير",
+    "category": "طبيعة",
+    "related": [
+      "تغريد",
+      "جناح",
+      "عش"
+    ],
+    "ambiguous": [
+      "صقر",
+      "بومة"
+    ],
+    "difficulty": "easy",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn090",
+    "word": "قرش",
+    "meaning": "سمك مفترس كبير",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "أسنان",
+      "خطر"
+    ],
+    "ambiguous": [
+      "دولفين",
+      "سلحفاة"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn091",
+    "word": "دولفين",
+    "meaning": "ثديي بحري ذكي",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "ذكاء",
+      "قفز"
+    ],
+    "ambiguous": [
+      "قرش",
+      "حوت"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn092",
+    "word": "حوت",
+    "meaning": "أكبر حيوان على الأرض",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "ضخامة",
+      "سباحة"
+    ],
+    "ambiguous": [
+      "دولفين",
+      "سمك"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn093",
+    "word": "سلحفاة",
+    "meaning": "حيوان صدفه بطيء",
+    "category": "طبيعة",
+    "related": [
+      "صدفة",
+      "بطيء",
+      "سباحة"
+    ],
+    "ambiguous": [
+      "أرنب",
+      "صقر"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn094",
+    "word": "تمساح",
+    "meaning": "زاحف نهري خطير",
+    "category": "طبيعة",
+    "related": [
+      "نهر",
+      "أسنان",
+      "جلد"
+    ],
+    "ambiguous": [
+      "سلحفاة",
+      "أفعى"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn095",
+    "word": "أفعى",
+    "meaning": "زاحف سام بلا أرجل",
+    "category": "طبيعة",
+    "related": [
+      "سم",
+      "زحف",
+      "لسان"
+    ],
+    "ambiguous": [
+      "تمساح",
+      "سلحفاة"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn096",
+    "word": "ضفدع",
+    "meaning": "حيوان برمائي قافز",
+    "category": "طبيعة",
+    "related": [
+      "بركة",
+      "قفز",
+      "صوت"
+    ],
+    "ambiguous": [
+      "سمك",
+      "سلحفاة"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn097",
+    "word": "فيل",
+    "meaning": "أكبر حيوان بري",
+    "category": "طبيعة",
+    "related": [
+      "خرطم",
+      "جذع",
+      "أنياب"
+    ],
+    "ambiguous": [
+      "زرافة",
+      "حصان"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn098",
+    "word": "زرافة",
+    "meaning": "أطول حيوان بري",
+    "category": "طبيعة",
+    "related": [
+      "عنق",
+      "طويل",
+      "قمم الأشجار"
+    ],
+    "ambiguous": [
+      "فيل",
+      "حصان"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn099",
+    "word": "أسد",
+    "meaning": "ملك الغابة",
+    "category": "طبيعة",
+    "related": [
+      "زئر",
+      "مخالب",
+      "قطيع"
+    ],
+    "ambiguous": [
+      "نمر",
+      "فهد"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn100",
+    "word": "نمر",
+    "meaning": "قط مرقط مفترس",
+    "category": "طبيعة",
+    "related": [
+      "مخالب",
+      "صيد",
+      "تخطيط"
+    ],
+    "ambiguous": [
+      "أسد",
+      "فهد"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn101",
+    "word": "فهد",
+    "meaning": "أسرع حيوان بري",
+    "category": "طبيعة",
+    "related": [
+      "سرعة",
+      "صيد",
+      "مخابئ"
+    ],
+    "ambiguous": [
+      "أسد",
+      "نمر"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn102",
+    "word": "دب",
+    "meaning": "ثديي ضخم يبيت شتاءً",
+    "category": "طبيعة",
+    "related": [
+      "عسل",
+      "غابة",
+      "سبات"
+    ],
+    "ambiguous": [
+      "أسد",
+      "ذئب"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn103",
+    "word": "ذئب",
+    "meaning": "حيوان اجتماعي صائد",
+    "category": "طبيعة",
+    "related": [
+      "قطيع",
+      "عواء",
+      "غابة"
+    ],
+    "ambiguous": [
+      "دب",
+      "ثعلب"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn104",
+    "word": "ثعلب",
+    "meaning": "حيوان ماكر صغير",
+    "category": "طبيعة",
+    "related": [
+      "مكر",
+      "غابة",
+      "ذيل"
+    ],
+    "ambiguous": [
+      "ذئب",
+      "أرنب"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn105",
+    "word": "أرنب",
+    "meaning": "حيوان طويل الأذن",
+    "category": "طبيعة",
+    "related": [
+      "جزر",
+      "قفز"
+    ],
+    "ambiguous": [
+      "ثعلب",
+      "سلحفاة"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn106",
+    "word": "فأر",
+    "meaning": "قوارض صغيرة",
+    "category": "طبيعة",
+    "related": [
+      "جبن",
+      "ثقب",
+      "ذيل"
+    ],
+    "ambiguous": [
+      "قطة",
+      "أرنب"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn107",
+    "word": "قطة",
+    "meaning": "حيوان أليف منزلي",
+    "category": "طبيعة",
+    "related": [
+      "مواء",
+      "حليب",
+      "خدش"
+    ],
+    "ambiguous": [
+      "كلب",
+      "فأر"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn108",
+    "word": "كلب",
+    "meaning": "حيوان أليف وفي",
+    "category": "طبيعة",
+    "related": [
+      "نباح",
+      "وفاء",
+      "مشي"
+    ],
+    "ambiguous": [
+      "قطة",
+      "ذئب"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn109",
+    "word": "جمل",
+    "meaning": "حيوان الصحراء",
+    "category": "طبيعة",
+    "related": [
+      "صحراء",
+      "سنام",
+      "واحة"
+    ],
+    "ambiguous": [
+      "حصان",
+      "بقرة"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn110",
+    "word": "غزال",
+    "meaning": "ظبي رشيق",
+    "category": "طبيعة",
+    "related": [
+      "سرعة",
+      "قفز",
+      "صحراء"
+    ],
+    "ambiguous": [
+      "أرنب",
+      "حصان"
+    ],
+    "difficulty": "medium",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn111",
+    "word": "وحيد القرن",
+    "meaning": "حيوان بقرن واحد",
+    "category": "طبيعة",
+    "related": [
+      "قرن",
+      "جلد سميك",
+      "أفريقي"
+    ],
+    "ambiguous": [
+      "فيل",
+      "زرافة"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn112",
+    "word": "آكل النمل",
+    "meaning": "حيوان يلتقط النمل بخرطومه",
+    "category": "طبيعة",
+    "related": [
+      "نمل",
+      "خرطوم",
+      "لسان"
+    ],
+    "ambiguous": [
+      "خنزير",
+      "أرنب"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn113",
+    "word": "كسلان",
+    "meaning": "حيوان بطيء يعيش على الأشجار",
+    "category": "طبيعة",
+    "related": [
+      "بطيء",
+      "شجرة",
+      "نوم"
+    ],
+    "ambiguous": [
+      "قرد",
+      "طائر"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn114",
+    "word": "شمبانزي",
+    "meaning": "قرد ذكي",
+    "category": "طبيعة",
+    "related": [
+      "قرد",
+      "ذكاء",
+      "غابة"
+    ],
+    "ambiguous": [
+      "غوريلا",
+      "مكاك"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn115",
+    "word": "غوريلا",
+    "meaning": "أكبر القرود",
+    "category": "طبيعة",
+    "related": [
+      "قوة",
+      "غابة"
+    ],
+    "ambiguous": [
+      "شمبانزي",
+      "قرد"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn116",
+    "word": "أخطبوط",
+    "meaning": "حيوان مائي بثمانية أذرع",
+    "category": "طبيعة",
+    "related": [
+      "أذرع",
+      "بحر",
+      "حبر"
+    ],
+    "ambiguous": [
+      "قنديل البحر",
+      "نجمة البحر"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn117",
+    "word": "نجمة البحر",
+    "meaning": "حيوان مائي خماسي",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "خمسة",
+      "قاع"
+    ],
+    "ambiguous": [
+      "أخطبوط",
+      "قنديل البحر"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn118",
+    "word": "قنديل البحر",
+    "meaning": "حيوان مائي شفاف لاسع",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "شفاف",
+      "لاسعة"
+    ],
+    "ambiguous": [
+      "نجمة البحر",
+      "أخطبوط"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn119",
+    "word": "مرجان",
+    "meaning": "كائن مائي يبني الشعاب",
+    "category": "طبيعة",
+    "related": [
+      "بحر",
+      "شعاب",
+      "ألوان"
+    ],
+    "ambiguous": [
+      "صخرة",
+      "نجمة البحر"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "cn120",
+    "word": "لؤلؤ",
+    "meaning": "جوهرة تتكون في المحارة",
+    "category": "طبيعة",
+    "related": [
+      "محارة",
+      "بحر",
+      "جوهرة"
+    ],
+    "ambiguous": [
+      "مرجان",
+      "مرجان"
+    ],
+    "difficulty": "hard",
+    "status": "approved",
+    "source": "manual"
+  }
+]

@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.mb{max-width:960px;margin:1.5rem auto}
+.mb-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:1.5rem;margin:1rem auto}
+.mb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.6rem;margin:1rem 0}
+.mb-cell{background:var(--bg-inset);border:2px solid var(--border-color);border-radius:10px;padding:.6rem;text-align:center;cursor:pointer;font-size:.85rem;min-height:58px;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.mb-cell:hover{border-color:var(--border-strong);background:var(--bg-card-hover)}
+.mb-cell.elim{opacity:.22;text-decoration:line-through;pointer-events:none}
+.mb-cell.sel{border-color:var(--accent-gold);background:rgba(245,158,11,.15)}
+.mb-log{max-height:170px;overflow:auto;background:var(--bg-inset);border-radius:10px;padding:.8rem;margin:.8rem 0;font-size:.9rem;display:grid;gap:.25rem}
+.mb-log div{padding:.25rem .4rem;border-bottom:1px solid var(--border-color);border-inline-start:3px solid var(--accent-blue)}
+.mb-log div b{color:var(--accent-gold)}
+.mb-hint{display:none;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:10px;margin:.6rem 0;background:var(--accent-gold-tint);border:1px solid var(--accent-gold);font-size:.88rem;font-weight:700}
+.mb-hint.on{display:flex}
+.mb-turn{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:10px;font-weight:800;font-size:1rem}
+.mb-turn.p0{background:var(--accent-blue-tint);border:1px solid var(--accent-blue);color:#a9c8ff}
+.mb-turn.p1{background:var(--accent-purple-tint);border:1px solid var(--accent-purple);color:#d6c2ff}
+.mb-qrow{display:flex;gap:.5rem;margin:.8rem 0}
+.mb-qrow input{flex:1;padding:.7rem .9rem;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-inset);color:var(--text-primary);font-family:inherit;font-size:1rem}
+.mb-qrow input:focus{outline:none;border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-blue-tint)}
+.mb-presets{display:flex;flex-wrap:wrap;gap:.45rem;margin:.4rem 0}
+.mb-presets button{padding:.45rem .8rem;border-radius:999px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:.82rem;transition:var(--transition)}
+.mb-presets button:hover{border-color:var(--accent-blue);color:var(--text-primary)}
+.mb-answer{min-height:2.6rem;text-align:center;font-size:1.6rem;font-weight:900;margin:.6rem 0;color:var(--accent-gold)}
+.mb-answer small{display:block;font-size:.72rem;font-weight:600;color:var(--text-muted)}
+.mb-src{font-size:.72rem;font-weight:700;padding:.15rem .6rem;border-radius:999px;background:var(--bg-inset);border:1px solid var(--border-color);color:var(--text-muted)}
+.mb-handover{position:fixed;inset:0;z-index:400;background:rgba(4,6,16,.96);display:grid;place-items:center;padding:1rem}
+.mb-handover .hc{width:min(440px,100%);background:#000;border:1px solid var(--border-strong);border-radius:16px;padding:2.2rem 1.5rem;text-align:center;color:#fff}
+.mb-handover .hc h3{margin:0 0 .6rem;font-size:1.3rem}
+.mb-handover .hc p{color:#b9bdd6;font-size:.9rem;margin:.4rem 0 1.2rem}
+.mb-handover .hc .who{font-size:2.1rem;font-weight:900;color:var(--accent-gold);margin:.8rem 0}
+.mb-handover .hc button{width:100%;padding:.9rem;border-radius:10px;border:1px solid #fff;background:transparent;color:#fff;font-family:inherit;font-size:1.05rem;font-weight:800;cursor:pointer;transition:var(--transition)}
+.mb-handover .hc button:hover{background:#fff;color:#000}
+@media (max-width:560px){.mb-grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}}
+</style>
+
+<h1 style="text-align:center;margin:.5rem 0">🧠 مين في بالي؟</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1rem">
+اختر شخصيتك، اسأل أسئلة نعم/لا، استبعد، وخمّن شخصية خصمك أولاً!
+</p>
+
+<div id="setup"></div>
+
+<div id="select" class="mb mb-card" style="display:none;margin:1.5rem auto;max-width:960px">
+  <h2 style="text-align:center;margin-top:0">👁️ <span id="selWho"></span> — اختر شخصيتك</h2>
+  <div class="mb-grid" id="selGrid"></div>
+  <div style="text-align:center;margin-top:1rem">
+    <button class="btn btn-primary" onclick="confirmSel()">تأكيد الاختيار</button>
+  </div>
+</div>
+
+<div id="reveal" class="mb mb-card" style="display:none;text-align:center;margin:1.5rem auto;max-width:760px">
+  <h2>🔒 شخصيتك</h2>
+  <p id="revName" style="font-size:2rem;font-weight:800;color:var(--accent-gold)"></p>
+  <button class="btn btn-primary" onclick="hideReveal()">إخفاء والمتابعة</button>
+</div>
+
+<div id="play" class="mb" style="display:none">
+  <div class="mb-turn p0" id="mbTurn">الدور: اللاعب 1</div>
+
+  <div class="mb-card">
+    <h3 style="margin-top:0">❓ اطرح سؤالاً (نعم/لا) — عن شخصية خصمك</h3>
+    <div class="mb-qrow">
+      <input id="mbQInput" placeholder="اكتب سؤالك..." onkeydown="if(event.key==='Enter')askFree()">
+      <button class="btn btn-primary" onclick="askFree()">إرسال</button>
+    </div>
+    <div class="mb-presets" id="mbPresets"></div>
+    <div class="mb-answer" id="mbAnswer"></div>
+    <div class="mb-hint" id="mbHint"></div>
+    <div class="mb-log" id="mbLog"></div>
+  </div>
+
+  <div class="mb-card">
+    <h3 style="margin-top:0">🗂️ لوحة الاستبعاد — انقر لإلغاء/استعادة شخصية</h3>
+    <div class="mb-grid" id="board"></div>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+      <button class="btn btn-gold" onclick="openGuess()"><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg> خمّن شخصية خصمك</button>
+      <button class="btn btn-secondary" onclick="endTurn()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> إنهاء الدور</button>
+    </div>
+  </div>
+</div>
+
+<div id="guessModal" class="mb-card" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);z-index:200;max-width:960px;width:90%;max-height:80vh;overflow:auto;background:var(--bg-card);border:2px solid var(--accent-gold)">
+  <h3 style="text-align:center">🎯 اختر شخصية خصمك</h3>
+  <div class="mb-grid" id="guessGrid"></div>
+  <div style="text-align:center;margin-top:1rem">
+    <button class="btn btn-secondary" onclick="closeGuess()">إلغاء</button>
+  </div>
+</div>
+
+<div id="result" class="mb mb-card" style="display:none;text-align:center;margin:1.5rem auto;max-width:760px">
+  <h2><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> النتيجة</h2>
+  <div id="mbResultBody"></div>
+  <div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="location.reload()">🔁 العب مرة أخرى</button>
+    <button class="btn btn-secondary" onclick="location.href='/games'">🏠 العودة</button>
+  </div>
+</div>
+
+<script>
+var CHARS=[], STATE=null, selectedIdx=null, PENDING_EXCLUDE=null;
+
+var PRESETS=[
+  {p:'real',     t:'حقيقي؟'},
+  {p:'genderM',  t:'ذكر؟'},
+  {p:'genderF',  t:'أنثى؟'},
+  {p:'main',     t:'بطل رئيسي؟'},
+  {p:'powers',   t:'قدرات خارقة؟'},
+  {p:'free:نينجا', t:'نينجا؟'},
+  {p:'free:محقق',  t:'محقق؟'},
+  {p:'free:سحر',   t:'سحر؟'},
+  {p:'free:أنمي',  t:'من الأنمي؟'},
+  {p:'free:الصحابة', t:'من الصحابة؟'}
+];
+
+/* ------------------------------------------------------------ data loading */
+async function loadChars(){
+  const r=await fetch('/api/content/minebali?status=approved&include_archived=1');
+  const d=await r.json();
+  CHARS=(d.items||[]).filter(function(c){ return c.status!=='archived'; });
+  buildSetup();
+}
+
+function buildSetup(){
+  const root=document.getElementById('setup');
+  root.className='mb';
+  root.innerHTML=
+    '<div class="gsp-field"><label>الفئة</label><div id="mbCatPick"></div></div>'+
+    '<div class="gsp-field"><label>عدد الشخصيات على اللوحة</label>'+
+      '<select id="mbSize">'+
+        '<option value="10">10 شخصيات</option>'+
+        '<option value="15">15 شخصية</option>'+
+        '<option value="20" selected>20 شخصية</option>'+
+        '<option value="24">24 شخصية</option>'+
+      '</select></div>'+
+    '<div class="gsp-field"><label>الأسئلة غير الموجودة في البيانات</label>'+
+      '<select id="mbFallback">'+
+        '<option value="opponent" selected>اللاعب الثاني يجيب ويُحفظ في قاعدة البيانات</option>'+
+        '<option value="skip">تخطَّ السؤال دون إجابة</option>'+
+      '</select></div>'+
+    '<button class="btn btn-primary btn-lg" onclick="startMatch()">🎮 ابدأ اللعبة</button>';
+
+  UI.enhanceSettings(root,{icon:'⚙️',title:'إعداد المباراة',sub:'لاعبان على نفس الجهاز'});
+
+  // one picker card per (category, subcategory) pair, grouped under its category
+  var groups={};
+  CHARS.forEach(function(c){
+    var cat=c.category||'عام';
+    var sub=c.subcategory||c.work||cat;
+    if(!groups[cat]) groups[cat]={};
+    groups[cat][sub]=1;
+  });
+  var items=[];
+  Object.keys(groups).forEach(function(cat){
+    items.push({id:'cat:'+cat,name:'كل '+cat,icon:'🗂️',group:cat,group_color:'#4f8cff',group_icon:'🗂️',
+                description:'كل شخصيات '+cat,_all:true,_cat:cat});
+    Object.keys(groups[cat]).forEach(function(s){
+      if(!s||s===cat) return;
+      items.push({id:'sub:'+s,name:s,icon:'🎭',group:cat,group_color:'#4f8cff',group_icon:'🗂️',
+                  description:cat+' — '+s,_sub:s});
+    });
+  });
+
+  UI.renderCategoryPicker(document.getElementById('mbCatPick'),{
+    categories:items,
+    searchPlaceholder:'ابحث عن فئة أو عمل...',
+    showCount:false,
+    selected:['cat:أنمي'],
+    onPick:function(c){
+      if(c._all) window.__mbFilter={type:'cat',value:c._cat};
+      else window.__mbFilter={type:'sub',value:c._sub};
+    }
+  });
+  window.__mbFilter={type:'cat',value:'أنمي'};
+}
+
+/* -------------------------------------------------------------- match setup */
+function filterChars(){
+  const f=window.__mbFilter||{type:'cat',value:'أنمي'};
+  let pool;
+  if(f.type==='cat') pool=CHARS.filter(function(c){ return (c.category||'عام')===f.value; });
+  else if(f.type==='sub') pool=CHARS.filter(function(c){ return (c.subcategory||c.work||c.category)===f.value; });
+  else pool=CHARS.slice();
+  const size=parseInt((document.getElementById('mbSize')||{}).value||'20',10);
+  if(pool.length>size){
+    for(let i=pool.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      const t=pool[i]; pool[i]=pool[j]; pool[j]=t;
+    }
+    pool=pool.slice(0,size);
+  }
+  return pool;
+}
+
+function startMatch(){
+  const pool=filterChars();
+  if(pool.length<5){ showToast('لا توجد شخصيات كافية في هذه الفئة','error'); return; }
+  STATE={
+    chars:pool, secrets:[null,null],
+    eliminated:[new Set(),new Set()],
+    cur:0, qCount:0, log:[], phase:'select0',
+    selIdx:null, done:false
+  };
+  document.getElementById('setup').style.display='none';
+  startSelect(0);
+}
+
+function startSelect(p){
+  STATE.phase='select'+p;
+  selectedIdx=null;
+  document.getElementById('select').style.display='block';
+  document.getElementById('play').style.display='none';
+  document.getElementById('reveal').style.display='none';
+  document.getElementById('selWho').textContent='اللاعب '+(p+1)+' — اختر شخصيتك';
+  renderSelect();
+}
+
+function renderSelect(){
+  const g=document.getElementById('selGrid');
+  g.innerHTML='';
+  STATE.chars.forEach(function(c,i){
+    const cell=UI.el('div','mb-cell'+(selectedIdx===i?' sel':''));
+    cell.textContent=c.name;
+    cell.onclick=function(){ selectedIdx=i; renderSelect(); };
+    g.appendChild(cell);
+  });
+}
+
+function confirmSel(){
+  if(selectedIdx===null){ showToast('اختر شخصية أولاً','error'); return; }
+  const p=STATE.phase==='select0'?0:1;
+  STATE.secrets[p]=STATE.chars[selectedIdx];
+  document.getElementById('select').style.display='none';
+  document.getElementById('reveal').style.display='block';
+  document.getElementById('revName').textContent=STATE.chars[selectedIdx].name;
+}
+
+function hideReveal(){
+  document.getElementById('reveal').style.display='none';
+  if(STATE.secrets[1]===null){ startSelect(1); return; }
+  STATE.phase='play';
+  STATE.cur=0;
+  document.getElementById('play').style.display='block';
+  document.getElementById('mbPresets').innerHTML=PRESETS.map(function(x){
+    return '<button onclick="askPreset(\''+x.p+'\')">'+x.t+'</button>';
+  }).join('');
+  renderBoard();
+  updateHUD();
+}
+
+function updateHUD(){
+  const t=document.getElementById('mbTurn');
+  t.textContent='الدور: اللاعب '+(STATE.cur+1)+' — اسأل عن شخصية خصمك';
+  t.className='mb-turn '+(STATE.cur===0?'p0':'p1');
+}
+
+function renderBoard(){
+  const g=document.getElementById('board');
+  g.innerHTML='';
+  const elim=STATE.eliminated[STATE.cur];
+  STATE.chars.forEach(function(c,i){
+    const cell=UI.el('div','mb-cell'+(elim.has(i)?' elim':''));
+    cell.textContent=c.name;
+    cell.onclick=function(){ toggleElim(i); };
+    g.appendChild(cell);
+  });
+}
+
+function toggleElim(i){
+  const elim=STATE.eliminated[STATE.cur];
+  if(elim.has(i)) elim.delete(i); else elim.add(i);
+  renderBoard();
+}
+
+/* --------------------------------------------------------- answering engine */
+function propValue(ch, prop){
+  switch(prop){
+    case 'real': return ch.real===true?'نعم':'لا';
+    case 'genderM': return ch.gender==='ذكر'?'نعم':'لا';
+    case 'genderF': return ch.gender==='أنثى'?'نعم':'لا';
+    case 'main': return ch.main===true?'نعم':'لا';
+    case 'powers': return ch.powers===true?'نعم':'لا';
+  }
+  return null;
+}
+
+/* Natural-question keywords mapped onto a trait the bank does model. */
+var SYNONYMS={
+  'أنمي':'أنمي','انمي':'أنمي','مانجا':'أنمي','مانغا':'أنمي',
+  'مسلسل':'مسلسلات','مسلسلات':'مسلسلات','فيلم':'فيلم','أفلام':'فيلم','افلام':'فيلم','سينما':'فيلم',
+  'لعبة':'لعبة','ألعاب':'لعبة','العاب':'لعبة','فيديو':'لعبة',
+  'كرتونية':'كرتونية','كرتوني':'كرتونية','رسوم':'كرتونية','أنميشن':'كرتونية',
+  'صحابة':'الصحابة','صحابي':'الصحابة','رفيق':'الصحابة','خليفة':'الصحابة',
+  'نينجا':'نينجا','قرصان':'قرصان','ساحر':'ساحر','سحر':'ساحر','محارب':'محارب',
+  'محقق':'محقق','تحقيق':'محقق','شرطي':'محقق','عميل':'عميل','جاسوس':'جاسوس',
+  'مقاتل':'مقاتل','بطل':'بطل','خيال':'خيالي','وهمي':'خيالي','حقيقي':'حقيقي','واقعي':'حقيقي',
+  'مغني':'مغني','مغنية':'مغني','ملحن':'مغني','ممثل':'ممثل','ممثلة':'ممثل',
+  'عالم':'عالم','مخترع':'مخترع','فيزيائي':'فيزيائي','كيميائي':'كيميائي',
+  'لاعب':'لاعب كرة','لاعبي':'لاعب كرة','مهاجم':'مهاجم','حارس':'حارس','وسط':'وسط','مدافع':'مدافع',
+  'ملك':'ملك','ملكة':'ملكة','سلطان':'سلطان',
+  'شرير':'شرير','الأشرار':'شرير','طيب':'طيب',
+  'ياباني':'يابان','اليابان':'يابان','أمريكي':'أمريكا','أمريكا':'أمريكا',
+  'عربي':'عربي','عربية':'عربي','أوروبي':'أوروبي'
+};
+
+var STOP_WORDS={'هل':1,'هو':1,'هي':1,'من':1,'في':1,'ما':1,'ماذا':1,'الذي':1,'التي':1,'الذين':1,
+  'يعرف':1,'اسم':1,'مجال':1,'عمل':1,'شخصية':1,'شخصيات':1,'يعتبر':1,'تنتمي':1,'ينتمي':1,
+  'تابع':1,'تابعة':1,'خاصة':1,'شيء':1,'امر':1,'انسان':1,'يكون':1,'كانت':1,'ضد':1,'مع':1,
+  'عن':1,'على':1,'الى':1,'إلى':1,'ثم':1,'او':1,'أو':1,'لا':1,'نعم':1,'كل':1,'غير':1,'بين':1,
+  'بعد':1,'قبل':1,'ابن':1,'بنت':1,'واحد':1,'واحدة':1};
+
+function normTok(s){
+  return String(s==null?'':s)
+    .replace(/[ً-ْٰـ]/g,'')
+    .replace(/[أإآٱ]/g,'ا')
+    .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+    .replace(/^ال/,'').replace(/\s+/g,' ').trim();
+}
+
+function tokensOf(text){
+  return normTok(text).split(' ').filter(function(t){
+    return t.length>=3 && !STOP_WORDS[t];
+  });
+}
+
+/* The character's own attributes as one searchable blob. */
+function charBlob(ch){
+  var bits=[ch.name,ch.subcategory,ch.work,ch.field,ch.role,ch.country,ch.era,ch.category];
+  if(ch.aliases && ch.aliases.length) bits=bits.concat(ch.aliases);
+  return normTok(bits.join(' '));
+}
+
+/* Auto-answer a free question from the character's own data.
+
+   Only a real attribute hit answers «نعم». Guessing «لا» on a miss would be
+   wrong half the time, so a miss returns null and the game offers the second
+   player instead — which is exactly the path the old "غير متاحة" dead end
+   replaced. */
+function autoAnswerFree(text, ch){
+  var blob=charBlob(ch);
+  var toks=tokensOf(text);
+  if(!toks.length) return null;
+  for(var i=0;i<toks.length;i++){
+    var syn=SYNONYMS[toks[i]]||toks[i];
+    if(blob.indexOf(normTok(syn))>-1) return 'نعم';
+  }
+  return null;
+}
+
+function classifyQuestion(text){
+  var low=String(text||'');
+  if(/حقيقي|خيالي|وهمي|واقعي|غير موجود/.test(low)) return 'real';
+  if(/ذكر|رجل|ولد|شاب/.test(low)) return 'genderM';
+  if(/أنثى|أنثي|امرأة|امراه|بنت|فتاة|انثى/.test(low)) return 'genderF';
+  if(/بطل|رئيسي|محوري/.test(low)) return 'main';
+  if(/قدرات|خارقة|سحر|قوى|خارق/.test(low)) return 'powers';
+  return 'free';
+}
+
+/* ------------------------------------------------------- the answer pipeline */
+async function resolveAnswer(qText){
+  var opp=STATE.cur===0?1:0;
+  var secret=STATE.secrets[opp];
+  if(!secret) return null;
+
+  // 1) this exact question about this exact character was answered before?
+  try{
+    const r=await fetch('/api/minebali/qa?q='+encodeURIComponent(qText)+'&char_id='+encodeURIComponent(secret.id));
+    const d=await r.json();
+    if(d.items && d.items.length){ return {ans:d.items[0].answer, src:'db'}; }
+  }catch(e){}
+
+  // 2) settle it from the character's own data
+  var prop=classifyQuestion(qText);
+  if(prop!=='free'){
+    var v=propValue(secret,prop);
+    if(v!==null) return {ans:v, src:'bank'};
+  }
+  var auto=autoAnswerFree(qText, secret);
+  if(auto!==null) return {ans:auto, src:'bank'};
+
+  // 3) not in the bank — offer the second player, or skip
+  var mode=(document.getElementById('mbFallback')||{}).value||'opponent';
+  if(mode==='skip'){
+    await UI.modal({
+      title:'سؤال خارج بيانات اللعبة',
+      tag:'اللاعب '+(STATE.cur+1),
+      body:'<div class="qmodal-q">'+UI.esc(qText)+'</div>'+
+           '<div class="qmodal-note">هذا السؤال غير موجود في لائحة البيانات، والإعداد مضبوط على «تخطَّ السؤال».</div>',
+      buttons:[{label:'حسناً', class:'btn-primary', value:'ok', block:true}]
+    });
+    return null;
+  }
+  var choice=await UI.modal({
+    title:'هذا السؤال غير موجود في لائحة البيانات',
+    tag:'اللاعب '+(STATE.cur+1),
+    body:'<div class="qmodal-q">'+UI.esc(qText)+'</div>'+
+         '<div class="qmodal-note">اللعبة لا تستطيع إجابة هذا السؤال تلقائياً. اجعل اللاعب الثاني يجيب: '+
+         'تنقلب اللوحة إليه، ثم تعود إليك لتستبعد الشخصيات، ويُحفظ السؤال وإجابته في قاعدة البيانات.</div>',
+    buttons:[
+      {label:'👥 اللاعب الثاني يجيب', class:'btn-gold', value:'opponent', block:true},
+      {label:'إلغاء', class:'btn-secondary', value:null}
+    ]
+  });
+  if(choice!=='opponent') return null;
+
+  var ans=await opponentAnswers(qText);
+  if(ans===null) return null;
+
+  try{
+    await fetch('/api/minebali/qa',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        question:qText, answer:ans, char_id:secret.id, char_name:secret.name,
+        asked_by:'اللاعب '+(STATE.cur+1), answered_by:'اللاعب '+((STATE.cur===0?1:0)+1)
+      })
+    });
+  }catch(e){}
+  return {ans:ans, src:'opponent'};
+}
+
+/* Hand the device to the second player so they can answer about the secret. */
+function opponentAnswers(qText){
+  return new Promise(function(resolve){
+    var asker=STATE.cur, opp=asker===0?1:0;
+    var mine=STATE.secrets[opp];
+
+    var h=UI.el('div','mb-handover');
+    var card=UI.el('div','hc');
+    card.innerHTML='<h3>📲 مرّر الجهاز إلى اللاعب '+(opp+1)+'</h3>'+
+      '<p>اللاعب '+(asker+1)+' يسأل عن شخصيتك أنت — لن يظهر لك أي شيء عن شخصيته.</p>'+
+      '<p>اللاعب '+(opp+1)+' فقط هو من ينظر إلى الخطوة التالية.</p>';
+    var b1=UI.el('button',null,'أنا اللاعب '+(opp+1)+' — اعرض شخصيتي');
+    card.appendChild(b1);
+    h.appendChild(card);
+    document.body.appendChild(h);
+
+    b1.onclick=function(){
+      card.innerHTML='<h3>🔒 شخصيتك أنت أيها اللاعب '+(opp+1)+'</h3>'+
+        '<div class="who">'+UI.esc(mine.name)+'</div>'+
+        '<p>أجب عن السؤال بصراحة عن هذه الشخصية — اللاعب '+(asker+1)+' لن يعرف ما هي.</p>';
+      var b2=UI.el('button',null,'أخفِها وأجب');
+      card.appendChild(b2);
+      b2.onclick=function(){
+        if(h.parentNode) h.parentNode.removeChild(h);
+        UI.modal({
+          title:'اللاعب '+(opp+1)+' — أجب عن السؤال',
+          tag:'دور الإجابة',
+          body:'<div class="qmodal-q">'+UI.esc(qText)+'</div>'+
+               '<div class="qmodal-note">الشخصية التي تجيب عنها هي شخصيتك أنت: '+
+               '<b>'+UI.esc(mine.name)+'</b> — تأكد أن اللاعب '+(asker+1)+' لا ينظر إليك.</div>',
+          buttons:[
+            {label:'نعم', class:'btn-gold', value:'نعم'},
+            {label:'لا', class:'btn-secondary', value:'لا'}
+          ]
+        }).then(function(v){
+          // back to the asker so they can exclude on the answer
+          STATE.cur=asker;
+          PENDING_EXCLUDE=v;
+          renderBoard(); updateHUD();
+          showExcludeHint(v);
+          resolve(v);
+        });
+      };
+    };
+  });
+}
+
+function showExcludeHint(ans){
+  var el=document.getElementById('mbHint');
+  el.className='mb-hint on';
+  el.innerHTML='💡 إجابة اللاعب الثاني: <b>'+UI.esc(ans)+'</b> — استبعد من اللوحة الشخصيات التي لا تنطبق عليها الإجابة.';
+  clearTimeout(showExcludeHint._t);
+  showExcludeHint._t=setTimeout(function(){ el.className='mb-hint'; }, 9000);
+}
+
+function renderLog(){
+  var el=document.getElementById('mbLog');
+  el.innerHTML=STATE.log.map(function(x){
+    var src = x.src==='db' ? 'محفوظ في القاعدة'
+            : x.src==='opponent' ? 'أجاب اللاعب الثاني'
+            : 'من بيانات الشخصية';
+    return '<div><b>س:</b> '+UI.esc(x.q)+' — <b>ج:</b> '+UI.esc(x.a)+' <span class="mb-src">'+src+'</span></div>';
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function setAnswer(text, src){
+  var box=document.getElementById('mbAnswer');
+  var label = src==='db' ? 'محفوظ في قاعدة البيانات'
+              : src==='opponent' ? 'أجاب اللاعب الثاني'
+              : 'من بيانات الشخصية';
+  box.innerHTML=UI.esc(text)+'<small>'+label+'</small>';
+}
+
+async function askPreset(p){
+  if(STATE.done) return;
+  var txt = p.indexOf('free:')===0
+    ? 'هل هو '+p.slice(5)+'؟'
+    : PRESETS.filter(function(x){ return x.p===p; })[0].t;
+  var r=await resolveAnswer(txt);
+  if(!r) return;
+  STATE.qCount++;
+  STATE.log.push({q:txt,a:r.ans,src:r.src});
+  renderLog();
+  setAnswer(r.ans, r.src);
+  document.getElementById('mbQInput').value='';
+}
+
+async function askFree(){
+  var txt=document.getElementById('mbQInput').value.trim();
+  if(!txt||STATE.done) return;
+  var r=await resolveAnswer(txt);
+  if(!r) return;
+  STATE.qCount++;
+  STATE.log.push({q:txt,a:r.ans,src:r.src});
+  renderLog();
+  setAnswer(r.ans, r.src);
+  document.getElementById('mbQInput').value='';
+}
+
+function endTurn(){
+  STATE.cur=STATE.cur===0?1:0;
+  STATE.log=[];
+  document.getElementById('mbLog').innerHTML='';
+  document.getElementById('mbAnswer').innerHTML='';
+  document.getElementById('mbHint').className='mb-hint';
+  PENDING_EXCLUDE=null;
+  renderBoard();
+  updateHUD();
+}
+
+/* ----------------------------------------------------------------- guessing */
+function openGuess(){
+  var g=document.getElementById('guessGrid');
+  g.innerHTML='';
+  STATE.chars.forEach(function(c,i){
+    var cell=UI.el('div','mb-cell');
+    cell.textContent=c.name;
+    cell.onclick=function(){ doGuess(i); };
+    g.appendChild(cell);
+  });
+  document.getElementById('guessModal').style.display='block';
+}
+function closeGuess(){ document.getElementById('guessModal').style.display='none'; }
+
+function doGuess(i){
+  closeGuess();
+  var opp=STATE.cur===0?1:0;
+  var guessed=STATE.chars[i];
+  var secret=STATE.secrets[opp];
+  if(guessed.id===secret.id){
+    STATE.done=true;
+    document.getElementById('play').style.display='none';
+    document.getElementById('result').style.display='block';
+    document.getElementById('mbResultBody').innerHTML=
+      '<p style="font-size:1.4rem">🎉 اللاعب '+(STATE.cur+1)+' فاز! خمّن شخصية خصمه: '+
+      '<b>'+UI.esc(secret.name)+'</b></p>'+
+      '<p style="color:var(--text-secondary)">عدد الأسئلة: '+STATE.qCount+'</p>';
+  } else {
+    showToast('❌ خاطئ! شخصية خصمك ليست '+guessed.name,'error');
+    endTurn();
+  }
+}
+
+loadChars();
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.wp-layout{max-width:700px;margin:1.5rem auto}
+.wp-player-card{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(236,72,153,.1));border:2px solid var(--accent-gold);border-radius:16px;padding:1.5rem;text-align:center;margin:1rem 0}
+.wp-hint{background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:.8rem;margin:.5rem 0;text-align:center;font-size:1.1rem}
+.wp-hint.locked{opacity:.4}
+.wp-answer-input{padding:.8rem;border-radius:10px;border:2px solid var(--border);background:var(--bg-secondary);color:var(--text);font-size:1.2rem;width:100%;text-align:center;margin:.5rem 0}
+.wp-score{display:flex;gap:1rem;justify-content:center;margin:1rem}
+.wp-score div{padding:.5rem 1.2rem;border-radius:10px;font-weight:800}
+</style>
+
+<h1 style="text-align:center">⚽ مين اللاعب؟</h1>
+<p style="text-align:center;color:var(--text-secondary)">خمّن اللاعب من التلميحات المتدرجة — كلما قلّت التلميحات زادت النقاط</p>
+
+<div id="setup" style="max-width:500px;margin:2rem auto;background:var(--bg-card);border-radius:14px;padding:1.5rem;border:1px solid var(--border-color)">
+  <h3>⚙️ الإعدادات</h3>
+  <div style="display:grid;gap:.8rem;margin-top:1rem">
+    <select id="wpDifficulty" style="padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text)">
+      <option value="easy">سهل — 3 تلميحات</option>
+      <option value="medium" selected>متوسط — 4 تلميحات</option>
+      <option value="hard">صعب — 5 تلميحات</option>
+    </select>
+    <select id="wpRounds" style="padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text)">
+      <option value="5">5 جولات</option>
+      <option value="10" selected>10 جولات</option>
+      <option value="15">15 جولة</option>
+    </select>
+    <button class="btn btn-primary" style="font-size:1.1rem" onclick="startGame()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ</button>
+  </div>
+</div>
+
+<div id="playArea" style="display:none">
+  <div style="display:flex;gap:1rem;justify-content:center;margin:1rem;flex-wrap:wrap">
+    <button class="btn btn-secondary" onclick="endGame()"><svg class="ico" aria-hidden="true"><use href="#i-close"></use></svg> إنهاء</button>
+  </div>
+  <div class="wp-score">
+    <div id="wpRound" style="background:var(--bg-secondary);color:var(--text)">1/10</div>
+    <div id="wpScore" style="background:rgba(245,158,11,.15);color:var(--accent-gold)">0</div>
+  </div>
+
+  <div class="wp-layout">
+    <div class="wp-player-card">
+      <h3 id="wpPlayerName" style="font-size:1.5rem">🎯 اللاعب السري</h3>
+      <p style="color:var(--text-muted);font-size:.9rem">خمّن من أنت؟</p>
+    </div>
+
+    <div id="wpHints"></div>
+
+    <input class="wp-answer-input" id="wpAnswer" placeholder="اكتب اسم اللاعب..." onkeydown="if(event.key==='Enter')submitGuess()">
+    <button class="btn btn-gold" style="width:100%;font-size:1.1rem" onclick="submitGuess()">✅ خمّن!</button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="nextHint()">💡 تلميح إضافي (-10 نقاط)</button>
+  </div>
+
+  <div id="roundResult" style="display:none;text-align:center;margin-top:1.5rem;background:var(--bg-card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent-gold)"></div>
+</div>
+
+<div id="finalResult" style="display:none;text-align:center;padding:2rem">
+  <h2 style="font-size:2rem"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> انتهت اللعبة!</h2>
+  <p style="font-size:1.5rem;margin:1rem">النقاط النهائية: <b id="finalScore" style="color:var(--accent-gold);font-size:2.5rem"></b></p>
+  <div style="display:flex;gap:1rem;justify-content:center">
+    <button class="btn btn-primary" onclick="resetGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة</button>
+    <button class="btn btn-secondary" onclick="location.href='/games'">العودة</button>
+  </div>
+</div>
+
+<script>
+let allPlayers=[], currentPlayer=null, round=0, totalRounds=10, score=0, hintsShown=0, maxHints=4, gameOver=false;
+
+async function loadPlayers(){
+  const r = await fetch('/api/content/whoplayer?status=approved&per_page=100');
+  const d = await r.json();
+  return d.items || [];
+}
+
+async function startGame(){
+  allPlayers = await loadPlayers();
+  if(!allPlayers.length){ alert('لا توجد بيانات لاعبين'); return; }
+  round=0; score=0; gameOver=false;
+  totalRounds = parseInt(document.getElementById('wpRounds').value)||10;
+  const diff = document.getElementById('wpDifficulty').value;
+  maxHints = diff==='easy'?3:diff==='hard'?5:4;
+  document.getElementById('setup').style.display='none';
+  document.getElementById('playArea').style.display='block';
+  document.getElementById('finalResult').style.display='none';
+  nextRound();
+}
+
+function nextRound(){
+  if(round>=totalRounds){ endGame(); return; }
+  currentPlayer = allPlayers[Math.floor(Math.random()*allPlayers.length)];
+  hintsShown=0; gameOver=false;
+  document.getElementById('wpRound').textContent = (round+1)+'/'+totalRounds;
+  document.getElementById('wpScore').textContent = score;
+  document.getElementById('wpPlayerName').textContent = '🎯 اللاعب السري';
+  document.getElementById('wpAnswer').value='';
+  document.getElementById('roundResult').style.display='none';
+  renderHints();
+}
+
+function renderHints(){
+  const hints = currentPlayer.hints || [];
+  const max = Math.min(hints.length, maxHints);
+  let html='';
+  for(let i=0;i<max;i++){
+    html += `<div class="wp-hint ${i<hintsShown?'':'locked'}">${i<hintsShown?hints[i]:'🔒 تلميح مغلق'}</div>`;
+  }
+  document.getElementById('wpHints').innerHTML = html;
+}
+
+function nextHint(){
+  if(hintsShown < maxHints && hintsShown < (currentPlayer.hints||[]).length){
+    hintsShown++;
+    score = Math.max(0, score-10);
+    document.getElementById('wpScore').textContent = score;
+    renderHints();
+  }
+}
+
+function submitGuess(){
+  if(gameOver) return;
+  const guess = document.getElementById('wpAnswer').value.trim();
+  if(!guess) return;
+  const correct = currentPlayer.player;
+  const altNames = (currentPlayer.alternatives||[]);
+  const isCorrect = guess===correct || altNames.includes(guess) ||
+    norm(guess).includes(norm(correct)) || norm(correct).includes(norm(guess));
+  
+  gameOver=true;
+  const points = isCorrect ? Math.max(10, 50-(hintsShown*10)) : 0;
+  score += points;
+  document.getElementById('wpScore').textContent = score;
+  
+  const result = document.getElementById('roundResult');
+  result.style.display='block';
+  result.innerHTML = `
+    <h3>${isCorrect?'🎉 صحيح! حصلت على '+points+' نقطة':'❌ خطأ!'}</h3>
+    <p style="margin:.5rem">اللاعب كان: <b style="color:var(--accent-gold);font-size:1.3rem">${correct}</b></p>
+    <button class="btn btn-primary" style="margin-top:1rem" onclick="nextRound()">${round+1>=totalRounds?'🏆 النتائج':'⏭️ التالي'}</button>`;
+}
+
+function endGame(){
+  document.getElementById('playArea').style.display='none';
+  document.getElementById('finalResult').style.display='block';
+  document.getElementById('finalScore').textContent = score;
+}
+
+function resetGame(){
+  document.getElementById('setup').style.display='block';
+  document.getElementById('playArea').style.display='none';
+  document.getElementById('finalResult').style.display='none';
+}
+
+function norm(s){ return (s||'').toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه'); }
+</script>
+    <button onclick="toggleFullscreen()" style="position:fixed;top:10px;left:10px;z-index:9999;background:var(--bg-card);border:1px solid var(--border-color);color:var(--text);padding:.4rem .8rem;border-radius:8px;cursor:pointer;font-size:1.2rem;" title="ملء الشاشة">⛶</button>
+    <script>
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+        else document.exitFullscreen && document.exitFullscreen();
+    }
+    </script>
+{% endblock %}

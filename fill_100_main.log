@@ -1,0 +1,165 @@
+model: nvidia/nemotron-3.5-lightning-30b-a3b   workers: 4
+targets (71):
+   f87726c2       اتاك اون تايتين          easy     15
+   f87726c2       اتاك اون تايتين          medium   13
+   f87726c2       اتاك اون تايتين          hard     17
+   space_missions رحلات الفضاء واكتشافه    hard     18
+   football_arab  كرة القدم العربية        easy      8
+   football_arab  كرة القدم العربية        hard     18
+   football_world كرة القدم العالمية       easy     28
+   football_world كرة القدم العالمية       medium   15
+   football_world كرة القدم العالمية       hard     27
+   kingdom        المملكة العربية السعودية easy     26
+   kingdom        المملكة العربية السعودية medium   16
+   kingdom        المملكة العربية السعودية hard     26
+   anime          الأنمي والمانجا          easy     16
+   anime          الأنمي والمانجا          medium   26
+   anime          الأنمي والمانجا          hard     30
+   novels         الروايات والكتب          easy     25
+   novels         الروايات والكتب          medium   28
+   novels         الروايات والكتب          hard     17
+   world_wars     الحروب والنزاعات         easy     19
+   world_wars     الحروب والنزاعات         medium   29
+   world_wars     الحروب والنزاعات         hard     22
+   kings_leaders  الملوك والقادة           easy     31
+   kings_leaders  الملوك والقادة           medium   29
+   kings_leaders  الملوك والقادة           hard     24
+   landmarks      المعالم والآثار          easy     32
+   landmarks      المعالم والآثار          medium   21
+   landmarks      المعالم والآثار          hard     30
+   olympics       الأولمبياد والألعاب الأو easy     30
+   olympics       الأولمبياد والألعاب الأو medium   26
+   olympics       الأولمبياد والألعاب الأو hard     28
+   animals_wild   الحيوانات البرية         easy     17
+   animals_wild   الحيوانات البرية         medium   30
+   animals_wild   الحيوانات البرية         hard     32
+   quran          القرآن الكريم            easy     18
+   quran          القرآن الكريم            medium   21
+   quran          القرآن الكريم            hard     21
+   prophets       الأنبياء والرسل          easy     14
+   prophets       الأنبياء والرسل          medium    1
+   seerah         السيرة النبوية           easy     12
+   seerah         السيرة النبوية           medium   18
+   seerah         السيرة النبوية           hard     16
+   islamic_history التاريخ الإسلامي         easy     16
+   islamic_history التاريخ الإسلامي         medium   13
+   islamic_history التاريخ الإسلامي         hard     16
+   pharaohs       الحضارة المصرية القديمة  easy     12
+   pharaohs       الحضارة المصرية القديمة  medium   17
+   pharaohs       الحضارة المصرية القديمة  hard     15
+   india_cinema   السينما والدراما         easy     12
+   india_cinema   السينما والدراما         medium   23
+   india_cinema   السينما والدراما         hard     34
+   smartphones    الهواتف والتطبيقات       easy     34
+   smartphones    الهواتف والتطبيقات       medium   32
+   smartphones    الهواتف والتطبيقات       hard     34
+   cybersecurity  الأمن السيبراني          easy     34
+   cybersecurity  الأمن السيبراني          medium   32
+   cybersecurity  الأمن السيبراني          hard     34
+   ai_ml          الذكاء الاصطناعي         easy     30
+   ai_ml          الذكاء الاصطناعي         medium   32
+   ai_ml          الذكاء الاصطناعي         hard     27
+   aviation       الطيران والطائرات        easy     34
+   aviation       الطيران والطائرات        medium   32
+   aviation       الطيران والطائرات        hard     34
+   seas_oceans    البحار والمحيطات         easy     34
+   seas_oceans    البحار والمحيطات         medium   32
+   seas_oceans    البحار والمحيطات         hard     34
+   weather_climate الطقس والمناخ            easy     34
+   weather_climate الطقس والمناخ            medium   32
+   weather_climate الطقس والمناخ            hard     34
+   solar_energy   الطاقة الشمسية           easy     34
+   solar_energy   الطاقة الشمسية           medium   32
+   solar_energy   الطاقة الشمسية           hard     34
+total need: 1737
+    +  6  اتاك اون تايتين          easy     (cat total so far saved)
+    + 17  اتاك اون تايتين          medium   (cat total so far saved)
+    + 20  اتاك اون تايتين          hard     (cat total so far saved)
+    + 12  رحلات الفضاء واكتشافه    hard     (cat total so far saved)
+    (model nvidia/nemotron-3.5-lightning-30b-a3b unavailable — using nvidia/nemotron-3-ultra-550b-a55b instead)
+    + 19  كرة القدم العربية        easy     (cat total so far saved)
+    +  2  كرة القدم العربية        hard     (cat total so far saved)
+    + 16  كرة القدم العالمية       easy     (cat total so far saved)
+    + 19  كرة القدم العالمية       medium   (cat total so far saved)
+    + 20  كرة القدم العالمية       hard     (cat total so far saved)
+    + 21  المملكة العربية السعودية easy     (cat total so far saved)
+    +  6  المملكة العربية السعودية medium   (cat total so far saved)
+    +  3  المملكة العربية السعودية hard     (cat total so far saved)
+    + 18  الأنمي والمانجا          easy     (cat total so far saved)
+    + 17  الأنمي والمانجا          medium   (cat total so far saved)
+    + 19  الأنمي والمانجا          hard     (cat total so far saved)
+    + 15  الروايات والكتب          easy     (cat total so far saved)
+    +  3  الروايات والكتب          medium   (cat total so far saved)
+    + 18  الروايات والكتب          hard     (cat total so far saved)
+    +  8  الحروب والنزاعات         easy     (cat total so far saved)
+    + 20  الحروب والنزاعات         medium   (cat total so far saved)
+    +  1  الحروب والنزاعات         hard     (cat total so far saved)
+    +  1  الملوك والقادة           easy     (cat total so far saved)
+    + 18  الملوك والقادة           medium   (cat total so far saved)
+    + 18  الملوك والقادة           hard     (cat total so far saved)
+    +  3  المعالم والآثار          hard     (cat total so far saved)
+    + 17  الأولمبياد والألعاب الأو easy     (cat total so far saved)
+    + 11  الأولمبياد والألعاب الأو medium   (cat total so far saved)
+    + 15  الأولمبياد والألعاب الأو hard     (cat total so far saved)
+    + 20  الحيوانات البرية         easy     (cat total so far saved)
+    + 19  الحيوانات البرية         medium   (cat total so far saved)
+    + 20  الحيوانات البرية         hard     (cat total so far saved)
+    +  4  القرآن الكريم            easy     (cat total so far saved)
+    + 17  القرآن الكريم            medium   (cat total so far saved)
+    + 15  القرآن الكريم            hard     (cat total so far saved)
+    +  1  الأنبياء والرسل          easy     (cat total so far saved)
+    +  5  الأنبياء والرسل          medium   (cat total so far saved)
+    + 15  السيرة النبوية           easy     (cat total so far saved)
+    +  6  السيرة النبوية           medium   (cat total so far saved)
+    + 16  السيرة النبوية           hard     (cat total so far saved)
+    +  3  التاريخ الإسلامي         easy     (cat total so far saved)
+    + 19  التاريخ الإسلامي         medium   (cat total so far saved)
+    + 18  التاريخ الإسلامي         hard     (cat total so far saved)
+    + 16  الحضارة المصرية القديمة  easy     (cat total so far saved)
+    + 19  الحضارة المصرية القديمة  medium   (cat total so far saved)
+    + 20  الحضارة المصرية القديمة  hard     (cat total so far saved)
+    +  6  السينما والدراما         easy     (cat total so far saved)
+    + 17  السينما والدراما         medium   (cat total so far saved)
+    + 18  السينما والدراما         hard     (cat total so far saved)
+    +  9  الهواتف والتطبيقات       easy     (cat total so far saved)
+    + 13  الهواتف والتطبيقات       medium   (cat total so far saved)
+    +  3  الأمن السيبراني          easy     (cat total so far saved)
+    + 14  الأمن السيبراني          medium   (cat total so far saved)
+    + 16  الأمن السيبراني          hard     (cat total so far saved)
+    +  6  الذكاء الاصطناعي         easy     (cat total so far saved)
+    + 17  الذكاء الاصطناعي         medium   (cat total so far saved)
+    +  2  الذكاء الاصطناعي         hard     (cat total so far saved)
+    + 16  الطيران والطائرات        easy     (cat total so far saved)
+    + 17  الطيران والطائرات        medium   (cat total so far saved)
+    + 16  الطيران والطائرات        hard     (cat total so far saved)
+    + 14  البحار والمحيطات         easy     (cat total so far saved)
+    + 20  البحار والمحيطات         medium   (cat total so far saved)
+    +  2  البحار والمحيطات         hard     (cat total so far saved)
+    +  3  الطقس والمناخ            easy     (cat total so far saved)
+    + 18  الطقس والمناخ            medium   (cat total so far saved)
+    + 20  الطقس والمناخ            hard     (cat total so far saved)
+    + 18  الطاقة الشمسية           easy     (cat total so far saved)
+    + 19  الطاقة الشمسية           medium   (cat total so far saved)
+    +  1  الطاقة الشمسية           hard     (cat total so far saved)
+  round  1: +881
+    + 19  اتاك اون تايتين          easy     (cat total so far saved)
+    + 19  رحلات الفضاء واكتشافه    hard     (cat total so far saved)
+    + 20  كرة القدم العربية        hard     (cat total so far saved)
+    + 11  كرة القدم العالمية       easy     (cat total so far saved)
+    + 21  كرة القدم العالمية       hard     (cat total so far saved)
+    + 20  المملكة العربية السعودية easy     (cat total so far saved)
+    + 44  المملكة العربية السعودية medium   (cat total so far saved)
+Traceback (most recent call last):
+  File "C:\Users\Ameen Dawaghreh\Desktop\ألعاب-أمين\tools\fill_quiz_100_run.py", line 175, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\Ameen Dawaghreh\Desktop\ألعاب-أمين\tools\fill_quiz_100_run.py", line 167, in main
+    acc, short = run(tg, a.workers, a.dry_run, a.max_rounds)
+                 ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ameen Dawaghreh\Desktop\ألعاب-أمين\tools\fill_quiz_100_run.py", line 128, in run
+    bg.append_locked(fresh)
+    ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Ameen Dawaghreh\Desktop\ألعاب-أمين\tools\bulk_gen.py", line 355, in append_locked
+    os.replace(tmp, QFILE)
+    ~~~~~~~~~~^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\Ameen Dawaghreh\\Desktop\\ألعاب-أمين\\data\\questions\\all.json.tmp' -> 'C:\\Users\\Ameen Dawaghreh\\Desktop\\ألعاب-أمين\\data\\questions\\all.json'

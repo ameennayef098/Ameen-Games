@@ -1,0 +1,1080 @@
+[16:14:59] orchestrator: 6 plans, 245 targets, 12529 questions, workers=6, api_slots=6
+[16:14:59]   start letters-a/أ/medium
+[16:14:59]   start letters-a/أ/hard
+[16:14:59]   start letters-a/ب/easy
+[16:14:59]   start letters-a/ب/medium
+[16:14:59]   start letters-a/ب/hard
+[16:14:59]   start letters-a/ت/easy
+[16:15:04]   done  letters-a/أ/hard -> 4
+[16:15:04]   start letters-a/ت/medium
+[16:15:06]   done  letters-a/ت/easy -> 8
+[16:15:06]   start letters-a/ث/easy
+[16:15:14]   done  letters-a/ت/medium -> 1
+[16:15:14]   start letters-a/ث/medium
+[16:15:14]   retry letters-a/ب/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:15]   retry letters-a/أ/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:15]   retry letters-a/ب/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:15]   retry letters-a/ب/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:22]   retry letters-a/ث/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:27]   retry letters-a/ث/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:30]   retry letters-a/ب/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:31]   retry letters-a/أ/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:31]   retry letters-a/ب/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:39]   retry letters-a/ث/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:40]   retry letters-a/ب/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:43]   retry letters-a/ث/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:49]   retry letters-a/ب/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:50]   retry letters-a/أ/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:50]   retry letters-a/ب/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:58]   retry letters-a/ث/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:58]   ! FAILED letters-a/ب/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:58]   start letters-a/ث/hard
+[16:15:59]   ! FAILED letters-a/أ/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:15:59]   start letters-a/ج/easy
+[16:15:59]   ! FAILED letters-a/ب/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 92 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\socket.py", line 859 in create_connection
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1051 in connect
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1520 in connect
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1085 in send
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1141 in _send_output
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1381 in endheaders
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1432 in _send_request
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1386 in request
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1320 in do_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1368 in https_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 464 in _call_chain
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 504 in _open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 487 in open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 187 in urlopen
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 162 in _call_model_raw
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 148 in _call_model
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 172 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\json\__init__.py", line 182 in dump
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 354 in append_locked
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 117 in handle
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 192 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:15:59]   start letters-a/ج/medium
+[16:15:59]   +3 letters-a/أ/hard (accepted 3, rejected 1, batches 1, slots 1)
+[16:15:59]   retry letters-a/ب/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:02]   retry letters-a/ث/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:07]   ! FAILED letters-a/ث/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:07]   start letters-a/ج/hard
+[16:16:08]   ! FAILED letters-a/ب/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:08]   start letters-a/ح/easy
+[16:16:09]   +8 letters-a/ت/easy (accepted 11, rejected 1, batches 2, slots 1)
+[16:16:09]   +1 letters-a/ت/medium (accepted 12, rejected 1, batches 3, slots 1)
+[16:16:11]   ! FAILED letters-a/ث/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:11]   start letters-a/ح/medium
+[16:16:11]   retry letters-a/ث/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:12]   retry letters-a/ج/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:12]   retry letters-a/ج/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:20]   retry letters-a/ج/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:21]   retry letters-a/ح/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:24]   retry letters-a/ح/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:28]   retry letters-a/ث/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:28]   retry letters-a/ج/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:28]   retry letters-a/ج/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:36]   retry letters-a/ج/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:38]   retry letters-a/ح/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:40]   retry letters-a/ح/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:47]   retry letters-a/ث/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:47]   retry letters-a/ج/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:47]   retry letters-a/ج/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:55]   retry letters-a/ج/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:56]   ! FAILED letters-a/ث/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:56]   start letters-a/ح/hard
+[16:16:56]   ! FAILED letters-a/ج/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:56]   start letters-a/خ/easy
+[16:16:56]   ! FAILED letters-a/ج/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:16:56]   start letters-a/خ/medium
+[16:16:57]   retry letters-a/ح/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:17:00]   retry letters-a/ح/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:04]   ! FAILED letters-a/ج/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:04]   start letters-a/خ/hard
+[16:17:06]   ! FAILED letters-a/ح/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:06]   start letters-a/د/easy
+[16:17:09]   ! FAILED letters-a/ح/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:09]   start letters-a/د/medium
+[16:17:09]   retry letters-a/ح/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:09]   retry letters-a/خ/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:09]   retry letters-a/خ/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:17]   retry letters-a/خ/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:19]   retry letters-a/د/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:25]   retry letters-a/ح/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:25]   retry letters-a/خ/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:25]   retry letters-a/خ/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:26]   retry letters-a/د/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:33]   retry letters-a/خ/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:37]   retry letters-a/د/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:42]   retry letters-a/د/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:44]   retry letters-a/ح/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:44]   retry letters-a/خ/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:45]   retry letters-a/خ/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:52]   retry letters-a/خ/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:53]   ! FAILED letters-a/ح/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:53]   start letters-a/د/hard
+[16:17:53]   ! FAILED letters-a/خ/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:53]   start letters-a/ر/easy
+[16:17:54]   ! FAILED letters-a/خ/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:17:54]   start letters-a/ر/medium
+[16:17:56]   retry letters-a/د/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:18:01]   ! FAILED letters-a/خ/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:01]   start letters-a/ر/hard
+[16:18:01]   retry letters-a/د/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:05]   ! FAILED letters-a/د/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:05]   start letters-a/ز/easy
+[16:18:06]   retry letters-a/د/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:06]   retry letters-a/ر/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:07]   retry letters-a/ر/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:10]   ! FAILED letters-a/د/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:10]   start letters-a/ز/medium
+[16:18:14]   retry letters-a/ر/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:18]   retry letters-a/ز/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:22]   retry letters-a/د/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:22]   retry letters-a/ر/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:23]   retry letters-a/ر/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:23]   retry letters-a/ز/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:30]   retry letters-a/ر/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:34]   retry letters-a/ز/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:39]   retry letters-a/ز/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:41]   retry letters-a/د/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:41]   retry letters-a/ر/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:42]   retry letters-a/ر/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:49]   retry letters-a/ر/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:50]   ! FAILED letters-a/د/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:50]   start letters-a/س/easy
+[16:18:50]   ! FAILED letters-a/ر/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:50]   start letters-a/س/medium
+[16:18:51]   ! FAILED letters-a/ر/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:51]   start letters-a/س/hard
+[16:18:53]   retry letters-a/ز/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:58]   retry letters-a/ز/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:58]   ! FAILED letters-a/ر/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:18:58]   start letters-a/ش/easy
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:19:02]   ! FAILED letters-a/ز/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:02]   start letters-a/ش/medium
+[16:19:03]   retry letters-a/س/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:03]   retry letters-a/س/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:04]   retry letters-a/س/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:07]   ! FAILED letters-a/ز/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:07]   start letters-a/ش/hard
+[16:19:12]   retry letters-a/ش/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:15]   retry letters-a/ش/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:19]   retry letters-a/س/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:20]   retry letters-a/س/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:20]   retry letters-a/س/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:20]   retry letters-a/ش/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:28]   retry letters-a/ش/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:31]   retry letters-a/ش/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:37]   retry letters-a/ش/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:38]   retry letters-a/س/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:39]   retry letters-a/س/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:39]   retry letters-a/س/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:47]   retry letters-a/ش/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:47]   ! FAILED letters-a/س/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:47]   start letters-a/ص/easy
+[16:19:48]   ! FAILED letters-a/س/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:48]   start letters-a/ص/hard
+[16:19:48]   ! FAILED letters-a/س/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:48]   start letters-b/ط/easy
+[16:19:51]   retry letters-a/ش/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:56]   retry letters-a/ش/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:56]   ! FAILED letters-a/ش/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:19:56]   start letters-b/ط/hard
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:20:00]   ! FAILED letters-a/ش/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:00]   start letters-b/ع/easy
+[16:20:00]   retry letters-a/ص/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:01]   retry letters-a/ص/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:01]   retry letters-b/ط/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:05]   ! FAILED letters-a/ش/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:05]   start letters-b/ع/medium
+[16:20:09]   retry letters-b/ط/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:13]   retry letters-b/ع/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:17]   retry letters-a/ص/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:17]   retry letters-a/ص/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:17]   retry letters-b/ط/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:18]   retry letters-b/ع/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:25]   retry letters-b/ط/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:29]   retry letters-b/ع/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:34]   retry letters-b/ع/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:36]   retry letters-a/ص/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:36]   retry letters-a/ص/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:37]   retry letters-b/ط/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:45]   ! FAILED letters-a/ص/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:45]   start letters-b/ع/hard
+[16:20:45]   ! FAILED letters-a/ص/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:45]   start letters-b/غ/easy
+[16:20:46]   ! FAILED letters-b/ط/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:46]   start letters-b/غ/medium
+[16:20:48]   retry letters-b/ع/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:52]   retry letters-b/ط/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:53]   retry letters-b/ع/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:57]   ! FAILED letters-b/ع/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:57]   start letters-b/غ/hard
+[16:20:58]   retry letters-b/ع/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:58]   retry letters-b/غ/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:20:59]   retry letters-b/غ/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:21:01]   ! FAILED letters-b/ط/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:01]   start letters-b/ف/easy
+[16:21:02]   ! FAILED letters-b/ع/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:02]   start letters-b/ف/medium
+[16:21:10]   retry letters-b/غ/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:14]   retry letters-b/ع/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:14]   retry letters-b/غ/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:14]   retry letters-b/ف/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:15]   retry letters-b/غ/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:15]   retry letters-b/ف/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:26]   retry letters-b/غ/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:31]   retry letters-b/ف/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:31]   retry letters-b/ف/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:33]   retry letters-b/ع/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:33]   retry letters-b/غ/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:34]   retry letters-b/غ/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:42]   ! FAILED letters-b/ع/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:42]   start letters-b/ف/hard
+[16:21:42]   ! FAILED letters-b/غ/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:42]   start letters-b/ق/easy
+[16:21:43]   ! FAILED letters-b/غ/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:43]   start letters-b/ق/medium
+[16:21:45]   retry letters-b/غ/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:50]   retry letters-b/ف/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:50]   retry letters-b/ف/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:54]   ! FAILED letters-b/غ/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:54]   start letters-b/ق/hard
+[16:21:55]   retry letters-b/ف/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:55]   retry letters-b/ق/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:56]   retry letters-b/ق/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:59]   ! FAILED letters-b/ف/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:59]   start letters-b/ك/easy
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 1138 in read
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 1304 in recv_into
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\socket.py", line 729 in readinto
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 304 in _read_status
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 343 in begin
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1478 in getresponse
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1324 in do_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1368 in https_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 464 in _call_chain
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 504 in _open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 487 in open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 187 in urlopen
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 162 in _call_model_raw
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 148 in _call_model
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 172 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 1372 in do_handshake
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 1076 in _create
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 455 in wrap_socket
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1527 in connect
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1085 in send
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1141 in _send_output
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1381 in endheaders
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1432 in _send_request
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1386 in request
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1320 in do_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1368 in https_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 464 in _call_chain
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 504 in _open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 487 in open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 187 in urlopen
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 162 in _call_model_raw
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 148 in _call_model
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 172 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 90 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:21:59]   ! FAILED letters-b/ف/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:21:59]   start letters-b/ك/medium
+[16:22:08]   retry letters-b/ق/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:11]   retry letters-b/ف/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:11]   retry letters-b/ق/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:12]   retry letters-b/ك/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:12]   retry letters-b/ق/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:12]   retry letters-b/ك/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:24]   retry letters-b/ق/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:28]   retry letters-b/ك/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:28]   retry letters-b/ك/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:30]   retry letters-b/ف/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:30]   retry letters-b/ق/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:31]   retry letters-b/ق/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:39]   ! FAILED letters-b/ف/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:39]   start letters-b/ك/hard
+[16:22:39]   ! FAILED letters-b/ق/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:39]   start letters-b/ل/easy
+[16:22:40]   ! FAILED letters-b/ق/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:40]   start letters-b/ل/medium
+[16:22:43]   retry letters-b/ق/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:47]   retry letters-b/ك/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:47]   retry letters-b/ك/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:52]   ! FAILED letters-b/ق/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:52]   start letters-b/ل/hard
+[16:22:52]   retry letters-b/ك/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:53]   retry letters-b/ل/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:53]   retry letters-b/ل/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:56]   ! FAILED letters-b/ك/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:56]   start letters-b/م/easy
+[16:22:56]   ! FAILED letters-b/ك/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:22:56]   start letters-b/م/medium
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 1138 in read
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\ssl.py", line 1304 in recv_into
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\socket.py", line 729 in readinto
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 304 in _read_status
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 343 in begin
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\http\client.py", line 1478 in getresponse
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1324 in do_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 1368 in https_open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 464 in _call_chain
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 504 in _open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 487 in open
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\urllib\request.py", line 187 in urlopen
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 162 in _call_model_raw
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 148 in _call_model
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 172 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:23:05]   retry letters-b/ل/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:08]   retry letters-b/ك/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:09]   retry letters-b/ل/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:09]   retry letters-b/م/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:09]   retry letters-b/ل/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:10]   retry letters-b/م/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:21]   retry letters-b/ل/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:25]   retry letters-b/م/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:26]   retry letters-b/م/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:27]   retry letters-b/ك/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:28]   retry letters-b/ل/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:28]   retry letters-b/ل/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:36]   ! FAILED letters-b/ك/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:36]   start letters-b/م/hard
+[16:23:37]   ! FAILED letters-b/ل/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:37]   start letters-b/ن/easy
+[16:23:37]   ! FAILED letters-b/ل/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:37]   start letters-b/ن/medium
+[16:23:40]   retry letters-b/ل/hard (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:44]   retry letters-b/م/easy (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:45]   retry letters-b/م/medium (2): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:49]   ! FAILED letters-b/ل/hard: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:49]   start letters-b/ن/hard
+[16:23:50]   retry letters-b/م/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:50]   retry letters-b/ن/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:50]   retry letters-b/ن/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:53]   ! FAILED letters-b/م/easy: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:53]   start letters-b/ه/easy
+[16:23:54]   ! FAILED letters-b/م/medium: RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:23:54]   start letters-b/ه/medium
+Timeout (0:01:00)!
+Thread 0x000049b8 [ThreadPoolExecutor-0_5] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000063a0 [ThreadPoolExecutor-0_4] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x0000638c [ThreadPoolExecutor-0_3] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005ee0 [ThreadPoolExecutor-0_2] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x000038f4 [ThreadPoolExecutor-0_1] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 569 in fetch_letter_words
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 590 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00005f94 [ThreadPoolExecutor-0_0] (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 188 in nvidia_chat
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\bulk_gen.py", line 612 in fetch_letters_batch
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 83 in job
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in <lambda>
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1024 in run
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1082 in _bootstrap_inner
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 1044 in _bootstrap
+
+Thread 0x00000ec8 (most recent call first):
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\threading.py", line 369 in wait
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 449 in result
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 312 in _result_or_cancel
+  File "C:\Users\Ameen Dawaghreh\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\concurrent\futures\_base.py", line 645 in result_iterator
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 191 in main
+  File "C:\Users\Ameen Dawaghreh\Desktop\\u0623\u0644\u0639\u0627\u0628-\u0623\u0645\u064a\u0646\tools\run_all_waves.py", line 209 in <module>
+[16:24:02]   retry letters-b/ن/hard (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:24:06]   retry letters-b/م/hard (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:24:06]   retry letters-b/ه/easy (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:24:07]   retry letters-b/ن/medium (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:24:07]   retry letters-b/ه/medium (0): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}
+[16:24:08]   retry letters-b/ن/easy (1): RuntimeError: HTTP 429 {"status":429,"title":"Too Many Requests"}

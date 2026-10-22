@@ -1,0 +1,15 @@
+{
+  "siteTitle": "ألعاب أمين",
+  "defaultQuizTimer": 30,
+  "defaultAuctionBudget": 100,
+  "defaultAuctionUnit": "مليون",
+  "defaultBidDuration": 30,
+  "defaultPlayersNeeded": 5,
+  "defaultBoardCells": 28,
+  "soundDefault": true,
+  "aiBatchSize": 10,
+  "aiModel": "nvidia/nemotron-3-super-120b-a12b",
+  "aiUnderPct": 20,
+  "aiMediumPct": 60,
+  "aiHardPct": 20
+}

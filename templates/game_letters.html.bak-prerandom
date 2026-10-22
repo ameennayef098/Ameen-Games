@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="letters-setup" class="setup-screen">
+    <h2>🔤 حروف مع أمين — إعداد المباراة</h2>
+
+    <div class="form-group">
+        <label>اسم المسابقة</label>
+        <input type="text" id="matchName" value="حروف مع أمين">
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label>اسم الفريق الأول</label>
+            <input type="text" id="team1Name" value="الفريق الأول">
+        </div>
+        <div class="form-group">
+            <label>اسم الفريق الثاني</label>
+            <input type="text" id="team2Name" value="الفريق الثاني">
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label>لون الفريق الأول</label>
+            <input type="color" id="team1Color" value="#2563eb" style="width:100%;height:48px;">
+        </div>
+        <div class="form-group">
+            <label>لون الفريق الثاني</label>
+            <input type="color" id="team2Color" value="#16a34a" style="width:100%;height:48px;">
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label>مدة العد التنازلي للإجابة</label>
+            <select id="timerDuration" style="width:100%;">
+                <option value="5">5 ثوانٍ</option>
+                <option value="10" selected>10 ثوانٍ</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label><input type="checkbox" id="soundEnabled" checked> تفعيل الأصوات</label>
+        </div>
+    </div>
+
+    <div class="setup-actions">
+        <button class="btn btn-primary btn-lg" onclick="startLettersGame()">🎮 ابدأ اللعبة</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+</div>
+
+<div id="letters-game" class="game-container" style="display:none;">
+    <div class="game-header">
+        <div class="team-score">
+            <div class="team-name" id="displayTeam1">الفريق الأول</div>
+            <div class="score" id="score1Value">0</div>
+            <div style="font-size:.72rem;color:var(--text-muted)">يصل من الأعلى إلى الأسفل</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:.95rem;color:var(--accent-gold);font-weight:700;">
+                اختر حرفاً من اللوحة لبدء السؤال
+            </div>
+        </div>
+        <div class="team-score">
+            <div class="team-name" id="displayTeam2">الفريق الثاني</div>
+            <div class="score" id="score2Value">0</div>
+            <div style="font-size:.72rem;color:var(--text-muted)">يصل من اليمين إلى اليسار</div>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;padding:1rem 0;">
+        <svg id="hexBoard" viewBox="0 0 436 368" style="width:100%;max-width:660px;height:auto;"></svg>
+    </div>
+
+    <div style="text-align:center;margin-top:.5rem;">
+        <button class="btn btn-secondary btn-sm" onclick="changeTeam()">🔄 تغيير الفريق</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetLettersGame()">🔄 إعادة</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='/'">🏠 الرئيسية</button>
+    </div>
+
+    <button id="fullscreenBtn" onclick="toggleFullscreen()" title="ملء الشاشة"
+            style="position:fixed;top:10px;left:10px;z-index:9999;background:var(--bg-card);border:1px solid var(--border-color);color:var(--text);padding:.4rem .8rem;border-radius:8px;cursor:pointer;font-size:1.2rem;">⛶</button>
+</div>
+
+<div id="questionModal" class="modal-overlay">
+    <div class="modal">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <span class="badge badge-purple" id="qLetterBadge">حرف</span>
+            <span class="badge badge-blue" id="qDiffBadge">سهل</span>
+        </div>
+        <h2 id="questionText" style="line-height:1.6;">السؤال</h2>
+
+        <div id="timerRow" style="display:none;margin:1rem 0;text-align:center;">
+            <div id="timerDisplay" style="font-size:2.2rem;font-weight:900;color:var(--accent-gold);line-height:1;">10</div>
+            <div id="timerTeamLabel" style="font-size:.85rem;color:var(--text-muted);"></div>
+        </div>
+
+        <div id="revealSection" style="display:none;margin:1.5rem 0;padding:1rem;background:var(--bg-secondary);border-radius:12px;">
+            <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.25rem;">الإجابة الصحيحة</div>
+            <div id="correctAnswer" style="font-size:1.4rem;font-weight:900;color:var(--accent-gold);"></div>
+        </div>
+
+        <div id="bellSection" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1.25rem 0;">
+            <button class="btn btn-lg" id="bellBtn1" onclick="ringBell(1)">🔔 <span id="bellName1">الفريق الأول</span></button>
+            <button class="btn btn-lg" id="bellBtn2" onclick="ringBell(2)">🔔 <span id="bellName2">الفريق الثاني</span></button>
+        </div>
+        <div id="bellResult" style="text-align:center;font-weight:900;color:var(--accent-gold);margin-bottom:.5rem;"></div>
+
+        <div id="answeredRow" style="display:none;margin:1rem 0;">
+            <button class="btn btn-gold btn-lg" style="width:100%;" onclick="markAnswered()">✅ لقد أجبت</button>
+        </div>
+
+        <div id="showAnswerRow" style="margin:1.5rem 0;text-align:center;">
+            <button class="btn btn-gold btn-lg" style="width:100%;" onclick="revealAnswer()">👁️ إظهار الإجابة</button>
+        </div>
+
+        <div id="claimSection" style="display:none;margin:1.5rem 0;">
+            <p style="text-align:center;color:var(--text-secondary);margin-bottom:1rem;">من أجاب بشكل صحيح؟</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                <button class="btn btn-lg" id="claimBtn1" onclick="claimCell(1)">الفريق الأول</button>
+                <button class="btn btn-lg" id="claimBtn2" onclick="claimCell(2)">الفريق الثاني</button>
+            </div>
+            <button class="btn btn-secondary" style="width:100%;margin-top:.75rem;" onclick="skipQuestion()">
+                ❌ لا أحد أجاب — إغلاق
+            </button>
+        </div>
+
+        <div class="modal-actions" style="margin-top:1rem;">
+            <button class="btn btn-secondary btn-sm" onclick="closeQuestionModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<div id="winnerModal" class="modal-overlay">
+    <div class="modal" style="text-align:center;">
+        <h1>🎉 الفائز</h1>
+        <h2 id="winnerName" style="color:var(--accent-gold);font-size:2rem;margin:1rem 0;"></h2>
+        <p id="winnerStats" style="color:var(--text-secondary);margin-bottom:2rem;"></p>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="resetLettersGame()">🔄 العب مرة أخرى</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ===== HEX BOARD: 25 cells, strict 5x5 honeycomb =====
+var ROWS = [5, 5, 5, 5, 5];
+var LETTERS_25 = ['أ','ب','ت','ث','ج','ح','خ','د','ر','ز','س','ش','ص','ط','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
+var DIFF_AR = { easy: 'سهل', medium: 'متوسط', hard: 'صعب' };
+
+var LS = null;
+var cells = [];
+var adj = [];
+var questionsByLetter = {};
+var usedQuestionIds = {};
+var selectedIdx = null;
+var currentQ = null;
+var bellWinner = null;
+var claimHistory = [];
+
+// buzzer + countdown state
+var timerHandle = null;
+var timerEnd = 0;
+var timerTeam = null;
+var answeredTeam = null;
+var timeouts = 0;
+
+var S = 42;
+var W = Math.sqrt(3) * S;
+var PAD = 14;
+
+function cellCenter(row, col) {
+    var cx = col * W + (row % 2) * (W / 2) + W / 2 + PAD;
+    var cy = row * 1.5 * S + S + PAD;
+    return [cx, cy];
+}
+
+function hexPoints(cx, cy) {
+    var pts = [];
+    for (var i = 0; i < 6; i++) {
+        var ang = Math.PI / 180 * (60 * i - 30);
+        pts.push((cx + S * Math.cos(ang)).toFixed(1) + ',' + (cy + S * Math.sin(ang)).toFixed(1));
+    }
+    return pts.join(' ');
+}
+
+function indexOf(r, c) {
+    if (r < 0 || r >= ROWS.length || c < 0 || c >= ROWS[r]) return -1;
+    var k = 0;
+    for (var i = 0; i < r; i++) k += ROWS[i];
+    return k + c;
+}
+
+function buildCells() {
+    cells = [];
+    for (var r = 0; r < ROWS.length; r++) {
+        for (var c = 0; c < ROWS[r]; c++) {
+            cells.push({ row: r, col: c, letter: null, owner: null });
+        }
+    }
+    adj = cells.map(function (cell) {
+        var row = cell.row, col = cell.col;
+        var out = [];
+        var l = indexOf(row, col - 1), rr = indexOf(row, col + 1);
+        if (l >= 0) out.push(l);
+        if (rr >= 0) out.push(rr);
+        [-1, 1].forEach(function (dr) {
+            var r2 = row + dr;
+            if (r2 < 0 || r2 >= ROWS.length) return;
+            var offs = (row % 2 === 0) ? [-1, 0] : [0, 1];
+            offs.forEach(function (dc) {
+                var i2 = indexOf(r2, col + dc);
+                if (i2 >= 0) out.push(i2);
+            });
+        });
+        return out;
+    });
+}
+
+function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+function firstLetterOf(answer) {
+    if (!answer) return '';
+    var s = String(answer).trim();
+    if (!s) return '';
+    // Normalize ALL alif variants to أ (U+0623) to match LETTERS_25
+    var c1 = s.charAt(0);
+    if (c1 === '\u0625' || c1 === '\u0622' || c1 === '\u0671' || c1 === '\u0627' || c1 === '\u0623') {
+        s = '\u0623' + s.slice(1); // أ
+    }
+    // Remove definite article ال (with أ after normalization)
+    if (s.length > 2 && s.charCodeAt(0) === 0x0623 && s.charCodeAt(1) === 0x0644) {
+        s = s.slice(2);
+    }
+    // If result starts with ا (shouldn't happen after above, but safety check)
+    if (s.charAt(0) === '\u0627') s = '\u0623' + s.slice(1);
+    // Final safety: if first char is إ or آ (shouldn't happen, but just in case)
+    var fc = s.charCodeAt(0);
+    if (fc === 0x0625 || fc === 0x0622) s = '\u0623' + s.slice(1);
+    return s.charAt(0) || '';
+}
+
+function startLettersGame() {
+    var t1 = document.getElementById('team1Name').value.trim() || 'الفريق الأول';
+    var t2 = document.getElementById('team2Name').value.trim() || 'الفريق الثاني';
+    var c1 = document.getElementById('team1Color').value;
+    var c2 = document.getElementById('team2Color').value;
+    var dur = parseInt((document.getElementById('timerDuration') || {}).value, 10);
+    if (dur !== 5 && dur !== 10) dur = 10;
+    SoundManager.enabled = document.getElementById('soundEnabled').checked;
+
+    LS = { t1: t1, t2: t2, c1: c1, c2: c2, turn: 1, s1: 0, s2: 0, over: false,
+           correct1: 0, correct2: 0, wrong1: 0, wrong2: 0, timerDuration: dur };
+
+    buildCells();
+    var shuffled = shuffle(LETTERS_25.slice());
+    cells.forEach(function (cell, i) { cell.letter = shuffled[i]; });
+
+    claimHistory = [];
+    stopTimer();
+    timerTeam = null; answeredTeam = null; timeouts = 0;
+
+    document.getElementById('displayTeam1').textContent = t1;
+    document.getElementById('displayTeam2').textContent = t2;
+    var b1 = document.getElementById('claimBtn1');
+    var b2 = document.getElementById('claimBtn2');
+    b1.textContent = t1; b2.textContent = t2;
+    b1.style.background = c1; b1.style.color = '#fff';
+    b2.style.background = c2; b2.style.color = '#fff';
+
+    document.getElementById('letters-setup').style.display = 'none';
+    document.getElementById('letters-game').style.display = 'block';
+
+    renderBoard();
+    updateHUD();
+    loadQuestions();
+}
+
+function loadQuestions() {
+    fetch('/api/questions?game=letters&per_page=5000')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            questionsByLetter = {};
+            usedQuestionIds = {};
+            data.questions.forEach(function (q) {
+                var letter = firstLetterOf(q.answer);
+                if (!questionsByLetter[letter]) questionsByLetter[letter] = [];
+                questionsByLetter[letter].push(q);
+            });
+            // STABLE ORDER: created_at ascending, then id ascending.
+            // The API returns newest-first, so without this the order would
+            // shift every time a question is added.
+            Object.keys(questionsByLetter).forEach(function (letter) {
+                questionsByLetter[letter].sort(function (a, b) {
+                    var ca = a.created_at || '', cb = b.created_at || '';
+                    if (ca !== cb) return ca < cb ? -1 : 1;
+                    var ia = a.id || '', ib = b.id || '';
+                    if (ia === ib) return 0;
+                    return ia < ib ? -1 : 1;
+                });
+            });
+        });
+}
+
+function renderBoard() {
+    var svg = document.getElementById('hexBoard');
+    var html = '';
+    cells.forEach(function (cell, i) {
+        var cc = cellCenter(cell.row, cell.col);
+        var cx = cc[0], cy = cc[1];
+        var fill = '#f8fafc', stroke = '#334155', textFill = '#0f172a';
+        if (cell.owner === 1) { fill = LS.c1; stroke = '#0b1220'; textFill = '#ffffff'; }
+        if (cell.owner === 2) { fill = LS.c2; stroke = '#0b1220'; textFill = '#ffffff'; }
+        var isSel = (i === selectedIdx);
+        html += '<g class="hexg" style="cursor:pointer" data-i="' + i + '">';
+        html += '<polygon points="' + hexPoints(cx, cy) + '" fill="' + fill + '" stroke="' +
+                (isSel ? '#f59e0b' : stroke) + '" stroke-width="' + (isSel ? 4 : 2) + '"/>';
+        html += '<text x="' + cx + '" y="' + (cy + 10) + '" text-anchor="middle" font-size="26" ' +
+                'font-weight="900" fill="' + textFill + '" style="font-family:Cairo,sans-serif;pointer-events:none">' +
+                firstLetterOf(cell.letter) + '</text>';
+        html += '</g>';
+    });
+    svg.innerHTML = html;
+    var groups = svg.querySelectorAll('.hexg');
+    for (var k = 0; k < groups.length; k++) {
+        (function (g) {
+            g.addEventListener('click', function () { selectCell(parseInt(g.getAttribute('data-i'))); });
+        })(groups[k]);
+    }
+}
+
+function selectCell(i) {
+  if (!LS || LS.over) return;
+  var cell = cells[i];
+  if (cell.owner !== null) { showToast('هذه الخلية محجوزة بالفعل', 'error'); return; }
+
+  var all = questionsByLetter[firstLetterOf(cell.letter)] || [];
+  var pool = all.filter(function (q) { return !usedQuestionIds[q.id]; });
+  if (pool.length === 0) { showToast('لا توجد أسئلة متاحة لهذا الحرف', 'error'); return; }
+
+  // Deterministic: take the first unused question in the stable-sorted list,
+  // so the first question for a letter is always the same one.
+  var q = pool[0];
+  usedQuestionIds[q.id] = true;
+  currentQ = q;
+  selectedIdx = i;
+  renderBoard();
+
+  document.getElementById('qLetterBadge').textContent = 'حرف ' + firstLetterOf(currentQ.answer);
+  document.getElementById('qDiffBadge').textContent = DIFF_AR[q.difficulty] || 'متوسط';
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('correctAnswer').textContent = q.answer;
+  document.getElementById('revealSection').style.display = 'none';
+  document.getElementById('claimSection').style.display = 'none';
+  document.getElementById('showAnswerRow').style.display = 'block';
+
+  // reset the competitive buzzer + countdown for this question
+  bellWinner = null;
+  answeredTeam = null;
+  timerTeam = null;
+  timeouts = 0;
+  stopTimer();
+  document.getElementById('timerRow').style.display = 'none';
+  document.getElementById('answeredRow').style.display = 'none';
+  document.getElementById('bellResult').textContent = '';
+  document.getElementById('bellName1').textContent = LS.t1;
+  document.getElementById('bellName2').textContent = LS.t2;
+  var b1 = document.getElementById('bellBtn1'), b2 = document.getElementById('bellBtn2');
+  b1.classList.remove('btn-gold'); b2.classList.remove('btn-gold');
+  b1.style.background = LS.c1; b1.style.color = '#fff';
+  b2.style.background = LS.c2; b2.style.color = '#fff';
+  b1.disabled = false; b2.disabled = false;
+
+  document.getElementById('questionModal').classList.add('active');
+}
+
+function ringBell(team) {
+    if (bellWinner !== null) { showToast('تم حسم الجرس مسبقاً', 'error'); return; }
+    bellWinner = team;
+    var name = (team === 1) ? LS.t1 : LS.t2;
+    var btn = document.getElementById('bellBtn' + team);
+    btn.classList.add('btn-gold');
+    document.getElementById('bellBtn1').disabled = true;
+    document.getElementById('bellBtn2').disabled = true;
+    document.getElementById('bellResult').textContent = '🔔 ' + name + ' ضغط الجرس أولاً';
+    document.getElementById('answeredRow').style.display = 'block';
+    SoundManager.play('buzzer');
+    showToast('🔔 ' + name + ' أول من ضغط');
+    startTimer(team);
+}
+
+// ===== countdown (Date.now based, no drift) =====
+function startTimer(team) {
+    stopTimer();
+    timerTeam = team;
+    timerEnd = Date.now() + LS.timerDuration * 1000;
+    document.getElementById('timerRow').style.display = 'block';
+    document.getElementById('timerTeamLabel').textContent =
+        'الدور على ' + (team === 1 ? LS.t1 : LS.t2) + ' — ' + LS.timerDuration + ' ثوانٍ';
+    updateTimerDisplay();
+    timerHandle = setInterval(updateTimerDisplay, 200);
+}
+
+function updateTimerDisplay() {
+    var remaining = Math.max(0, timerEnd - Date.now());
+    document.getElementById('timerDisplay').textContent = Math.ceil(remaining / 1000);
+    if (remaining <= 0) onTimerExpired();
+}
+
+function stopTimer() {
+    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+}
+
+function onTimerExpired() {
+    stopTimer();
+    timeouts++;
+    if (timeouts >= 2) {
+        showToast('انتهى الوقت ولم يُجب أحد', 'error');
+        closeQuestionModal();
+        return;
+    }
+    var other = 3 - timerTeam;
+    showToast('انتهى الوقت — السؤال ينتقل إلى ' + (other === 1 ? LS.t1 : LS.t2));
+    startTimer(other);
+}
+
+function markAnswered() {
+    if (timerTeam === null) { showToast('اضغط الجرس أولاً', 'error'); return; }
+    answeredTeam = timerTeam;
+    stopTimer();
+    document.getElementById('answeredRow').style.display = 'none';
+    document.getElementById('timerRow').style.display = 'none';
+    revealAnswer();
+    showToast('✅ ' + (answeredTeam === 1 ? LS.t1 : LS.t2) + ' أجاب');
+}
+
+function revealAnswer() {
+    document.getElementById('revealSection').style.display = 'block';
+    document.getElementById('showAnswerRow').style.display = 'none';
+    document.getElementById('answeredRow').style.display = 'none';
+    document.getElementById('claimSection').style.display = 'block';
+}
+
+function claimCell(team) {
+    if (!currentQ || selectedIdx === null) return;
+    var cell = cells[selectedIdx];
+    if (cell.owner !== null) { closeQuestionModal(); return; }
+
+    cell.owner = team;
+    if (team === 1) { LS.s1++; LS.correct1++; } else { LS.s2++; LS.correct2++; }
+    claimHistory.push({ idx: selectedIdx, team: team });
+    SoundManager.play('correct');
+    LS.turn = (team === 1) ? 2 : 1;
+
+    closeQuestionModal();
+    renderBoard();
+    updateHUD();
+    saveLettersState();
+
+    var winner = checkWinner();
+    if (winner) { endGame(winner); return; }
+    var full = cells.every(function (c) { return c.owner !== null; });
+    if (full) endGame(0);
+}
+
+// ===== host correction: flip the last credited answer to the other team =====
+function changeTeam() {
+    if (!LS || LS.over) { showToast('لا توجد لعبة جارية', 'error'); return; }
+    if (claimHistory.length === 0) { showToast('لا يوجد جواب مسجّل لتصحيحه', 'error'); return; }
+    var last = claimHistory[claimHistory.length - 1];
+    var cell = cells[last.idx];
+    var newTeam = 3 - last.team;
+
+    // undo the previous claim
+    if (last.team === 1) { LS.s1--; LS.correct1--; } else { LS.s2--; LS.correct2--; }
+    // apply the new team
+    cell.owner = newTeam;
+    if (newTeam === 1) { LS.s1++; LS.correct1++; } else { LS.s2++; LS.correct2++; }
+    claimHistory[claimHistory.length - 1] = { idx: last.idx, team: newTeam };
+    LS.turn = (newTeam === 1) ? 2 : 1;
+
+    renderBoard();
+    updateHUD();
+    saveLettersState();
+    showToast('تم تغيير الإجابة إلى ' + (newTeam === 1 ? LS.t1 : LS.t2));
+
+    var winner = checkWinner();
+    if (winner) { endGame(winner); return; }
+}
+
+function saveLettersState() {
+    try {
+        localStorage.setItem('ameen_letters_state', JSON.stringify({
+            LS: LS,
+            cells: cells.map(function (c) { return { r: c.row, c: c.col, l: c.letter, o: c.owner }; }),
+            used: Object.keys(usedQuestionIds)
+        }));
+    } catch (e) {}
+}
+
+function skipQuestion() {
+    if (!currentQ) return;
+    if (LS.turn === 1) LS.wrong1++; else LS.wrong2++;
+    LS.turn = (LS.turn === 1) ? 2 : 1;
+    closeQuestionModal();
+    updateHUD();
+    saveLettersState();
+}
+
+function closeQuestionModal() {
+    stopTimer();
+    timerTeam = null; answeredTeam = null; timeouts = 0;
+    document.getElementById('questionModal').classList.remove('active');
+    selectedIdx = null;
+    currentQ = null;
+    if (LS) renderBoard();
+}
+
+function updateHUD() {
+    document.getElementById('score1Value').textContent = LS.s1;
+    document.getElementById('score2Value').textContent = LS.s2;
+}
+
+// ===== BFS: team1 top->bottom (vertical), team2 right->left (horizontal) =====
+function checkWinner() {
+    if (bfs(1, 'v')) return 1;
+    if (bfs(2, 'h')) return 2;
+    return null;
+}
+
+function bfs(team, dir) {
+    var visited = {};
+    var queue = [];
+    cells.forEach(function (cell, i) {
+        if (cell.owner !== team) return;
+        if (dir === 'v' && cell.row === 0) { queue.push(i); visited[i] = true; }
+        if (dir === 'h' && cell.col === ROWS[cell.row] - 1) { queue.push(i); visited[i] = true; }
+    });
+
+    while (queue.length) {
+        var i = queue.shift();
+        var cell = cells[i];
+        if (dir === 'v' && cell.row === ROWS.length - 1) return true;
+        if (dir === 'h' && cell.col === 0) return true;
+
+        var nb = adj[i];
+        for (var k = 0; k < nb.length; k++) {
+            var n = nb[k];
+            if (visited[n]) continue;
+            if (cells[n].owner !== team) continue;
+            visited[n] = true;
+            queue.push(n);
+        }
+    }
+    return false;
+}
+
+function endGame(team) {
+    LS.over = true;
+    var name, stats;
+    if (team === 0) {
+        name = 'تعادل!';
+        stats = 'امتلأت اللوحة دون أن يكمل أي فريق مساره';
+    } else {
+        name = (team === 1) ? LS.t1 : LS.t2;
+        var won = cells.filter(function (c) { return c.owner === team; }).length;
+        stats = 'الخلايا المستحوذ عليها: ' + won + ' من ' + cells.length;
+    }
+    document.getElementById('winnerName').textContent = name;
+    document.getElementById('winnerStats').innerHTML =
+        stats + '<br><br>' +
+        '<table class="questions-table" style="margin-top:.5rem"><thead><tr><th>الفريق</th><th>الخلايا</th><th>إجابات صحيحة</th><th>إجابات خاطئة</th></tr></thead><tbody>' +
+        '<tr><td>' + LS.t1 + '</td><td>' + cells.filter(function (c) { return c.owner === 1; }).length +
+        '</td><td>' + LS.correct1 + '</td><td>' + LS.wrong1 + '</td></tr>' +
+        '<tr><td>' + LS.t2 + '</td><td>' + cells.filter(function (c) { return c.owner === 2; }).length +
+        '</td><td>' + LS.correct2 + '</td><td>' + LS.wrong2 + '</td></tr></tbody></table>';
+    try { localStorage.removeItem('ameen_letters_state'); } catch (e) {}
+    setTimeout(function () {
+        document.getElementById('winnerModal').classList.add('active');
+        SoundManager.play('win');
+    }, 400);
+}
+
+function resetLettersGame() {
+    document.getElementById('winnerModal').classList.remove('active');
+    document.getElementById('letters-game').style.display = 'none';
+    document.getElementById('letters-setup').style.display = 'block';
+    LS = null; cells = []; selectedIdx = null; currentQ = null;
+    claimHistory = [];
+    stopTimer();
+    timerTeam = null; answeredTeam = null; timeouts = 0;
+}
+
+// ===== fullscreen (single working toggle) =====
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+}
+document.addEventListener('fullscreenchange', function () {
+    var btn = document.getElementById('fullscreenBtn');
+    if (!btn) return;
+    if (document.fullscreenElement) {
+        btn.textContent = '✕';
+        btn.title = 'إنهاء ملء الشاشة';
+    } else {
+        btn.textContent = '⛶';
+        btn.title = 'ملء الشاشة';
+    }
+});
+</script>
+{% endblock %}

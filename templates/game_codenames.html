@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.cn-rules{margin-bottom:1.5rem}
+.cn-rules summary{cursor:pointer;padding:.8rem 1.2rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);font-weight:700;font-size:1rem;color:var(--text-primary);transition:var(--transition)}
+.cn-rules summary:hover{border-color:var(--accent-blue)}
+.cn-rules-body{padding:1rem 1.2rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.cn-rules-body ul{padding-right:1.5rem;display:grid;gap:.4rem}
+.cn-rules-body li{color:var(--text-secondary);font-size:.95rem}
+.cn-topbar{display:flex;justify-content:center;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.cn-btn{padding:.55rem 1.2rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:.95rem;font-weight:600;cursor:pointer;transition:var(--transition)}
+.cn-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.cn-btn.active{border-color:var(--accent-gold);background:rgba(245,158,11,.12);color:var(--accent-gold)}
+.cn-turn{text-align:center;font-size:1.2rem;font-weight:800;padding:.6rem 1.5rem;border-radius:var(--radius);background:var(--bg-card);border:2px solid var(--border-color);display:inline-block;transition:var(--transition)}
+.cn-turn.red{border-color:var(--accent-red);color:var(--accent-red)}
+.cn-turn.blue{border-color:var(--accent-blue);color:var(--accent-blue)}
+.cn-scores{display:flex;justify-content:center;gap:1.5rem;margin-bottom:1rem}
+.cn-score-box{padding:.5rem 1.5rem;border-radius:var(--radius);text-align:center;font-weight:800;font-size:1.05rem;border:1px solid var(--border-color)}
+.cn-score-box .num{font-size:1.4rem;display:block}
+.cn-score-box.red{background:rgba(239,68,68,.12);border-color:var(--accent-red);color:var(--accent-red)}
+.cn-score-box.blue{background:rgba(59,130,246,.12);border-color:var(--accent-blue);color:var(--accent-blue)}
+.cn-hint-area{text-align:center;margin-bottom:1.2rem;padding:1rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border-color)}
+.cn-hint-area p{color:var(--accent-gold);font-weight:700;margin-bottom:.6rem}
+.cn-hint-row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.cn-hint-row input{padding:.5rem .8rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;text-align:center}
+.cn-hint-row input#cnHintWord{width:180px}
+.cn-hint-row input#cnHintNum{width:70px}
+.cn-hint-display{font-size:1.4rem;font-weight:800;color:var(--accent-gold);margin-top:.5rem;min-height:1.8rem}
+.cn-board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 auto 1.2rem;max-width:880px}
+.cn-card{background:var(--bg-card);border:2px solid var(--border-color);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:var(--transition);font-size:1rem;font-weight:700;min-height:68px;display:flex;align-items:center;justify-content:center;user-select:none}
+.cn-card:hover:not(.revealed){transform:translateY(-3px);border-color:var(--accent-blue)}
+.cn-card.revealed{cursor:default;opacity:.8}
+.cn-card.revealed.cn-red{background:rgba(239,68,68,.25);border-color:var(--accent-red)}
+.cn-card.revealed.cn-blue{background:rgba(59,130,246,.25);border-color:var(--accent-blue)}
+.cn-card.revealed.cn-neutral{background:rgba(148,163,184,.2);border-color:#64748b}
+.cn-card.revealed.cn-killer{background:#1a1a2e;border-color:#e11d48;color:#e11d48}
+.cn-board.cn-reveal .cn-card.cn-red{border-color:var(--accent-red)}
+.cn-board.cn-reveal .cn-card.cn-blue{border-color:var(--accent-blue)}
+.cn-board.cn-reveal .cn-card.cn-neutral{border-color:#64748b}
+.cn-board.cn-reveal .cn-card.cn-killer{border-color:#e11d48}
+.cn-actions{display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem}
+.cn-log{max-width:600px;margin:0 auto 1.5rem;background:var(--bg-card);border-radius:var(--radius);padding:1rem;border:1px solid var(--border-color);max-height:180px;overflow-y:auto}
+.cn-log-line{padding:.3rem 0;border-bottom:1px solid var(--border-color);font-size:.9rem;color:var(--text-secondary)}
+.cn-log-line:last-child{border-bottom:none}
+.cn-result{text-align:center;padding:2rem 1rem}
+.cn-result h2{font-size:2.2rem;margin-bottom:.5rem}
+.cn-result p{color:var(--text-secondary);margin-bottom:1.5rem}
+@media(max-width:600px){.cn-board{gap:5px}.cn-card{font-size:.85rem;min-height:55px;padding:8px 4px}}
+</style>
+<h1 style="text-align:center;margin:.5rem 0">🕵️ كود نيمز</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1.5rem">لعبة كلمات واستنتاج جماعية — فريقان يتنافسان لكشف كلماتهم السرية</p>
+<details class="cn-rules">
+<summary>📖 طريقة اللعب</summary>
+<div class="cn-rules-body"><ul>
+<li>🔴🔵 فريقان: الأحمر والأزرق. كل فريق لديه "قائد" (Spymaster) و"متخمين" (Guessers).</li>
+<li>💡 القائد يعطي تلميحاً: كلمة واحدة + رقم (1-9) يدل على عدد البطاقات المرتبطة.</li>
+<li>✅ إذا اختار المتخمين بطاقة من لون فريقه: يستمر في التخمين (حتى الرقم + 1).</li>
+<li>❌ إذا اختار بطاقة من لون الخصم: ينتهي دوره والخصم يحصل عليها.</li>
+<li>⬜ إذا اختار بطاقة محايدة: ينتهي دوره ولا أحد يحصل عليها.</li>
+<li>💀 إذا اختار بطاقة القاتل: يخسر فوراً ويفوز الفريق الآخر!</li>
+<li>🏆 الفريق الذي يكشف كل بطاقات لونه أولاً يفوز.</li>
+</ul></div>
+</details>
+<div class="cn-topbar">
+<button class="cn-btn" id="cnSpymasterBtn" onclick="toggleSpymaster()">👁️ قيادة الفريق</button>
+<button class="cn-btn" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
+</div>
+<div style="text-align:center;margin-bottom:1rem"><span class="cn-turn red" id="cnTurn">الدور: الفريق الأحمر</span></div>
+<div class="cn-scores">
+<div class="cn-score-box red">🔴<span class="num" id="cnRedCount">9</span>بطاقات متبقية</div>
+<div class="cn-score-box blue">🔵<span class="num" id="cnBlueCount">8</span>بطاقات متبقية</div>
+</div>
+<div class="cn-hint-area" id="cnHintArea">
+<p>💡 أدخل التلميح (كلمة واحدة + رقم)</p>
+<div class="cn-hint-row">
+<input id="cnHintWord" placeholder="كلمة التلميح" maxlength="30">
+<input id="cnHintNum" type="number" min="1" max="9" value="1" style="width:70px">
+<button class="cn-btn" style="border-color:var(--accent-gold);color:var(--accent-gold)" onclick="submitHint()">إرسال التلميح</button>
+</div>
+<div class="cn-hint-display" id="cnHintDisplay"></div>
+</div>
+<div class="cn-board" id="cnBoard"></div>
+<div class="cn-actions">
+<button class="cn-btn" id="cnEndTurnBtn" onclick="endTurn()" style="display:none"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> إنهاء الدور</button>
+<button class="cn-btn" onclick="newGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> لوحة جديدة</button>
+</div>
+<div class="cn-log" id="cnLog"></div>
+<div class="cn-result" id="cnResult" style="display:none">
+<h2 id="cnWinnerText"></h2>
+<p id="cnWinnerReason"></p>
+<div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+<button class="cn-btn" style="border-color:var(--accent-green);color:var(--accent-green)" onclick="newGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة الجولة</button>
+<button class="cn-btn" onclick="location.href='/games'">العودة للألعاب</button>
+</div>
+</div>
+
+<script>
+var cnBoard=[],cnCurrentTeam='red',cnGameOver=false,cnRedRemaining=9,cnBlueRemaining=8;
+var cnHintWord='',cnHintNum=0,cnGuessesLeft=0,cnSpymasterOn=false;
+async function initCodenames(){
+var r=await fetch('/api/content/codenames?status=approved&per_page=500');
+var d=await r.json();var pool=d.items||[];
+if(pool.length<25){alert('\u0644\u0627 \u062a\u0648\u062c\u062f \u0643\u0644\u0645\u0627\u062a \u0643\u0627\u0641\u064a\u0629 \u0641\u064a \u0627\u0644\u0645\u0643\u062a\u0628\u0629');return;}
+var shuffled=[...pool].sort(function(){return Math.random()-.5});
+var words=shuffled.slice(0,25).map(function(w){return w.word});
+var colors=[];var first=Math.random()<.5?'red':'blue';
+for(var i=0;i<25;i++){if(i<9)colors.push(first);else if(i<17)colors.push(first==='red'?'blue':'red');else if(i<24)colors.push('neutral');else colors.push('killer')}
+for(var i=colors.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=colors[i];colors[i]=colors[j];colors[j]=t}
+cnBoard=words.map(function(w,i){return{word:w,type:colors[i],revealed:false}});
+cnCurrentTeam=first;cnRedRemaining=first==='red'?9:8;cnBlueRemaining=first==='red'?8:9;
+cnGameOver=false;cnHintWord='';cnHintNum=0;cnGuessesLeft=0;cnSpymasterOn=false;
+document.getElementById('cnResult').style.display='none';
+document.getElementById('cnLog').innerHTML='';
+document.getElementById('cnLog').style.display='block';
+renderBoard();updateUI();
+log('\u{1F3AE} \u0628\u062f\u0623\u062a \u0627\u0644\u0644\u0639\u0628\u0629! \u0627\u0644\u0641\u0631\u064a\u0642 '+(cnCurrentTeam==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631':'\u0627\u0644\u0623\u0632\u0631\u0642')+' \u064a\u0628\u062f\u0623');
+}
+function renderBoard(){
+var b=document.getElementById('cnBoard');
+b.className='cn-board'+(cnSpymasterOn?' cn-reveal':'');
+b.innerHTML=cnBoard.map(function(c,i){
+var cls='cn-card';
+if(c.revealed)cls+=' revealed cn-'+c.type;
+else if(cnSpymasterOn)cls+=' cn-'+c.type;
+return '<div class="'+cls+'" onclick="guessCard('+i+')">'+c.word+'</div>';
+}).join('');
+}
+function updateUI(){
+document.getElementById('cnRedCount').textContent=cnRedRemaining;
+document.getElementById('cnBlueCount').textContent=cnBlueRemaining;
+var turnEl=document.getElementById('cnTurn');
+turnEl.textContent='\u0627\u0644\u062f\u0648\u0631: '+(cnCurrentTeam==='red'?'\u0627\u0644\u0641\u0631\u064a\u0642 \u0627\u0644\u0623\u062d\u0645\u0631 \u{1F534}':'\u0627\u0644\u0641\u0631\u064a\u0642 \u0627\u0644\u0623\u0632\u0631\u0642 \u{1F535}');
+turnEl.className='cn-turn '+cnCurrentTeam;
+}
+function toggleSpymaster(){
+cnSpymasterOn=!cnSpymasterOn;
+var btn=document.getElementById('cnSpymasterBtn');
+btn.className='cn-btn'+(cnSpymasterOn?' active':'');
+btn.textContent=cnSpymasterOn?'\u{1F441}\uFE0F \u0625\u062e\u0641\u0627\u0621 \u0627\u0644\u062e\u0631\u064a\u0637\u0629':'\u{1F441}\uFE0F \u0642\u064a\u0627\u062f\u0629 \u0627\u0644\u0641\u0631\u064a\u0642';
+renderBoard();
+}
+function submitHint(){
+var w=document.getElementById('cnHintWord').value.trim();
+var n=parseInt(document.getElementById('cnHintNum').value)||1;
+if(!w){alert('أدخل كلمة التلميح');return}
+if(w.includes(' ')){alert('التلميح كلمة واحدة فقط');return}
+cnHintWord=w;cnHintNum=n;cnGuessesLeft=n+1;
+document.getElementById('cnHintDisplay').textContent='\u{1F4A1} '+w+' \u2014 '+n;
+document.getElementById('cnHintArea').style.display='none';
+document.getElementById('cnEndTurnBtn').style.display='inline-block';
+log('\u{1F4A1} \u0627\u0644\u062a\u0644\u0645\u064a\u062d: \u00AB'+w+'\u00BB \u0644\u0639\u062f\u062f '+n+' \u0643\u0644\u0645\u0627\u062a');
+}
+function guessCard(i){
+if(cnGameOver||cnBoard[i].revealed)return;
+cnBoard[i].revealed=true;cnGuessesLeft--;
+var c=cnBoard[i];
+var teamName=cnCurrentTeam==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631':'\u0627\u0644\u0623\u0632\u0631\u0642';
+if(c.type==='killer'){log('\u{1F480} \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0627\u062e\u062a\u0627\u0631 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0642\u0627\u062a\u0644! \u00AB'+c.word+'\u00BB');endGame(cnCurrentTeam==='red'?'blue':'red','\u0627\u062e\u062a\u0627\u0631 \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0642\u0627\u062a\u0644 \u{1F480}');return}
+if(c.type===cnCurrentTeam){
+if(cnCurrentTeam==='red')cnRedRemaining--;else cnBlueRemaining--;
+log('\u2705 \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0623\u0635\u0627\u0628! \u00AB'+c.word+'\u00BB');
+if(cnRedRemaining<=0)return endGame('red','\u0643\u0634\u0641 \u0643\u0644 \u0627\u0644\u0643\u0644\u0645\u0627\u062a \u0627\u0644\u062d\u0645\u0631\u0627\u0621');
+if(cnBlueRemaining<=0)return endGame('blue','\u0643\u0634\u0641 \u0643\u0644 \u0627\u0644\u0643\u0644\u0645\u0627\u062a \u0627\u0644\u0632\u0631\u0642\u0627\u0621');
+}else if(c.type==='neutral'){log('\u2B1C \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0627\u062e\u062a\u0627\u0631 \u0643\u0644\u0645\u0629 \u0645\u062d\u0627\u064a\u062f\u0629 \u00AB'+c.word+'\u00BB \u2014 \u064a\u0646\u062a\u0647\u064a \u0627\u0644\u062f\u0648\u0631');renderBoard();updateUI();switchTurn();return}
+else{var other=cnCurrentTeam==='red'?'blue':'red';if(other==='red')cnRedRemaining--;else cnBlueRemaining--;log('\u274C \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0627\u062e\u062a\u0627\u0631 \u0643\u0644\u0645\u0629 \u0627\u0644\u062e\u0635\u0645 \u00AB'+c.word+'\u00BB \u2014 \u0644\u0635\u0627\u0644\u062d \u0627\u0644\u0641\u0631\u064a\u0642 '+(other==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631':'\u0627\u0644\u0623\u0632\u0631\u0642')+'!');if(cnRedRemaining<=0)return endGame('red','\u0643\u0634\u0641 \u0643\u0644 \u0627\u0644\u0643\u0644\u0645\u0627\u062a \u0627\u0644\u062d\u0645\u0631\u0627\u0621');if(cnBlueRemaining<=0)return endGame('blue','\u0643\u0634\u0641 \u0643\u0644 \u0627\u0644\u0643\u0644\u0645\u0627\u062a \u0627\u0644\u0632\u0631\u0642\u0627\u0621')}
+renderBoard();updateUI();
+if(cnGuessesLeft<=0){log('\u23F3 \u0627\u0646\u062a\u0647\u062a \u0639\u062f\u062f \u0627\u0644\u062a\u062e\u0645\u064a\u0646\u0627\u062a \u0627\u0644\u0645\u062a\u0627\u062d\u0629');switchTurn()}
+}
+function endTurn(){if(cnGameOver)return;log('\u23ED\uFE0F \u0627\u0644\u0641\u0631\u064a\u0642 '+(cnCurrentTeam==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631':'\u0627\u0644\u0623\u0632\u0631\u0642')+' \u0623\u0646\u0647\u0649 \u062f\u0648\u0631\u0647');switchTurn()}
+function switchTurn(){
+cnCurrentTeam=cnCurrentTeam==='red'?'blue':'red';
+cnHintWord='';cnHintNum=0;cnGuessesLeft=0;
+document.getElementById('cnHintDisplay').textContent='';
+document.getElementById('cnEndTurnBtn').style.display='none';
+document.getElementById('cnHintArea').style.display='block';
+document.getElementById('cnHintWord').value='';
+document.getElementById('cnHintNum').value='1';
+updateUI();
+}
+function endGame(winner,reason){
+cnGameOver=true;
+var wName=winner==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631 \u{1F534}':'\u0627\u0644\u0623\u0632\u0631\u0642 \u{1F535}';
+document.getElementById('cnWinnerText').textContent='\u{1F3C6} \u0627\u0644\u0641\u0631\u064a\u0642 '+wName+' \u064a\u0641\u0648\u0632!';
+document.getElementById('cnWinnerText').style.color=winner==='red'?'#ef4444':'#3b82f6';
+document.getElementById('cnWinnerReason').textContent=reason;
+document.getElementById('cnResult').style.display='block';
+document.getElementById('cnLog').style.display='none';
+document.getElementById('cnHintArea').style.display='none';
+document.getElementById('cnEndTurnBtn').style.display='none';
+log('\u{1F3C6} \u0627\u0644\u0641\u0627\u0626\u0632: \u0627\u0644\u0641\u0631\u064a\u0642 '+wName+' \u2014 '+reason);
+renderBoard();
+}
+function newGame(){initCodenames()}
+function toggleFullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+function log(msg){var el=document.getElementById('cnLog');el.innerHTML='<div class="cn-log-line">'+msg+'</div>'+el.innerHTML}
+initCodenames();
+</script>
+{% endblock %}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> | ألعاب أمين</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">🎮</span>
+            <span class="logo-text">ألعاب أمين</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">الرئيسية</a>
+            <a href="/games" class="nav-link">الألعاب</a>
+            <a href="/how-to-play" class="nav-link">طريقة اللعب</a>
+            <a href="/about" class="nav-link">عن الموقع</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-primary" onclick="window.location.href='/games'">🎮 ابدأ اللعب</button>
+            <a href="/admin" class="nav-link" style="opacity:.4;font-size:1.1rem;" title="لوحة الإدارة">🔒</a>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/">الرئيسية</a>
+        <a href="/games">الألعاب</a>
+        <a href="/how-to-play">طريقة اللعب</a>
+        <a href="/about">عن الموقع</a>
+        <a href="/admin" style="opacity:.5">🔒 لوحة الإدارة</a>
+    </div>
+    
+    <main class="main-content">
+        
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">🎮 ألعاب أمين</h1>
+        <p class="hero-subtitle">اللعب أحلى لما تكون المنافسة بينكم</p>
+        <p class="hero-desc">ثلاث تجارب مختلفة، تحديات وأسئلة ومزايدات، وكلها في مكان واحد</p>
+        <div class="hero-buttons">
+            <a href="/games" class="btn btn-primary btn-lg">🎮 استكشف الألعاب</a>
+            <a href="/game/letters" class="btn btn-secondary btn-lg">⚡ ابدأ مباراة جديدة</a>
+        </div>
+    </div>
+    <div class="hero-decoration">
+        <div class="floating-shapes">
+            <span class="shape shape1">🎯</span>
+            <span class="shape shape2">🏆</span>
+            <span class="shape shape3">🎲</span>
+            <span class="shape shape4">⚽</span>
+        </div>
+    </div>
+</section>
+
+<section class="games-section">
+    <h2 class="section-title">🎮 الألعاب</h2>
+    <div class="games-grid">
+        <div class="game-card" onclick="window.location.href='/game/letters'">
+            <div class="game-card-icon">🔤</div>
+            <h3>حروف مع أمين</h3>
+            <p>اختبروا معرفتكم، اختاروا الحروف، واصنعوا طريق الفوز</p>
+            <div class="game-card-meta">
+                <span class="badge badge-blue">2 فرق</span>
+                <span class="badge badge-green">مسابقة</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+        
+        <div class="game-card" onclick="window.location.href='/game/quiz'">
+            <div class="game-card-icon">❓</div>
+            <h3>س.ج</h3>
+            <p>ست فئات، 36 سؤالًا، والنقاط الأعلى للأسئلة الأصعب</p>
+            <div class="game-card-meta">
+                <span class="badge badge-blue">2 فرق</span>
+                <span class="badge badge-purple">ثقافة</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+        
+        <div class="game-card" onclick="window.location.href='/game/auction'">
+            <div class="game-card-icon">💰</div>
+            <h3>مزاد اللاعبين</h3>
+            <p>نافس أصحابك في المزاد، واصنع التشكيلة الأقوى بميزانيتك</p>
+            <div class="game-card-meta">
+                <span class="badge badge-blue">2+ مشاركين</span>
+                <span class="badge badge-gold">استراتيجية</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+        
+        <div class="game-card" onclick="window.location.href='/game/million'">
+            <div class="game-card-icon">💵</div>
+            <h3>من سيربح المليون</h3>
+            <p>خمسة عشر سؤالاً بمبالغ تصاعدية، وثلاث وسائل مساعدة</p>
+            <div class="game-card-meta">
+                <span class="badge badge-green">فردي</span>
+                <span class="badge badge-gold">تحدي</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+    </div>
+    <div style="text-align:center;margin-top:1.5rem">
+        <a href="/games" class="btn btn-secondary">🎮 عرض كل الألعاب</a>
+    </div>
+</section>
+
+<section class="how-to-section">
+    <h2 class="section-title">🎯 كيف تلعب؟</h2>
+    <div class="steps-grid">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h4>اختر اللعبة</h4>
+            <p>اختر من بين الألعاب المتاحة</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <h4>اضبط الإعدادات</h4>
+            <p>حدد الفرق والإعدادات</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h4>قسّم الفرق</h4>
+            <p>نظّم المشاركين</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <h4>ابدأ التحدي</h4>
+            <p>ابدأ اللعب واستمتع</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">5</div>
+            <h4>تابع النتائج</h4>
+            <p>حتى إعلان الفائز</p>
+        </div>
+    </div>
+</section>
+
+    </main>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon">🎮</span>
+                <span>ألعاب أمين</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">الرئيسية</a>
+                <a href="/games">الألعاب</a>
+                <a href="/library">مكتبة الأسئلة</a>
+                <a href="/about">عن الموقع</a>
+            </div>
+            <div class="footer-version">الإصدار 1.0.0</div>
+            <div class="footer-rights">© 2024 ألعاب أمين — جميع الحقوق محفوظة</div>
+        </div>
+    </footer>
+    
+    <script src="/static/js/main.js"></script>
+    
+</body>
+</html>

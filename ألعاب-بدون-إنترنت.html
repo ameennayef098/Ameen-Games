@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ألعاب أمين — بدون إنترنت</title>
+<style>
+:root{--bg:#060d1f;--bg2:#0a1628;--bg3:#111d33;--card:#0f1a2e;--border:#1e2d4a;--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--gold:#f59e0b;--green:#10b981;--red:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#0a1628,#0f1a2e);border-bottom:2px solid var(--border);padding:1rem;text-align:center;position:sticky;top:0;z-index:100}
+.header h1{color:var(--cyan);font-size:1.6rem}
+.header p{color:var(--muted);font-size:.85rem}
+.btn{display:inline-block;min-height:2.75rem;padding:.55rem 1.2rem;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;font-size:.95rem;font-weight:700;transition:.2s;font-family:inherit}
+.btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-primary{background:linear-gradient(135deg,#22d3ee,#0891b2);color:#000;border-color:transparent}
+.btn-gold{background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border-color:transparent}
+.btn-green{background:linear-gradient(135deg,#10b981,#059669);color:#000;border-color:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.games-nav{display:flex;gap:.5rem;justify-content:center;margin:1rem 0;flex-wrap:wrap}
+.games-nav .btn.active{background:var(--cyan);color:#000}
+.page{display:none;max-width:900px;margin:0 auto;padding:1rem}
+.page.active{display:block}
+.setup{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:1rem 0}
+.setup h3{color:var(--gold);margin-bottom:.8rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.form-row label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem}
+.form-row input{width:100%;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;font-size:1rem}
+.score-bar{display:flex;gap:1rem;justify-content:center;margin:1rem 0}
+.score-box{padding:.5rem 1.2rem;border-radius:10px;background:var(--bg2);text-align:center;min-width:110px}
+.score-box .label{font-size:.75rem;color:var(--muted)}
+.score-box .value{font-size:1.4rem;font-weight:900}
+.score-box.team1 .value{color:var(--cyan)}
+.score-box.team2 .value{color:var(--gold)}
+.hex-board{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:1rem auto;max-width:600px}
+.hex-cell{background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:.8rem .3rem;text-align:center;cursor:pointer;transition:.2s;font-size:1.1rem;font-weight:800;min-height:55px;display:flex;align-items:center;justify-content:center}
+.hex-cell:hover:not(.owned){border-color:var(--cyan);transform:scale(1.05)}
+.hex-cell.owned{opacity:.7;cursor:default}
+.hex-cell.owned.team1{background:var(--cyan);color:#000;border-color:var(--cyan)}
+.hex-cell.owned.team2{background:var(--gold);color:#000;border-color:var(--gold)}
+.quiz-board{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:1rem 0}
+.quiz-cell{background:var(--bg2);border:2px solid var(--border);border-radius:8px;padding:.6rem .3rem;text-align:center;cursor:pointer;transition:.2s;font-weight:800;min-height:45px;display:flex;align-items:center;justify-content:center}
+.quiz-cell:hover:not(.used){border-color:var(--gold)}
+.quiz-cell.used{opacity:.3;cursor:default}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border:2px solid var(--gold);border-radius:16px;padding:1.5rem;max-width:550px;width:90%;text-align:center}
+.modal h2{color:var(--gold);margin-bottom:.8rem}
+.modal .question{font-size:1.2rem;font-weight:800;margin:.8rem 0;padding:.8rem;background:var(--bg2);border-radius:10px}
+.modal .answer{font-size:1.1rem;color:var(--green);margin:.5rem 0}
+.badge{display:inline-block;padding:.15rem .6rem;border-radius:6px;font-size:.75rem;font-weight:700;margin:.3rem}
+.badge-easy{background:var(--green);color:#000}
+.badge-medium{background:var(--gold);color:#000}
+.badge-hard{background:var(--red);color:#fff}
+.bell-area{display:flex;gap:1rem;justify-content:center;margin:1rem 0}
+.bell-btn{width:70px;height:70px;border-radius:50%;border:3px solid var(--border);background:var(--bg2);color:var(--text);font-size:1.8rem;cursor:pointer;transition:.2s}
+.bell-btn:hover{border-color:var(--gold);transform:scale(1.1)}
+.bell-btn.winner{background:var(--gold);color:#000;border-color:var(--gold)}
+.data-status{text-align:center;padding:.8rem;margin:1rem 0;border-radius:10px;background:var(--bg2)}
+.data-status.loaded{border:2px solid var(--green);color:var(--green)}
+.data-status.not-loaded{border:2px solid var(--red);color:var(--red)}
+.progress-bar{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin:.5rem 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .3s}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:.7rem 1.2rem;border-radius:10px;z-index:2000;display:none}
+.toast.show{display:block;animation:slideUp .3s}
+@keyframes slideUp{from{bottom:-50px;opacity:0}to{bottom:20px;opacity:1}}
+@media(max-width:768px){.form-row{grid-template-columns:1fr}.hex-board{grid-template-columns:repeat(4,1fr)}.quiz-board{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>ألعاب أمين — بدون إنترنت</h1>
+<p>حمّل البيانات مرة واحدة ثم العب في أي مكان</p>
+</div>
+
+<div class="games-nav">
+<button class="btn active" id="navLoad" onclick="showPage('load')">📥 تحميل البيانات</button>
+<button class="btn" id="navLetters" onclick="showPage('letters')">🔤 حروف مع أمين</button>
+<button class="btn" id="navQuiz" onclick="showPage('quiz')">❓ س.ج</button>
+</div>
+
+<div class="page active" id="page-load">
+<div class="setup">
+<h3>📥 تحميل البيانات للعب بدون إنترنت</h3>
+<p style="margin-bottom:1rem;color:var(--muted)">اضغط الزر لتحميل كل الأسئلة والبيانات. بعد التحميل احفظ هذه الصفحة وافتحها بدون إنترنت.</p>
+<button class="btn btn-primary" id="loadBtn" onclick="loadData()">📥 تحميل البيانات</button>
+<div class="progress-bar" id="loadProgress" style="display:none"><div class="progress-fill" id="loadProgressFill"></div></div>
+<div id="loadStatus" style="margin-top:.5rem;font-size:.85rem;color:var(--muted)"></div>
+</div>
+<div class="data-status not-loaded" id="dataStatus">
+⚠️ لم يتم تحميل البيانات بعد
+</div>
+</div>
+
+<div class="page" id="page-letters">
+<div class="setup">
+<h3>🔤 إعداد حروف مع أمين</h3>
+<div class="form-row">
+<div><label>اسم الفريق الأول</label><input id="ltTeam1" value="الفريق الأزرق"></div>
+<div><label>اسم الفريق الثاني</label><input id="ltTeam2" value="الفريق الذهبي"></div>
+</div>
+<button class="btn btn-primary" onclick="startLetters()">🎮 ابدأ اللعبة</button>
+</div>
+<div id="ltGameArea" style="display:none">
+<div class="score-bar">
+<div class="score-box team1"><div class="label" id="ltDisplay1">الفريق الأزرق</div><div class="value" id="ltScore1">0</div></div>
+<div class="score-box"><div class="label">الدور</div><div class="value" id="ltTurn">1</div></div>
+<div class="score-box team2"><div class="label" id="ltDisplay2">الفريق الذهبي</div><div class="value" id="ltScore2">0</div></div>
+</div>
+<div class="hex-board" id="ltBoard"></div>
+</div>
+</div>
+
+<div class="page" id="page-quiz">
+<div class="setup">
+<h3>❓ إعداد س.ج</h3>
+<div class="form-row">
+<div><label>اسم الفريق الأول</label><input id="qzTeam1" value="الفريق الأزرق"></div>
+<div><label>اسم الفريق الثاني</label><input id="qzTeam2" value="الفريق الذهبي"></div>
+</div>
+<button class="btn btn-primary" onclick="startQuiz()">🎮 ابدأ اللعبة</button>
+</div>
+<div id="qzGameArea" style="display:none">
+<div class="score-bar">
+<div class="score-box team1"><div class="label" id="qzDisplay1">الفريق الأزرق</div><div class="value" id="qzScore1">0</div></div>
+<div class="score-box"><div class="label">الدور</div><div class="value" id="qzTurn">1</div></div>
+<div class="score-box team2"><div class="label" id="qzDisplay2">الفريق الذهبي</div><div class="value" id="qzScore2">0</div></div>
+</div>
+<div class="quiz-board" id="qzBoard"></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="ltModal">
+<div class="modal">
+<h2 id="ltModalTitle">حرف</h2>
+<div class="question" id="ltQuestion">السؤال</div>
+<div id="ltAnswerArea" style="display:none">
+<div class="answer" id="ltAnswer">الإجابة</div>
+<span class="badge" id="ltDiff">سهل</span>
+</div>
+<div class="bell-area" id="ltBellArea" style="display:none">
+<button class="bell-btn" id="ltBell1" onclick="ringBell(1)">🔔</button>
+<button class="bell-btn" id="ltBell2" onclick="ringBell(2)">🔔</button>
+</div>
+<div style="margin-top:1rem" id="ltButtons">
+<button class="btn btn-gold" onclick="showAnswer()">👁️ إظهار الإجابة</button>
+<button class="btn" onclick="closeModal()">إغلاق</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="qzModal">
+<div class="modal">
+<h2 id="qzModalTitle">سؤال</h2>
+<div class="question" id="qzQuestion">السؤال</div>
+<div id="qzAnswerArea" style="display:none">
+<div class="answer" id="qzAnswer">الإجابة</div>
+</div>
+<div style="margin-top:1rem">
+<button class="btn btn-gold" onclick="showQuizAnswer()">👁️ إظهار الإجابة</button>
+<button class="btn" onclick="closeQuizModal()">إغلاق</button>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var DB = {letters:[],quiz:[],million:[],players:[],codenames:[],spy:[],categories:[]};
+var dataLoaded = false;
+
+function saveDB() {
+    try { localStorage.setItem('ameen_offline_db', JSON.stringify(DB)); } catch(e) { showToast('مساحة التخزين ممتلئة'); }
+}
+function loadDB() {
+    try {
+        var raw = localStorage.getItem('ameen_offline_db');
+        if (raw) { DB = JSON.parse(raw); dataLoaded = true; }
+    } catch(e) {}
+}
+function hasData() { return dataLoaded || (DB.letters && DB.letters.length > 0); }
+
+async function loadData() {
+    var sources = [
+        {key:'letters', url:'/api/questions?game=letters&per_page=5000'},
+        {key:'quiz', url:'/api/questions?game=quiz&per_page=5000'},
+        {key:'million', url:'/api/questions?game=million&per_page=5000'},
+        {key:'players', url:'/api/players'},
+        {key:'codenames', url:'/api/content/codenames?status=approved&per_page=500'},
+        {key:'spy', url:'/api/content/spy?status=approved&per_page=500'},
+        {key:'categories', url:'/api/categories'}
+    ];
+    document.getElementById('loadProgress').style.display = 'block';
+    document.getElementById('loadStatus').textContent = 'جاري التحميل...';
+    var done = 0;
+    for (var i = 0; i < sources.length; i++) {
+        var src = sources[i];
+        try {
+            var r = await fetch(src.url);
+            var d = await r.json();
+            if (src.key === 'letters' || src.key === 'quiz' || src.key === 'million') DB[src.key] = d.questions || [];
+            else if (src.key === 'players') DB.players = d.players || [];
+            else if (src.key === 'categories') DB.categories = d.categories || [];
+            else DB[src.key] = d.items || [];
+        } catch(e) {
+            document.getElementById('loadStatus').textContent += ' — فشل: ' + src.key;
+        }
+        done++;
+        document.getElementById('loadProgressFill').style.width = (done/sources.length*100) + '%';
+    }
+    saveDB();
+    dataLoaded = true;
+    updateDataStatus();
+    showToast('تم تحميل البيانات بنجاح!');
+    document.getElementById('loadStatus').textContent = 'اكتمل التحميل';
+}
+
+function updateDataStatus() {
+    var el = document.getElementById('dataStatus');
+    if (hasData()) {
+        el.className = 'data-status loaded';
+        el.innerHTML = '✓ البيانات محملة: ' + DB.letters.length + ' حروف، ' + DB.quiz.length + ' س.ج، ' + DB.million.length + ' مليون، ' + DB.players.length + ' لاعب';
+    } else {
+        el.className = 'data-status not-loaded';
+        el.innerHTML = '⚠️ لم يتم تحميل البيانات بعد';
+    }
+}
+
+function showPage(p) {
+    var pages = document.querySelectorAll('.page');
+    for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+    document.getElementById('page-' + p).classList.add('active');
+    var navs = document.querySelectorAll('.games-nav .btn');
+    for (var i = 0; i < navs.length; i++) navs[i].classList.remove('active');
+    if (p === 'load') document.getElementById('navLoad').classList.add('active');
+    if (p === 'letters') document.getElementById('navLetters').classList.add('active');
+    if (p === 'quiz') document.getElementById('navQuiz').classList.add('active');
+    if (p === 'load') updateDataStatus();
+}
+
+function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// ===== LETTERS GAME =====
+var L28 = ['\u0623','\u0628','\u062a','\u062b','\u062c','\u062d','\u062e','\u062f','\u0630','\u0631','\u0632','\u0633','\u0634','\u0635','\u0636','\u0637','\u0638','\u0639','\u063a','\u0641','\u0642','\u0643','\u0644','\u0645','\u0646','\u0647','\u0648','\u064a'];
+var LT = null;
+
+function firstLetter(answer) {
+    if (!answer) return '';
+    var s = String(answer).trim();
+    if (!s) return '';
+    var c1 = s.charCodeAt(0);
+    if (c1 === 0x0625 || c1 === 0x0622 || c1 === 0x0671 || c1 === 0x0627) s = '\u0623' + s.slice(1);
+    if (s.charCodeAt(0) === 0x0647) s = '\u0647' + s.slice(1);
+    if (s.length > 2 && s.charCodeAt(0) === 0x0623 && s.charCodeAt(1) === 0x0644) s = s.slice(2);
+    if (s.charCodeAt(0) === 0x0627) s = '\u0623' + s.slice(1);
+    return s.charAt(0) || '';
+}
+
+function shuffle(a) { for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+
+function startLetters() {
+    if (!hasData() || DB.letters.length < 20) { showToast('حمّل البيانات أولاً'); return; }
+    LT = { t1: document.getElementById('ltTeam1').value, t2: document.getElementById('ltTeam2').value,
+           turn: 1, s1: 0, s2: 0, over: false, usedQ: {}, cellLetters: [] };
+    document.getElementById('ltDisplay1').textContent = LT.t1;
+    document.getElementById('ltDisplay2').textContent = LT.t2;
+    document.getElementById('ltGameArea').style.display = 'block';
+    renderLtBoard();
+    showToast('اختر حرفاً من اللوحة');
+}
+
+function renderLtBoard() {
+    var board = document.getElementById('ltBoard');
+    var letters = shuffle(L28.slice());
+    var html = '';
+    for (var i = 0; i < 28; i++) {
+        html += '<div class="hex-cell" onclick="selectLetterCell(' + i + ')">' + letters[i] + '</div>';
+    }
+    board.innerHTML = html;
+    LT.cellLetters = letters;
+}
+
+function selectLetterCell(idx) {
+    if (LT.over) return;
+    var letter = LT.cellLetters[idx];
+    var fl = firstLetter(letter);
+    var pool = DB.letters.filter(function(q) { return firstLetter(q.answer) === fl && !LT.usedQ[q.id]; });
+    if (pool.length === 0) { showToast('لا توجد أسئلة متاحة'); return; }
+
+    // Weighted difficulty: 60% medium, 20% easy, 20% hard (fallback to any available)
+    var easy = pool.filter(function(q) { return q.difficulty === 'easy'; });
+    var medium = pool.filter(function(q) { return q.difficulty === 'medium'; });
+    var hard = pool.filter(function(q) { return q.difficulty === 'hard'; });
+    var r = Math.random();
+    var q = null;
+    if (r < 0.2 && easy.length) q = easy[Math.floor(Math.random() * easy.length)];
+    else if (r < 0.8 && medium.length) q = medium[Math.floor(Math.random() * medium.length)];
+    else if (hard.length) q = hard[Math.floor(Math.random() * hard.length)];
+    else if (easy.length) q = easy[Math.floor(Math.random() * easy.length)];
+    else if (medium.length) q = medium[Math.floor(Math.random() * medium.length)];
+    else if (pool.length) q = pool[Math.floor(Math.random() * pool.length)];
+    else { showToast('لا توجد أسئلة متاحة'); return; }
+    LT.usedQ[q.id] = true;
+    LT.currentQ = q;
+    LT.currentLetter = fl;
+    LT.selectedCell = idx;
+    document.getElementById('ltModalTitle').textContent = 'حرف ' + fl;
+    document.getElementById('ltQuestion').textContent = q.question;
+    document.getElementById('ltAnswer').textContent = q.answer;
+    document.getElementById('ltAnswerArea').style.display = 'none';
+    document.getElementById('ltBellArea').style.display = 'none';
+    document.getElementById('ltButtons').style.display = 'block';
+    var diff = q.difficulty || 'medium';
+    document.getElementById('ltDiff').className = 'badge badge-' + diff;
+    document.getElementById('ltDiff').textContent = diff === 'easy' ? 'سهل' : diff === 'medium' ? 'متوسط' : 'صعب';
+    document.getElementById('ltModal').classList.add('active');
+}
+
+function showAnswer() {
+    document.getElementById('ltAnswerArea').style.display = 'block';
+    document.getElementById('ltButtons').style.display = 'none';
+    document.getElementById('ltBellArea').style.display = 'flex';
+}
+
+function ringBell(team) {
+    if (LT.bellWinner) return;
+    LT.bellWinner = team;
+    document.getElementById('ltBell' + team).classList.add('winner');
+    showToast((team === 1 ? LT.t1 : LT.t2) + ' ضغط الجرس!');
+    var cell = document.getElementById('ltBoard').children[LT.selectedCell];
+    if (cell) { cell.classList.add('owned'); cell.classList.add(team === 1 ? 'team1' : 'team2'); }
+    if (team === 1) LT.s1++; else LT.s2++;
+    document.getElementById('ltScore1').textContent = LT.s1;
+    document.getElementById('ltScore2').textContent = LT.s2;
+    setTimeout(closeModal, 2000);
+}
+
+function closeModal() {
+    document.getElementById('ltModal').classList.remove('active');
+    LT.bellWinner = null;
+    document.getElementById('ltBell1').classList.remove('winner');
+    document.getElementById('ltBell2').classList.remove('winner');
+}
+
+// ===== QUIZ GAME =====
+var QZ = null;
+
+function startQuiz() {
+    if (!hasData() || DB.quiz.length < 36) { showToast('حمّل البيانات أولاً'); return; }
+    QZ = { t1: document.getElementById('qzTeam1').value, t2: document.getElementById('qzTeam2').value,
+           turn: 1, s1: 0, s2: 0, used: {} };
+    document.getElementById('qzDisplay1').textContent = QZ.t1;
+    document.getElementById('qzDisplay2').textContent = QZ.t2;
+    document.getElementById('qzGameArea').style.display = 'block';
+    renderQzBoard();
+    showToast('اختر سؤالاً من اللوحة');
+}
+
+function renderQzBoard() {
+    var board = document.getElementById('qzBoard');
+    var cats = {};
+    DB.quiz.forEach(function(q) {
+        var cn = q.category_name || 'عام';
+        if (!cats[cn]) cats[cn] = [];
+        cats[cn].push(q);
+    });
+    var catNames = Object.keys(cats).slice(0, 6);
+    var html = '';
+    catNames.forEach(function(cn) {
+        html += '<div style="text-align:center;font-weight:800;padding:.4rem;background:var(--bg2);border-radius:8px;margin-bottom:.3rem">' + cn + '</div>';
+        var qs = cats[cn].slice(0, 6);
+        qs.forEach(function(q) {
+            var pts = q.points || 200;
+            html += '<div class="quiz-cell' + (QZ.used[q.id] ? ' used' : '') + '" onclick="selectQuizQ(\'' + q.id + '\')">' + pts + '</div>';
+        });
+    });
+    board.innerHTML = html;
+}
+
+function selectQuizQ(qid) {
+    if (QZ.over || QZ.used[qid]) return;
+    var q = null;
+    for (var i = 0; i < DB.quiz.length; i++) { if (DB.quiz[i].id === qid) { q = DB.quiz[i]; break; } }
+    if (!q) return;
+    QZ.used[qid] = true;
+    QZ.currentQ = q;
+    var pts = q.points || 200;
+    document.getElementById('qzModalTitle').textContent = 'سؤال ' + pts + ' نقطة';
+    document.getElementById('qzQuestion').textContent = q.question;
+    document.getElementById('qzAnswer').textContent = q.answer;
+    document.getElementById('qzAnswerArea').style.display = 'none';
+    document.getElementById('qzModal').classList.add('active');
+    var cells = document.querySelectorAll('.quiz-cell');
+    for (var i = 0; i < cells.length; i++) {
+        if (cells[i].getAttribute('onclick') && cells[i].getAttribute('onclick').indexOf(qid) >= 0) cells[i].classList.add('used');
+    }
+}
+
+function showQuizAnswer() {
+    document.getElementById('qzAnswerArea').style.display = 'block';
+    var pts = QZ.currentQ.points || 200;
+    if (QZ.turn === 1) QZ.s1 += pts; else QZ.s2 += pts;
+    document.getElementById('qzScore1').textContent = QZ.s1;
+    document.getElementById('qzScore2').textContent = QZ.s2;
+    QZ.turn = QZ.turn === 1 ? 2 : 1;
+    document.getElementById('qzTurn').textContent = QZ.turn;
+    setTimeout(closeQuizModal, 1500);
+}
+
+function closeQuizModal() {
+    document.getElementById('qzModal').classList.remove('active');
+}
+
+// Init
+loadDB();
+updateDataStatus();
+</script>
+</body>
+</html>

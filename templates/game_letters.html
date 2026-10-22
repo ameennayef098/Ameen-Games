@@ -1,0 +1,949 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ==========================================================================
+   حروف مع أمين — game-local styles on top of the shared design system.
+   Presentation only: board geometry / adjacency / scoring are untouched.
+   ========================================================================== */
+
+/* --- Setup screen --- */
+.setup-screen > h2 {
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    font-size: var(--font-size-xl);
+}
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+
+/* Colour swatch wells instead of bare colour inputs */
+.color-field input[type="color"] {
+    width: 100%; height: 48px; padding: 3px; cursor: pointer;
+    background: var(--bg-inset); border: 1px solid var(--border-color); border-radius: var(--radius);
+}
+.color-field input[type="color"]:hover { border-color: var(--border-strong); }
+
+.setup-actions .btn { min-width: 10rem; }
+
+/* --- HUD: two team panels with an explicit turn indicator --- */
+.hud {
+    display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.6fr) minmax(9rem, 1fr);
+    align-items: stretch; gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+.team-panel {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem;
+    padding: var(--space-4) var(--space-5);
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,0)), var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.team-panel::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--team-color, var(--accent-blue));
+    opacity: .9;
+}
+.team-panel .team-name {
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: var(--font-size-md); font-weight: 800; color: var(--text-secondary);
+    transition: color var(--transition-fast);
+}
+.team-panel .score {
+    font-size: var(--font-size-2xl); font-weight: 900; line-height: 1.1;
+    color: var(--team-color, var(--accent-gold));
+    font-variant-numeric: tabular-nums;
+}
+.team-panel .goal { font-size: var(--font-size-xs); color: var(--text-muted); }
+
+/* Active turn: the panel lights up, lifts and wears a marker */
+.team-panel.active {
+    border-color: var(--team-color, var(--accent-gold));
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow), 0 0 0 1px var(--team-color, transparent), var(--shadow-inset);
+    transform: translateY(-2px);
+}
+.team-panel.active .team-name { color: var(--text-primary); }
+.team-panel.active .score { text-shadow: 0 0 22px var(--team-color, transparent); }
+.team-panel.active::after {
+    content: "🎯 الدور";
+    position: absolute; top: -0.7rem; inset-inline-start: 50%; transform: translateX(50%);
+    padding: 0.12rem 0.6rem; border-radius: var(--radius-pill);
+    background: var(--team-color, var(--accent-gold)); color: #10122a;
+    font-size: var(--font-size-xs); font-weight: 900; white-space: nowrap;
+}
+
+.hud-center {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: var(--space-2); text-align: center;
+    padding: var(--space-4) var(--space-5);
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)), var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-inset);
+}
+.hud-center .hint { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: var(--leading-normal); }
+.hud-center .hint strong { color: var(--accent-gold); }
+
+/* --- Legend + controls under the board --- */
+.board-bar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: var(--space-3) var(--space-5);
+    margin-top: var(--space-4);
+}
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--font-size-sm); color: var(--text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: .4rem; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,.25); }
+.controls { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+
+/* --- The 5x5 honeycomb (SVG) --- */
+.board-frame {
+    position: relative;
+    width: 100%; max-width: 660px; margin-inline: auto;
+    padding: var(--space-3);
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)), var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow), var(--shadow-inset);
+}
+.board-frame::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(70% 60% at 50% 0%, rgba(79,140,255,.10), transparent 70%);
+}
+#hexBoard { position: relative; width: 100%; max-width: 660px; height: auto; display: block; margin-inline: auto; }
+#hexBoard polygon {
+    fill: var(--hex-fill, #232a52);
+    stroke: var(--hex-stroke, #323a75);
+    stroke-width: 1.5;
+    transition: fill var(--transition-fast), filter var(--transition-fast), stroke var(--transition-fast);
+}
+#hexBoard .hexg { transform-box: fill-box; transform-origin: center; transition: transform var(--transition-fast); }
+#hexBoard .hexg:hover polygon { filter: brightness(1.28); }
+#hexBoard .hexg:hover { transform: scale(1.07); }
+#hexBoard text {
+    font-family: var(--font-sans); font-weight: 900;
+    font-size: var(--hex-fs, 22px);
+    fill: var(--hex-text, var(--text-primary));
+    pointer-events: none; user-select: none;
+}
+/* Owned by a team: tinted fill + bright rim so the path reads at a glance */
+#hexBoard polygon.hex-owned {
+    fill: var(--hex-fill);
+    stroke: var(--hex-stroke, rgba(255,255,255,.55));
+    stroke-width: 2;
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,.45));
+}
+/* The cell the host is currently asking about */
+#hexBoard polygon.hex-selected {
+    fill: var(--hex-fill);
+    stroke: #ffffff; stroke-width: 3;
+    filter: drop-shadow(0 0 14px rgba(255,255,255,.5));
+}
+#hexBoard text.hex-dim { opacity: .55; }
+
+/* Empty / error notice inside the board frame */
+.board-notice {
+    display: none; margin: var(--space-4) 0 var(--space-1); padding: var(--space-4);
+    text-align: center;
+    background: var(--accent-gold-tint);
+    border: 1px solid rgba(246,167,20,.4);
+    border-radius: var(--radius);
+    color: var(--text-primary); font-weight: 700; font-size: var(--font-size-sm);
+}
+
+/* --- Question modal --- */
+.qm-badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.qm-points { color: var(--accent-gold); font-weight: 900; font-size: var(--font-size-sm); }
+.qm-points::before { content: "◈ "; opacity: .8; }
+
+.qm-question {
+    padding: var(--space-5);
+    background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0)), var(--bg-inset);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-inset);
+    font-size: clamp(1.05rem, 2.6vw, var(--font-size-md));
+    font-weight: 800;
+    line-height: var(--leading-normal);
+    text-align: center;
+}
+
+.qm-timer {
+    display: none; margin: var(--space-5) 0; text-align: center;
+    padding: var(--space-4);
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-inset);
+}
+.qm-timer .tm {
+    font-size: var(--font-size-3xl); font-weight: 900; line-height: 1;
+    color: var(--accent-gold); font-variant-numeric: tabular-nums;
+}
+.qm-timer .tm-label { margin-top: .35rem; font-size: var(--font-size-sm); color: var(--text-secondary); }
+.qm-timer .tm-label b { color: var(--text-primary); }
+.qm-timer.warn .tm { color: var(--accent-gold); }
+.qm-timer.danger .tm { color: var(--accent-red); animation: pulse 1s ease-in-out infinite; }
+
+/* The answer reveal is a distinct card, not another text line */
+.qm-reveal {
+    display: none; margin: var(--space-5) 0; padding: var(--space-4) var(--space-5);
+    text-align: center;
+    background: linear-gradient(180deg, rgba(246,167,20,.16), rgba(246,167,20,.04));
+    border: 1px solid rgba(246,167,20,.45);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-glow-gold), var(--shadow-inset);
+}
+.qm-reveal .cap { font-size: var(--font-size-xs); color: var(--accent-gold); font-weight: 800; letter-spacing: var(--tracking-wide); }
+.qm-reveal .val { margin-top: .25rem; font-size: var(--font-size-xl); font-weight: 900; color: var(--text-primary); }
+
+.qm-bell { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin: var(--space-5) 0; }
+.qm-bell-result { text-align: center; font-weight: 800; color: var(--accent-gold); margin-bottom: var(--space-3); }
+.qm-claim { display: none; margin: var(--space-5) 0; }
+.qm-claim .claim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.qm-claim > p { text-align: center; color: var(--text-secondary); margin-bottom: var(--space-4); }
+
+.btn-block { width: 100%; }
+
+/* --- Winner modal --- */
+.wm-trophy { font-size: 3.4rem; line-height: 1; filter: drop-shadow(0 8px 22px rgba(246,167,20,.45)); }
+.wm-name {
+    margin: var(--space-3) 0 var(--space-2);
+    font-size: var(--font-size-2xl); font-weight: 900;
+    background: linear-gradient(120deg, var(--accent-gold), #ffd98a);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.wm-stats { color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--space-5); }
+
+/* --- Fullscreen button --- */
+.fs-btn {
+    position: fixed; top: calc(var(--navbar-h) + 10px); inset-inline-start: 10px; z-index: 9999;
+    display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+    min-width: 2.6rem; height: 2.6rem; padding-inline: .7rem;
+    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius);
+    color: var(--text-secondary); font-family: inherit; font-weight: 800; font-size: .95rem;
+    cursor: pointer; box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+}
+.fs-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); background: var(--bg-card-hover); }
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .hud { grid-template-columns: 1fr 1fr; }
+    .hud-center { grid-column: 1 / -1; order: -1; }
+}
+@media (max-width: 620px) {
+    .setup-grid { grid-template-columns: 1fr; }
+    .qm-bell { grid-template-columns: 1fr; }
+    .qm-claim .claim-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .hud { grid-template-columns: 1fr; }
+    .hud-center { order: -1; }
+    .team-panel { flex-direction: row; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+    .team-panel .score { font-size: var(--font-size-xl); }
+    .team-panel.active::after { top: -0.65rem; }
+    .board-bar { gap: var(--space-3); }
+    .setup-actions .btn { min-width: 0; }
+}
+@media (max-width: 400px) {
+    #hexBoard text { font-size: 15px !important; }
+}
+</style>
+
+<div id="letters-setup" class="setup-screen">
+    <h2><svg class="ico" aria-hidden="true"><use href="#i-shield"></use></svg> حروف مع أمين — إعداد المباراة</h2>
+    <p class="setup-lead">سمّوا الفريقين، اختاروا ألوانهم، وحددوا وقت الجولة — ثم ابدأوا المباراة.</p>
+
+    <div class="form-group">
+        <label for="matchName">اسم المسابقة</label>
+        <input type="text" id="matchName" value="حروف مع أمين">
+    </div>
+
+    <div class="setup-grid">
+        <div class="form-group">
+            <label for="team1Name">اسم الفريق الأول</label>
+            <input type="text" id="team1Name" value="الفريق الأول">
+        </div>
+        <div class="form-group">
+            <label for="team2Name">اسم الفريق الثاني</label>
+            <input type="text" id="team2Name" value="الفريق الثاني">
+        </div>
+    </div>
+
+    <div class="setup-grid">
+        <div class="form-group color-field">
+            <label for="team1Color">لون الفريق الأول</label>
+            <input type="color" id="team1Color" value="#4f8cff">
+        </div>
+        <div class="form-group color-field">
+            <label for="team2Color">لون الفريق الثاني</label>
+            <input type="color" id="team2Color" value="#17c38f">
+        </div>
+    </div>
+
+    <div class="setup-grid">
+        <div class="form-group">
+            <label for="timerDuration">مدة العد التنازلي للإجابة</label>
+            <select id="timerDuration">
+                <option value="5">5 ثوانٍ</option>
+                <option value="10" selected>10 ثوانٍ</option>
+            </select>
+            <p class="form-hint">الوقت المتاح لكل سؤال قبل أن ينتقل إلى الخصم.</p>
+        </div>
+        <div class="form-group">
+            <label for="soundEnabled"><input type="checkbox" id="soundEnabled" checked> تفعيل الأصوات</label>
+        </div>
+    </div>
+
+    <div class="setup-actions">
+        <button class="btn btn-primary btn-lg" onclick="startLettersGame()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ اللعبة</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+</div>
+
+<div id="letters-game" class="game-container" style="display:none;">
+    <div class="hud">
+        <div class="team-panel" id="teamPanel1">
+            <div class="team-name" id="displayTeam1">الفريق الأول</div>
+            <div class="score" id="score1Value">0</div>
+            <div class="goal">يصل من الأعلى إلى الأسفل</div>
+        </div>
+
+        <div class="hud-center">
+            <div class="hint">
+                اضغط على <strong>خلية</strong> من اللوحة لبدء سؤال، وأسرع فريق يضغط الجرس يجيب.
+            </div>
+        </div>
+
+        <div class="team-panel" id="teamPanel2">
+            <div class="team-name" id="displayTeam2">الفريق الثاني</div>
+            <div class="score" id="score2Value">0</div>
+            <div class="goal">يصل من اليمين إلى اليسار</div>
+        </div>
+    </div>
+
+    <div class="board-frame">
+        <svg id="hexBoard" viewBox="0 0 436 368" role="img" aria-label="لوحة حروف 5 في 5"></svg>
+        <div class="board-notice" id="boardNotice" role="status"></div>
+    </div>
+
+    <div class="board-bar">
+        <div class="legend">
+            <span><i class="swatch" id="swatchTeam1" style="background:var(--accent-blue)"></i> الفريق الأول</span>
+            <span><i class="swatch" id="swatchTeam2" style="background:var(--accent-green)"></i> الفريق الثاني</span>
+        </div>
+        <div class="controls">
+            <button class="btn btn-secondary btn-sm" onclick="changeTeam()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> تصحيح آخر إجابة</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetLettersGame()">↺ إعادة</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+
+    <button id="fullscreenBtn" class="fs-btn" onclick="toggleFullscreen()" title="ملء الشاشة" aria-label="ملء الشاشة">⛶</button>
+</div>
+
+<div id="questionModal" class="modal-overlay">
+    <div class="modal">
+        <div class="qm-badges">
+            <span class="badge badge-purple" id="qLetterBadge">حرف</span>
+            <span class="badge badge-blue" id="qDiffBadge">تحت المتوسط</span>
+            <span class="qm-points" id="qPointsBadge" style="display:none;"></span>
+        </div>
+
+        <div class="qm-question" id="questionText">السؤال</div>
+
+        <div class="qm-timer" id="timerRow">
+            <div class="tm" id="timerDisplay">10</div>
+            <div class="tm-label" id="timerTeamLabel"></div>
+        </div>
+
+        <div class="qm-reveal" id="revealSection">
+            <div class="cap">الإجابة الصحيحة</div>
+            <div class="val" id="correctAnswer"></div>
+        </div>
+
+        <div class="qm-bell" id="bellSection">
+            <button class="btn btn-lg" id="bellBtn1" onclick="ringBell(1)"><svg class="ico" aria-hidden="true"><use href="#i-bell"></use></svg> <span id="bellName1">الفريق الأول</span></button>
+            <button class="btn btn-lg" id="bellBtn2" onclick="ringBell(2)"><svg class="ico" aria-hidden="true"><use href="#i-bell"></use></svg> <span id="bellName2">الفريق الثاني</span></button>
+        </div>
+        <div class="qm-bell-result" id="bellResult"></div>
+
+        <div id="answeredRow" style="display:none;margin:1rem 0;">
+            <button class="btn btn-gold btn-lg btn-block" onclick="markAnswered()">✅ لقد أجبت</button>
+        </div>
+
+        <div id="showAnswerRow" style="margin:1.5rem 0;">
+            <button class="btn btn-gold btn-lg btn-block" onclick="revealAnswer()">👁️ إظهار الإجابة</button>
+        </div>
+
+        <div class="qm-claim" id="claimSection">
+            <p>من أجاب بشكل صحيح؟</p>
+            <div class="claim-grid">
+                <button class="btn btn-lg" id="claimBtn1" onclick="claimCell(1)">الفريق الأول</button>
+                <button class="btn btn-lg" id="claimBtn2" onclick="claimCell(2)">الفريق الثاني</button>
+            </div>
+            <button class="btn btn-secondary btn-block" style="margin-top:.75rem;" onclick="skipQuestion()">
+                ❌ لا أحد أجاب — إغلاق
+            </button>
+        </div>
+
+        <div class="modal-actions" style="margin-top:1rem;">
+            <button class="btn btn-secondary btn-sm" onclick="closeQuestionModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<div id="winnerModal" class="modal-overlay">
+    <div class="modal" style="text-align:center;">
+        <div class="wm-trophy">🏆</div>
+        <h2 class="wm-name" id="winnerName" style="font-size:2rem;margin:.5rem 0 1rem;"></h2>
+        <p class="wm-stats" id="winnerStats"></p>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="resetLettersGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> العب مرة أخرى</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ===== HEX BOARD: 25 cells, strict 5x5 honeycomb =====
+var ROWS = [5, 5, 5, 5, 5];
+var LETTERS_25 = ['أ','ب','ت','ث','ج','ح','خ','د','ر','ز','س','ش','ص','ط','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
+var DIFF_AR = { under: 'تحت المتوسط', medium: 'متوسط', hard: 'صعب' };
+
+var LS = null;
+var cells = [];
+var adj = [];
+var questionsByLetter = {};
+var usedQuestionIds = {};
+var selectedIdx = null;
+var currentQ = null;
+var bellWinner = null;
+var claimHistory = [];
+
+// buzzer + countdown state
+var timerHandle = null;
+var timerEnd = 0;
+var timerTeam = null;
+var answeredTeam = null;
+var timeouts = 0;
+
+var S = 42;
+var W = Math.sqrt(3) * S;
+var PAD = 14;
+
+function cellCenter(row, col) {
+    var cx = col * W + (row % 2) * (W / 2) + W / 2 + PAD;
+    var cy = row * 1.5 * S + S + PAD;
+    return [cx, cy];
+}
+
+function hexPoints(cx, cy) {
+    var pts = [];
+    for (var i = 0; i < 6; i++) {
+        var ang = Math.PI / 180 * (60 * i - 30);
+        pts.push((cx + S * Math.cos(ang)).toFixed(1) + ',' + (cy + S * Math.sin(ang)).toFixed(1));
+    }
+    return pts.join(' ');
+}
+
+function indexOf(r, c) {
+    if (r < 0 || r >= ROWS.length || c < 0 || c >= ROWS[r]) return -1;
+    var k = 0;
+    for (var i = 0; i < r; i++) k += ROWS[i];
+    return k + c;
+}
+
+function buildCells() {
+    cells = [];
+    for (var r = 0; r < ROWS.length; r++) {
+        for (var c = 0; c < ROWS[r]; c++) {
+            cells.push({ row: r, col: c, letter: null, owner: null });
+        }
+    }
+    adj = cells.map(function (cell) {
+        var row = cell.row, col = cell.col;
+        var out = [];
+        var l = indexOf(row, col - 1), rr = indexOf(row, col + 1);
+        if (l >= 0) out.push(l);
+        if (rr >= 0) out.push(rr);
+        [-1, 1].forEach(function (dr) {
+            var r2 = row + dr;
+            if (r2 < 0 || r2 >= ROWS.length) return;
+            var offs = (row % 2 === 0) ? [-1, 0] : [0, 1];
+            offs.forEach(function (dc) {
+                var i2 = indexOf(r2, col + dc);
+                if (i2 >= 0) out.push(i2);
+            });
+        });
+        return out;
+    });
+}
+
+function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+function firstLetterOf(answer) {
+    if (!answer) return '';
+    var s = String(answer).trim();
+    if (!s) return '';
+    // Normalize ALL alif variants to أ (U+0623) to match LETTERS_25
+    var c1 = s.charAt(0);
+    if (c1 === '\u0625' || c1 === '\u0622' || c1 === '\u0671' || c1 === '\u0627' || c1 === '\u0623') {
+        s = '\u0623' + s.slice(1); // أ
+    }
+    // Remove definite article ال (with أ after normalization)
+    if (s.length > 2 && s.charCodeAt(0) === 0x0623 && s.charCodeAt(1) === 0x0644) {
+        s = s.slice(2);
+    }
+    // If result starts with ا (shouldn't happen after above, but safety check)
+    if (s.charAt(0) === '\u0627') s = '\u0623' + s.slice(1);
+    // Final safety: if first char is إ or آ (shouldn't happen, but just in case)
+    var fc = s.charCodeAt(0);
+    if (fc === 0x0625 || fc === 0x0622) s = '\u0623' + s.slice(1);
+    return s.charAt(0) || '';
+}
+
+function startLettersGame() {
+    var t1 = document.getElementById('team1Name').value.trim() || 'الفريق الأول';
+    var t2 = document.getElementById('team2Name').value.trim() || 'الفريق الثاني';
+    var c1 = document.getElementById('team1Color').value;
+    var c2 = document.getElementById('team2Color').value;
+    var dur = parseInt((document.getElementById('timerDuration') || {}).value, 10);
+    if (dur !== 5 && dur !== 10) dur = 10;
+    SoundManager.enabled = document.getElementById('soundEnabled').checked;
+
+    LS = { t1: t1, t2: t2, c1: c1, c2: c2, turn: 1, s1: 0, s2: 0, over: false,
+           correct1: 0, correct2: 0, wrong1: 0, wrong2: 0, timerDuration: dur };
+
+    buildCells();
+    // ترتيب الحروف يُخلط في كل مباراة جديدة (لا يُحفظ في localStorage عمداً)
+    var shuffled = shuffle(LETTERS_25.slice());
+    cells.forEach(function (cell, i) { cell.letter = shuffled[i]; });
+
+    claimHistory = [];
+    stopTimer();
+    timerTeam = null; answeredTeam = null; timeouts = 0;
+
+    document.getElementById('displayTeam1').textContent = t1;
+    document.getElementById('displayTeam2').textContent = t2;
+    var b1 = document.getElementById('claimBtn1');
+    var b2 = document.getElementById('claimBtn2');
+    b1.textContent = t1; b2.textContent = t2;
+    b1.style.background = c1; b1.style.color = '#fff';
+    b2.style.background = c2; b2.style.color = '#fff';
+    var sw1 = document.getElementById('swatchTeam1');
+    var sw2 = document.getElementById('swatchTeam2');
+    if (sw1) sw1.style.background = c1;
+    if (sw2) sw2.style.background = c2;
+
+    document.getElementById('letters-setup').style.display = 'none';
+    document.getElementById('letters-game').style.display = 'block';
+
+    renderBoard();
+    updateHUD();
+    loadQuestions();
+}
+
+function setBoardNotice(msg) {
+    var el = document.getElementById('boardNotice');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.display = msg ? 'block' : 'none';
+}
+
+function loadQuestions() {
+    fetch('/api/questions?game=letters&per_page=5000')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            questionsByLetter = {};
+            usedQuestionIds = {};
+            data.questions.forEach(function (q) {
+                var letter = firstLetterOf(q.answer);
+                if (!questionsByLetter[letter]) questionsByLetter[letter] = [];
+                questionsByLetter[letter].push(q);
+            });
+            // STABLE ORDER: created_at ascending, then id ascending.
+            // The API returns newest-first, so without this the order would
+            // shift every time a question is added.
+            Object.keys(questionsByLetter).forEach(function (letter) {
+                questionsByLetter[letter].sort(function (a, b) {
+                    var ca = a.created_at || '', cb = b.created_at || '';
+                    if (ca !== cb) return ca < cb ? -1 : 1;
+                    var ia = a.id || '', ib = b.id || '';
+                    if (ia === ib) return 0;
+                    return ia < ib ? -1 : 1;
+                });
+            });
+            setBoardNotice(data.questions.length === 0
+                ? 'لا توجد أسئلة في البنك بعد — أضف أسئلة من لوحة الإدارة ثم أعد تحميل الصفحة.'
+                : '');
+        })
+        .catch(function () {
+            setBoardNotice('تعذّر تحميل الأسئلة — تحقق من الاتصال ثم أعد تحميل الصفحة.');
+        });
+}
+
+function renderBoard() {
+    var svg = document.getElementById('hexBoard');
+    var html = '';
+    cells.forEach(function (cell, i) {
+        var cc = cellCenter(cell.row, cell.col);
+        var cx = cc[0], cy = cc[1];
+        // Design-system palette, carried as CSS custom properties on the polygon.
+        var fill = '#232a52', stroke = '#323a75', textFill = '#f2f3fa';
+        if (cell.owner === 1) { fill = LS.c1; stroke = '#0b1220'; textFill = '#ffffff'; }
+        if (cell.owner === 2) { fill = LS.c2; stroke = '#0b1220'; textFill = '#ffffff'; }
+        var isSel = (i === selectedIdx);
+        if (isSel) { fill = '#f6a714'; textFill = '#231600'; }
+        var cls = isSel ? 'hex-selected' : (cell.owner !== null ? 'hex-owned' : '');
+        html += '<g class="hexg" style="cursor:pointer" data-i="' + i + '">';
+        html += '<polygon class="' + cls + '" points="' + hexPoints(cx, cy) +
+                '" style="--hex-fill:' + fill + ';--hex-stroke:' + stroke + ';--hex-text:' + textFill + '"/>';
+        html += '<text x="' + cx + '" y="' + (cy + 10) + '" text-anchor="middle" ' +
+                'style="font-family:Cairo,sans-serif;pointer-events:none">' +
+                firstLetterOf(cell.letter) + '</text>';
+        html += '</g>';
+    });
+    svg.innerHTML = html;
+    // Glyph colour comes from the polygon's custom property, not an inline override
+    var polys = svg.querySelectorAll('polygon');
+    for (var p = 0; p < polys.length; p++) {
+        var t = polys[p].style.getPropertyValue('--hex-text');
+        var tx = polys[p].parentNode ? polys[p].parentNode.querySelector('text') : null;
+        if (t && tx) tx.style.setProperty('fill', t, 'important');
+    }
+    var groups = svg.querySelectorAll('.hexg');
+    for (var k = 0; k < groups.length; k++) {
+        (function (g) {
+            g.addEventListener('click', function () { selectCell(parseInt(g.getAttribute('data-i'))); });
+        })(groups[k]);
+    }
+}
+
+function selectCell(i) {
+  if (!LS || LS.over) return;
+  var cell = cells[i];
+  if (cell.owner !== null) { showToast('هذه الخلية محجوزة بالفعل', 'error'); return; }
+
+  var all = questionsByLetter[firstLetterOf(cell.letter)] || [];
+  var pool = all.filter(function (q) { return !usedQuestionIds[q.id]; });
+  if (pool.length === 0) { showToast('لا توجد أسئلة متاحة لهذا الحرف', 'error'); return; }
+
+  // اختيار عشوائي موزّع حسب الصعوبة: 60% متوسط، 20% تحت المتوسط، 20% صعب،
+  // مع رجوع لأي سؤال متاح عند نقص المستوى المطلوب — فلا يتكرر أول سؤال.
+  var under = pool.filter(function (x) { return x.difficulty === 'under'; });
+  var medium = pool.filter(function (x) { return x.difficulty === 'medium'; });
+  var hard = pool.filter(function (x) { return x.difficulty === 'hard'; });
+  var pickFrom = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+  var r = Math.random();
+  var q = null;
+  if (r < 0.2 && under.length) q = pickFrom(under);
+  else if (r < 0.8 && medium.length) q = pickFrom(medium);
+  else if (hard.length) q = pickFrom(hard);
+  else if (under.length) q = pickFrom(under);
+  else if (medium.length) q = pickFrom(medium);
+  else if (pool.length) q = pickFrom(pool);
+  else { showToast('لا توجد أسئلة متاحة لهذا الحرف', 'error'); return; }
+  usedQuestionIds[q.id] = true;
+  currentQ = q;
+  selectedIdx = i;
+  renderBoard();
+
+  document.getElementById('qLetterBadge').textContent = 'حرف ' + firstLetterOf(currentQ.answer);
+  var d = document.getElementById('qDiffBadge');
+  d.textContent = DIFF_AR[q.difficulty] || 'متوسط';
+  d.className = 'badge ' + (q.difficulty === 'under' ? 'badge-green'
+                           : (q.difficulty === 'hard' ? 'badge-red' : 'badge-blue'));
+  var pb = document.getElementById('qPointsBadge');
+  if (q.points) { pb.textContent = q.points + ' نقطة'; pb.style.display = ''; }
+  else { pb.textContent = ''; pb.style.display = 'none'; }
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('correctAnswer').textContent = q.answer;
+  document.getElementById('revealSection').style.display = 'none';
+  document.getElementById('claimSection').style.display = 'none';
+  document.getElementById('showAnswerRow').style.display = 'block';
+
+  // reset the competitive buzzer + countdown for this question
+  bellWinner = null;
+  answeredTeam = null;
+  timerTeam = null;
+  timeouts = 0;
+  stopTimer();
+  document.getElementById('timerRow').style.display = 'none';
+  document.getElementById('answeredRow').style.display = 'none';
+  document.getElementById('bellResult').textContent = '';
+  document.getElementById('bellName1').textContent = LS.t1;
+  document.getElementById('bellName2').textContent = LS.t2;
+  var b1 = document.getElementById('bellBtn1'), b2 = document.getElementById('bellBtn2');
+  b1.classList.remove('btn-gold'); b2.classList.remove('btn-gold');
+  b1.style.background = LS.c1; b1.style.color = '#fff';
+  b2.style.background = LS.c2; b2.style.color = '#fff';
+  b1.disabled = false; b2.disabled = false;
+
+  document.getElementById('questionModal').classList.add('active');
+}
+
+function ringBell(team) {
+    if (bellWinner !== null) { showToast('تم حسم الجرس مسبقاً', 'error'); return; }
+    bellWinner = team;
+    var name = (team === 1) ? LS.t1 : LS.t2;
+    var btn = document.getElementById('bellBtn' + team);
+    btn.classList.add('btn-gold');
+    document.getElementById('bellBtn1').disabled = true;
+    document.getElementById('bellBtn2').disabled = true;
+    document.getElementById('bellResult').textContent = '🔔 ' + name + ' ضغط الجرس أولاً';
+    document.getElementById('answeredRow').style.display = 'block';
+    SoundManager.play('buzzer');
+    showToast('🔔 ' + name + ' أول من ضغط');
+    startTimer(team);
+}
+
+// ===== countdown (Date.now based, no drift) =====
+function startTimer(team) {
+    stopTimer();
+    timerTeam = team;
+    timerEnd = Date.now() + LS.timerDuration * 1000;
+    document.getElementById('timerRow').style.display = 'block';
+    document.getElementById('timerTeamLabel').innerHTML =
+        'الدور على <b>' + (team === 1 ? LS.t1 : LS.t2) + '</b> — ' + LS.timerDuration + ' ثوانٍ';
+    updateTimerDisplay();
+    timerHandle = setInterval(updateTimerDisplay, 200);
+}
+
+function updateTimerDisplay() {
+    var remaining = Math.max(0, timerEnd - Date.now());
+    document.getElementById('timerDisplay').textContent = Math.ceil(remaining / 1000);
+    var row = document.getElementById('timerRow');
+    if (remaining <= 3000) row.className = 'qm-timer danger';
+    else if (remaining <= 5000) row.className = 'qm-timer warn';
+    else row.className = 'qm-timer';
+    if (remaining <= 0) onTimerExpired();
+}
+
+function stopTimer() {
+    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+}
+
+function onTimerExpired() {
+    stopTimer();
+    timeouts++;
+    if (timeouts >= 2) {
+        showToast('انتهى الوقت ولم يُجب أحد', 'error');
+        closeQuestionModal();
+        return;
+    }
+    var other = 3 - timerTeam;
+    showToast('انتهى الوقت — السؤال ينتقل إلى ' + (other === 1 ? LS.t1 : LS.t2));
+    startTimer(other);
+}
+
+function markAnswered() {
+    if (timerTeam === null) { showToast('اضغط الجرس أولاً', 'error'); return; }
+    answeredTeam = timerTeam;
+    stopTimer();
+    document.getElementById('answeredRow').style.display = 'none';
+    document.getElementById('timerRow').style.display = 'none';
+    revealAnswer();
+    showToast('✅ ' + (answeredTeam === 1 ? LS.t1 : LS.t2) + ' أجاب');
+}
+
+function revealAnswer() {
+    document.getElementById('revealSection').style.display = 'block';
+    document.getElementById('showAnswerRow').style.display = 'none';
+    document.getElementById('answeredRow').style.display = 'none';
+    document.getElementById('claimSection').style.display = 'block';
+}
+
+function claimCell(team) {
+    if (!currentQ || selectedIdx === null) return;
+    var cell = cells[selectedIdx];
+    if (cell.owner !== null) { closeQuestionModal(); return; }
+
+    cell.owner = team;
+    if (team === 1) { LS.s1++; LS.correct1++; } else { LS.s2++; LS.correct2++; }
+    claimHistory.push({ idx: selectedIdx, team: team });
+    SoundManager.play('correct');
+    LS.turn = (team === 1) ? 2 : 1;
+
+    closeQuestionModal();
+    renderBoard();
+    updateHUD();
+    saveLettersState();
+
+    var winner = checkWinner();
+    if (winner) { endGame(winner); return; }
+    var full = cells.every(function (c) { return c.owner !== null; });
+    if (full) endGame(0);
+}
+
+// ===== host correction: flip the last credited answer to the other team =====
+function changeTeam() {
+    if (!LS || LS.over) { showToast('لا توجد لعبة جارية', 'error'); return; }
+    if (claimHistory.length === 0) { showToast('لا يوجد جواب مسجّل لتصحيحه', 'error'); return; }
+    var last = claimHistory[claimHistory.length - 1];
+    var cell = cells[last.idx];
+    var newTeam = 3 - last.team;
+
+    // undo the previous claim
+    if (last.team === 1) { LS.s1--; LS.correct1--; } else { LS.s2--; LS.correct2--; }
+    // apply the new team
+    cell.owner = newTeam;
+    if (newTeam === 1) { LS.s1++; LS.correct1++; } else { LS.s2++; LS.correct2++; }
+    claimHistory[claimHistory.length - 1] = { idx: last.idx, team: newTeam };
+    LS.turn = (newTeam === 1) ? 2 : 1;
+
+    renderBoard();
+    updateHUD();
+    saveLettersState();
+    showToast('تم تغيير الإجابة إلى ' + (newTeam === 1 ? LS.t1 : LS.t2));
+
+    var winner = checkWinner();
+    if (winner) { endGame(winner); return; }
+}
+
+function saveLettersState() {
+    try {
+        localStorage.setItem('ameen_letters_state', JSON.stringify({
+            LS: LS,
+            cells: cells.map(function (c) { return { r: c.row, c: c.col, l: c.letter, o: c.owner }; }),
+            used: Object.keys(usedQuestionIds)
+        }));
+    } catch (e) {}
+}
+
+function skipQuestion() {
+    if (!currentQ) return;
+    if (LS.turn === 1) LS.wrong1++; else LS.wrong2++;
+    LS.turn = (LS.turn === 1) ? 2 : 1;
+    closeQuestionModal();
+    updateHUD();
+    saveLettersState();
+}
+
+function closeQuestionModal() {
+    stopTimer();
+    timerTeam = null; answeredTeam = null; timeouts = 0;
+    document.getElementById('questionModal').classList.remove('active');
+    selectedIdx = null;
+    currentQ = null;
+    if (LS) renderBoard();
+}
+
+function updateHUD() {
+    document.getElementById('score1Value').textContent = LS.s1;
+    document.getElementById('score2Value').textContent = LS.s2;
+    // Turn indicator: highlight the panel of the team that answers next.
+    var p1 = document.getElementById('teamPanel1');
+    var p2 = document.getElementById('teamPanel2');
+    if (p1 && p2) {
+        p1.classList.toggle('active', !LS.over && LS.turn === 1);
+        p2.classList.toggle('active', !LS.over && LS.turn === 2);
+        p1.style.setProperty('--team-color', LS.c1);
+        p2.style.setProperty('--team-color', LS.c2);
+    }
+}
+
+// ===== BFS: team1 top->bottom (vertical), team2 right->left (horizontal) =====
+function checkWinner() {
+    if (bfs(1, 'v')) return 1;
+    if (bfs(2, 'h')) return 2;
+    return null;
+}
+
+function bfs(team, dir) {
+    var visited = {};
+    var queue = [];
+    cells.forEach(function (cell, i) {
+        if (cell.owner !== team) return;
+        if (dir === 'v' && cell.row === 0) { queue.push(i); visited[i] = true; }
+        if (dir === 'h' && cell.col === ROWS[cell.row] - 1) { queue.push(i); visited[i] = true; }
+    });
+
+    while (queue.length) {
+        var i = queue.shift();
+        var cell = cells[i];
+        if (dir === 'v' && cell.row === ROWS.length - 1) return true;
+        if (dir === 'h' && cell.col === 0) return true;
+
+        var nb = adj[i];
+        for (var k = 0; k < nb.length; k++) {
+            var n = nb[k];
+            if (visited[n]) continue;
+            if (cells[n].owner !== team) continue;
+            visited[n] = true;
+            queue.push(n);
+        }
+    }
+    return false;
+}
+
+function endGame(team) {
+    LS.over = true;
+    var name, stats;
+    if (team === 0) {
+        name = 'تعادل!';
+        stats = 'امتلأت اللوحة دون أن يكمل أي فريق مساره';
+    } else {
+        name = (team === 1) ? LS.t1 : LS.t2;
+        var won = cells.filter(function (c) { return c.owner === team; }).length;
+        stats = 'الخلايا المستحوذ عليها: ' + won + ' من ' + cells.length;
+    }
+    document.getElementById('winnerName').textContent = name;
+    document.getElementById('winnerStats').innerHTML =
+        stats + '<br><br>' +
+        '<table class="questions-table" style="margin-top:.5rem"><thead><tr><th>الفريق</th><th>الخلايا</th><th>إجابات صحيحة</th><th>إجابات خاطئة</th></tr></thead><tbody>' +
+        '<tr><td>' + LS.t1 + '</td><td>' + cells.filter(function (c) { return c.owner === 1; }).length +
+        '</td><td>' + LS.correct1 + '</td><td>' + LS.wrong1 + '</td></tr>' +
+        '<tr><td>' + LS.t2 + '</td><td>' + cells.filter(function (c) { return c.owner === 2; }).length +
+        '</td><td>' + LS.correct2 + '</td><td>' + LS.wrong2 + '</td></tr></tbody></table>';
+    try { localStorage.removeItem('ameen_letters_state'); } catch (e) {}
+    updateHUD();
+    setTimeout(function () {
+        document.getElementById('winnerModal').classList.add('active');
+        SoundManager.play('win');
+    }, 400);
+}
+
+function resetLettersGame() {
+    document.getElementById('winnerModal').classList.remove('active');
+    document.getElementById('letters-game').style.display = 'none';
+    document.getElementById('letters-setup').style.display = 'block';
+    LS = null; cells = []; selectedIdx = null; currentQ = null;
+    claimHistory = [];
+    stopTimer();
+    timerTeam = null; answeredTeam = null; timeouts = 0;
+}
+
+// ===== fullscreen (single working toggle) =====
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+}
+document.addEventListener('fullscreenchange', function () {
+    var btn = document.getElementById('fullscreenBtn');
+    if (!btn) return;
+    if (document.fullscreenElement) {
+        btn.textContent = '✕';
+        btn.title = 'إنهاء ملء الشاشة';
+        btn.setAttribute('aria-label', 'إنهاء ملء الشاشة');
+    } else {
+        btn.textContent = '⛶';
+        btn.title = 'ملء الشاشة';
+        btn.setAttribute('aria-label', 'ملء الشاشة');
+    }
+});
+</script>
+{% endblock %}

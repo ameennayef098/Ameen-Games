@@ -1,0 +1,722 @@
+[
+  {
+    "id": "sp000",
+    "word": "بحر",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "ماء",
+      "محيط"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp001",
+    "word": "قمر",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "شهر",
+      "ليل"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp002",
+    "word": "مطر",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "غيث",
+      "سحاب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp003",
+    "word": "نجم",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "كوكب",
+      "شمس"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp004",
+    "word": "ثلج",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "جليد",
+      "برد"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp005",
+    "word": "شجرة",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "غابة",
+      "ورقة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp006",
+    "word": "ورقة",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "شجرة",
+      "كتاب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp007",
+    "word": "زهرة",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "وردة",
+      "عطر"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp008",
+    "word": "عسل",
+    "category": "طعام",
+    "difficulty": "easy",
+    "similar": [
+      "سكر",
+      "نحل"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp009",
+    "word": "كتاب",
+    "category": "ثقافة",
+    "difficulty": "easy",
+    "similar": [
+      "قراءة",
+      "صفحة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp010",
+    "word": "قلم",
+    "category": "ثقافة",
+    "difficulty": "easy",
+    "similar": [
+      "كتابة",
+      "حبر"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp011",
+    "word": "حاسوب",
+    "category": "تقنية",
+    "difficulty": "easy",
+    "similar": [
+      "هاتف",
+      "شاشة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp012",
+    "word": "هاتف",
+    "category": "تقنية",
+    "difficulty": "easy",
+    "similar": [
+      "جوال",
+      "مكالمة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp013",
+    "word": "سيارة",
+    "category": "مواصلات",
+    "difficulty": "easy",
+    "similar": [
+      "طريق",
+      "قيادة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp014",
+    "word": "طائرة",
+    "category": "مواصلات",
+    "difficulty": "easy",
+    "similar": [
+      "سفر",
+      "جناح"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp015",
+    "word": "قطار",
+    "category": "مواصلات",
+    "difficulty": "easy",
+    "similar": [
+      "سكة",
+      "رحلة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp016",
+    "word": "دراجة",
+    "category": "مواصلات",
+    "difficulty": "easy",
+    "similar": [
+      "عجلة",
+      "قيادة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp017",
+    "word": "ملعب",
+    "category": "رياضة",
+    "difficulty": "easy",
+    "similar": [
+      "كرة",
+      "جمهور"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp018",
+    "word": "كرة",
+    "category": "رياضة",
+    "difficulty": "easy",
+    "similar": [
+      "ملعب",
+      "قدم"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp019",
+    "word": "فريق",
+    "category": "رياضة",
+    "difficulty": "easy",
+    "similar": [
+      "لاعب",
+      "ناد"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp020",
+    "word": "بطولة",
+    "category": "رياضة",
+    "difficulty": "easy",
+    "similar": [
+      "كأس",
+      "فوز"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp021",
+    "word": "مدرب",
+    "category": "رياضة",
+    "difficulty": "easy",
+    "similar": [
+      "تدريب",
+      "فريق"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp022",
+    "word": "طبيب",
+    "category": "مهن",
+    "difficulty": "easy",
+    "similar": [
+      "مستشفى",
+      "دواء"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp023",
+    "word": "معلم",
+    "category": "مهن",
+    "difficulty": "easy",
+    "similar": [
+      "طالب",
+      "كتاب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp024",
+    "word": "مهندس",
+    "category": "مهن",
+    "difficulty": "easy",
+    "similar": [
+      "بناء",
+      "تصميم"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp025",
+    "word": "طباخ",
+    "category": "مهن",
+    "difficulty": "easy",
+    "similar": [
+      "مطعم",
+      "طعام"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp026",
+    "word": "فنان",
+    "category": "مهن",
+    "difficulty": "easy",
+    "similar": [
+      "رسم",
+      "لون"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp027",
+    "word": "موسيقي",
+    "category": "فنون",
+    "difficulty": "easy",
+    "similar": [
+      "أغنية",
+      "لحن"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp028",
+    "word": "ملك",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "تاج",
+      "عرش"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp029",
+    "word": "حرب",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "سلام",
+      "معركة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp030",
+    "word": "سلام",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "حرب",
+      "هدوء"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp031",
+    "word": "مدينة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "قرية",
+      "شارع"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp032",
+    "word": "صحراء",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "رمل",
+      "جمل"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp033",
+    "word": "جبل",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "قمة",
+      "صخر"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp034",
+    "word": "نهر",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "بحر",
+      "جسر"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp035",
+    "word": "غابة",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "شجرة",
+      "حيوان"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp036",
+    "word": "سماء",
+    "category": "طبيعة",
+    "difficulty": "easy",
+    "similar": [
+      "فضاء",
+      "سحاب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp037",
+    "word": "شاطئ",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "بحر",
+      "رمل"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp038",
+    "word": "حديقة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "شجرة",
+      "زهرة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp039",
+    "word": "سوق",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "تسوق",
+      "بائع"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp040",
+    "word": "مطار",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "طائرة",
+      "سفر"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp041",
+    "word": "محطة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "قطار",
+      "انتظار"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp042",
+    "word": "فندق",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "غرفة",
+      "إقامة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp043",
+    "word": "مستشفى",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "طبيب",
+      "مريض"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp044",
+    "word": "مكتبة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "كتاب",
+      "قراءة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp045",
+    "word": "متحف",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "أثر",
+      "فن"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp046",
+    "word": "مسرح",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "فن",
+      "تمثيل"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp047",
+    "word": "سينما",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "similar": [
+      "فيلم",
+      "شاشة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp048",
+    "word": "تاريخ",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "ماضي",
+      "أثر"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp049",
+    "word": "علوم",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "تجربة",
+      "بحث"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp050",
+    "word": "رياضيات",
+    "category": "علوم",
+    "difficulty": "easy",
+    "similar": [
+      "عدد",
+      "حساب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp051",
+    "word": "لغة",
+    "category": "أدب",
+    "difficulty": "easy",
+    "similar": [
+      "كلمة",
+      "نحو"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp052",
+    "word": "فن",
+    "category": "ثقافة",
+    "difficulty": "easy",
+    "similar": [
+      "رسم",
+      "موسيقى"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp053",
+    "word": "معلومة",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "بيانات",
+      "معرفة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp054",
+    "word": "لغز",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "سر",
+      "حل"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp055",
+    "word": "سؤال",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "جواب",
+      "استفسار"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp056",
+    "word": "سر",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "خفي",
+      "كشف"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp057",
+    "word": "هدف",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "غاية",
+      "سعي"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp058",
+    "word": "نجاح",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "فوز",
+      "تحقيق"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "sp059",
+    "word": "فشل",
+    "category": "معلومات عامة",
+    "difficulty": "easy",
+    "similar": [
+      "خسارة",
+      "تراجع"
+    ],
+    "status": "approved",
+    "source": "manual"
+  }
+]

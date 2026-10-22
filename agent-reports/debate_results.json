@@ -1,0 +1,92 @@
+{
+  "game": "debate",
+  "tests": [
+    {
+      "test": "page_load",
+      "status": "pass",
+      "detail": "Title: | ألعاب أمين, H1: 💬 أقنعني!"
+    },
+    {
+      "test": "topic_cards",
+      "status": "pass",
+      "detail": "Found 9 topic cards"
+    },
+    {
+      "test": "select_topic",
+      "status": "pass",
+      "detail": "Play area: True, Pro: التعليم بالمشاريع يطبق المعرفة ويطور المهارات العم..."
+    },
+    {
+      "test": "submit_pro_args",
+      "status": "pass",
+      "detail": "Submitted 4 pro arguments"
+    },
+    {
+      "test": "submit_con_args",
+      "status": "pass",
+      "detail": "Submitted 2 con arguments"
+    },
+    {
+      "test": "timer_display",
+      "status": "pass",
+      "detail": "Timer: 01:56"
+    },
+    {
+      "test": "finish_debate",
+      "status": "pass",
+      "detail": "Winner: True, Scores: True"
+    },
+    {
+      "test": "back_to_topics",
+      "status": "pass",
+      "detail": "Topic list: True"
+    },
+    {
+      "test": "second_topic",
+      "status": "pass",
+      "detail": "Play area: True"
+    },
+    {
+      "test": "ai_evaluation",
+      "status": "fail",
+      "detail": "No AI evaluation button - uses local random scoring"
+    },
+    {
+      "test": "ai_topic_generation",
+      "status": "fail",
+      "detail": "No AI topic generation button"
+    },
+    {
+      "test": "phase_system",
+      "status": "fail",
+      "detail": "No phase system - both teams submit simultaneously"
+    }
+  ],
+  "bugs": [
+    {
+      "severity": "major",
+      "description": "Debate game has NO AI evaluation. The served page uses finishDebate() with random scoring, not the AI judging system from the template.",
+      "reproduction_steps": "1. Go to debate game 2. No AI evaluation button exists 3. Scoring is random"
+    },
+    {
+      "severity": "minor",
+      "description": "No AI topic generation feature in served page.",
+      "reproduction_steps": "1. Go to debate game 2. No AI topic generation button"
+    },
+    {
+      "severity": "minor",
+      "description": "No debate phase system in served page.",
+      "reproduction_steps": "1. Go to debate game 2. Both teams submit simultaneously"
+    }
+  ],
+  "console_errors": [],
+  "screenshots": [
+    "debate_01_loaded.png",
+    "debate_02_topics.png",
+    "debate_03_debate_started.png",
+    "debate_04_pro_args.png",
+    "debate_05_con_args.png",
+    "debate_06_results.png",
+    "debate_14_final.png"
+  ]
+}

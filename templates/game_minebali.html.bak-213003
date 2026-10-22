@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.mb{max-width:900px;margin:1.5rem auto}
+.mb-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:1.5rem;margin:1rem auto}
+.mb-btn{padding:.6rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);cursor:pointer;font-size:.95rem}
+.mb-btn.primary{background:var(--accent-blue);color:#fff;border:none}
+.mb-btn.gold{background:var(--accent-gold);color:#000;border:none}
+.mb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;margin:1rem 0}
+.mb-cell{background:var(--bg-inset);border:2px solid var(--border-color);border-radius:10px;padding:.6rem;text-align:center;cursor:pointer;font-size:.85rem;min-height:60px;display:flex;align-items:center;justify-content:center}
+.mb-cell.elim{opacity:.25;text-decoration:line-through}
+.mb-cell.sel{border-color:var(--accent-gold);background:rgba(245,158,11,.15)}
+.mb-log{max-height:180px;overflow:auto;background:var(--bg-inset);border-radius:10px;padding:.8rem;margin:.8rem 0;font-size:.9rem}
+.mb-log div{padding:.2rem 0;border-bottom:1px solid var(--border-color)}
+</style>
+
+<h1 style="text-align:center">🧠 مين في بالي؟</h1>
+<p style="text-align:center;color:var(--text-secondary)">اختر شخصيتك، اسأل، استبعد، وخمّن شخصية خصمك أولاً!</p>
+
+<div id="setup" class="mb mb-card" style="margin:1.5rem auto;max-width:760px;">
+  <h3>⚙️ الإعدادات</h3>
+  <div style="display:grid;gap:.8rem;margin-top:1rem">
+    <label>الفئة:
+      <select id="mbCat" class="mb-btn" style="width:100%"></select>
+    </label>
+    <button class="mb-btn primary" onclick="startMatch()">🎮 ابدأ</button>
+  </div>
+</div>
+
+<div id="select" class="mb mb-card" style="display:none;margin:1.5rem auto;max-width:900px;">
+  <h2 style="text-align:center">👁️ <span id="selWho"></span> — اختر شخصيتك</h2>
+  <div class="mb-grid" id="selGrid"></div>
+  <div style="text-align:center">
+    <button class="mb-btn gold" onclick="confirmSel()">تأكيد الاختيار</button>
+  </div>
+</div>
+
+<div id="reveal" class="mb mb-card" style="display:none;text-align:center;margin:1.5rem auto;max-width:760px;">
+  <h2>🔒 شخصيتك</h2>
+  <p id="revName" style="font-size:2rem;font-weight:800;color:var(--accent-gold)"></p>
+  <button class="mb-btn gold" onclick="hideReveal()">إخفاء والمتابعة</button>
+</div>
+
+<div id="play" class="mb" style="display:none">
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:1rem 0">
+    <div class="mb-card" style="padding:.6rem 1rem">الدور: <b id="mbCur">-</b></div>
+  </div>
+
+  <div class="mb-card">
+    <h3>❓ اطرح سؤالاً (نعم/لا) — عن شخصية خصمك</h3>
+    <div style="display:flex;gap:.5rem;margin:.8rem 0">
+      <input id="mbQInput" class="mb-btn" style="flex:1" placeholder="اكتب سؤالك..." onkeydown="if(event.key==='Enter')askFree()">
+      <button class="mb-btn primary" onclick="askFree()">إرسال</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0">
+      <button class="mb-btn" onclick="askPreset('real')">حقيقي؟</button>
+      <button class="mb-btn" onclick="askPreset('genderM')">ذكر؟</button>
+      <button class="mb-btn" onclick="askPreset('genderF')">أنثى؟</button>
+      <button class="mb-btn" onclick="askPreset('main')">بطل رئيسي؟</button>
+      <button class="mb-btn" onclick="askPreset('powers')">قدرات خارقة؟</button>
+    </div>
+    <div id="mbAnswer" style="text-align:center;font-size:1.4rem;font-weight:800;margin:.8rem 0;color:var(--accent-gold)"></div>
+    <div class="mb-log" id="mbLog"></div>
+  </div>
+
+  <div class="mb-card">
+    <h3>🗂️ لوحة الاستبعاد — انقر لإلغاء/استعادة شخصية</h3>
+    <div class="mb-grid" id="board"></div>
+    <div style="text-align:center;margin-top:1rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
+      <button class="mb-btn gold" onclick="openGuess()">🎯 خمّن شخصية خصمك</button>
+      <button class="mb-btn" onclick="endTurn()">➡️ إنهاء الدور</button>
+    </div>
+  </div>
+</div>
+
+<div id="guessModal" class="mb-card" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);z-index:100;max-width:900px;width:90%;max-height:80vh;overflow:auto;background:var(--bg-card);border:2px solid var(--accent-gold);">
+  <h3 style="text-align:center">🎯 اختر شخصية خصمك</h3>
+  <div class="mb-grid" id="guessGrid"></div>
+  <div style="text-align:center;margin-top:1rem">
+    <button class="mb-btn" onclick="closeGuess()">إلغاء</button>
+  </div>
+</div>
+
+<div id="result" class="mb mb-card" style="display:none;text-align:center;margin:1.5rem auto;max-width:760px;">
+  <h2>🏆 النتيجة</h2>
+  <div id="mbResultBody"></div>
+  <div style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
+    <button class="mb-btn gold" onclick="location.reload()">🔁 العب مرة أخرى</button>
+    <button class="mb-btn" onclick="location.href='/games'">🏠 العودة</button>
+  </div>
+</div>
+
+<script>
+let CHARS=[], STATE=null, selectedIdx=null;
+
+async function loadChars(){
+  const r=await fetch('/api/content/minebali');
+  const d=await r.json();
+  CHARS=d.items||[];
+  const sel=document.getElementById('mbCat');
+  const groups={};
+  CHARS.forEach(c=>{ (groups[c.category]=groups[c.category]||new Set()).add(c.subcategory); });
+  sel.innerHTML='';
+  Object.keys(groups).forEach(cat=>{
+    const og=document.createElement('optgroup'); og.label=cat;
+    og.appendChild(new Option('الكل - '+cat,'cat:'+cat));
+    [...groups[cat]].forEach(s=>{ if(s) og.appendChild(new Option(s,'sub:'+s)); });
+    sel.appendChild(og);
+  });
+}
+loadChars();
+
+function filterChars(){
+  const v=document.getElementById('mbCat').value;
+  let pool=CHARS.slice();
+  if(v.startsWith('cat:')) pool=CHARS.filter(c=>c.category===v.slice(4));
+  else if(v.startsWith('sub:')) pool=CHARS.filter(c=>c.subcategory===v.slice(4));
+  if(pool.length>20) pool=pool.slice(0,20);
+  return pool;
+}
+
+function startMatch(){
+  const pool=filterChars();
+  if(pool.length<5){ alert('Not enough characters'); return; }
+  STATE={
+    chars: pool,
+    secrets:[null,null],
+    eliminated:[new Set(),new Set()],
+    cur:0,
+    qCount:0,
+    log:[],
+    phase:'select0',
+    selIdx:null,
+    done:false
+  };
+  document.getElementById('setup').style.display='none';
+  startSelect(0);
+}
+
+function startSelect(p){
+  STATE.phase='select'+p;
+  selectedIdx=null;
+  document.getElementById('select').style.display='block';
+  document.getElementById('play').style.display='none';
+  document.getElementById('reveal').style.display='none';
+  document.getElementById('selWho').textContent='اللاعب '+(p+1)+' — اختر شخصيتك';
+  renderSelect();
+}
+
+function renderSelect(){
+  const g=document.getElementById('selGrid');
+  g.innerHTML='';
+  STATE.chars.forEach((c,i)=>{
+    const cell=document.createElement('div');
+    cell.className='mb-cell'+(selectedIdx===i?' sel':'');
+    cell.textContent=c.name;
+    cell.onclick=()=>{ selectedIdx=i; renderSelect(); };
+    g.appendChild(cell);
+  });
+}
+
+function confirmSel(){
+  if(selectedIdx===null){ alert('اختر شخصية'); return; }
+  const p=STATE.phase==='select0'?0:1;
+  STATE.secrets[p]=STATE.chars[selectedIdx];
+  document.getElementById('select').style.display='none';
+  document.getElementById('reveal').style.display='block';
+  document.getElementById('revName').textContent=STATE.chars[selectedIdx].name;
+}
+
+function hideReveal(){
+  document.getElementById('reveal').style.display='none';
+  if(STATE.secrets[1]===null){
+    startSelect(1);
+  } else {
+    STATE.phase='play';
+    STATE.cur=0;
+    document.getElementById('play').style.display='block';
+    renderBoard();
+    updateHUD();
+  }
+}
+
+function updateHUD(){
+  document.getElementById('mbCur').textContent='اللاعب '+(STATE.cur+1);
+}
+
+function renderBoard(){
+  const g=document.getElementById('board');
+  g.innerHTML='';
+  const elim=STATE.eliminated[STATE.cur];
+  STATE.chars.forEach((c,i)=>{
+    const cell=document.createElement('div');
+    cell.className='mb-cell'+(elim.has(i)?' elim':'');
+    cell.textContent=c.name;
+    cell.onclick=()=>{ toggleElim(i); };
+    g.appendChild(cell);
+  });
+}
+
+function toggleElim(i){
+  const elim=STATE.eliminated[STATE.cur];
+  if(elim.has(i)) elim.delete(i); else elim.add(i);
+  renderBoard();
+}
+
+function propValue(ch, prop){
+  switch(prop){
+    case 'real': return ch.real===true?'نعم':'لا';
+    case 'genderM': return ch.gender==='ذكر'?'نعم':'لا';
+    case 'genderF': return ch.gender==='أنثى'?'نعم':'لا';
+    case 'main': return ch.main===true?'نعم':'لا';
+    case 'powers': return ch.powers===true?'نعم':'لا';
+  }
+  return 'غير متاحة';
+}
+
+function classifyQuestion(text){
+  const low=text;
+  if(/حقيقي|واقع/.test(low)) return 'real';
+  if(/ذكر|رجل|ولد/.test(low)) return 'genderM';
+  if(/أنثى|أنثي|امرأة|بنت|فتاة/.test(low)) return 'genderF';
+  if(/بطل|رئيسي/.test(low)) return 'main';
+  if(/قدرات|خارقة|سحر|قوى/.test(low)) return 'powers';
+  return 'free';
+}
+
+function askPreset(prop){
+  if(STATE.done) return;
+  const opp=STATE.cur===0?1:0;
+  const ans=propValue(STATE.secrets[opp],prop);
+  STATE.qCount++;
+  const labelMap={real:'حقيقي؟',genderM:'ذكر؟',genderF:'أنثى؟',main:'بطل رئيسي؟',powers:'قدرات خارقة؟'};
+  STATE.log.push({q:labelMap[prop],a:ans});
+  renderLog();
+  document.getElementById('mbAnswer').textContent=ans;
+  updateHUD();
+}
+
+async function askFree(){
+  const txt=document.getElementById('mbQInput').value.trim();
+  if(!txt) return;
+  if(STATE.done) return;
+  const opp=STATE.cur===0?1:0;
+  const prop=classifyQuestion(txt);
+  let ans;
+  if(prop==='free'){
+    // manual answer by opponent
+    ans = await manualAnswer(txt);
+  } else {
+    ans=propValue(STATE.secrets[opp],prop);
+    if(ans==='غير متاحة'){ ans = await manualAnswer(txt); }
+  }
+  STATE.qCount++;
+  STATE.log.push({q:txt,a:ans});
+  renderLog();
+  document.getElementById('mbAnswer').textContent=ans;
+  document.getElementById('mbQInput').value='';
+  updateHUD();
+}
+
+function renderLog(){
+  const el=document.getElementById('mbLog');
+  el.innerHTML=STATE.log.map(x=>`<div><b>س:</b> ${x.q} — <b>ج:</b> ${x.a}</div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+async function manualAnswer(qText){
+  // switch board to opponent to answer
+  const prev=STATE.cur;
+  STATE.cur = STATE.cur===0?1:0;
+  renderBoard(); updateHUD();
+  return new Promise(resolve=>{
+    const box=document.createElement('div');
+    box.style='position:fixed;top:30%;left:50%;transform:translateX(-50%);z-index:200;background:var(--bg-card);border:2px solid var(--accent-gold);padding:1.5rem;border-radius:14px;text-align:center;';
+    box.innerHTML='<h3>اللاعب '+(STATE.cur+1)+' — أجب:</h3><p>'+qText+'</p><div style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem"><button class="mb-btn gold" id="maYes">نعم</button><button class="mb-btn" id="maNo">لا</button><button class="mb-btn" id="maUnk">غير متاحة</button></div>';
+    document.body.appendChild(box);
+    function finish(val){ document.body.removeChild(box); 
+      // save Q&A
+      try{ const arr=JSON.parse(localStorage.getItem('mb_qa')||'[]'); arr.push({q:qText,a:val}); localStorage.setItem('mb_qa',JSON.stringify(arr)); }catch(e){}
+      // switch back
+      STATE.cur=prev; renderBoard(); updateHUD();
+      resolve(val);
+    }
+    box.querySelector('#maYes').onclick=()=>finish('نعم');
+    box.querySelector('#maNo').onclick=()=>finish('لا');
+    box.querySelector('#maUnk').onclick=()=>finish('غير متاحة');
+  });
+}
+
+function endTurn(){
+  STATE.cur=STATE.cur===0?1:0;
+  STATE.log=[];
+  document.getElementById('mbLog').innerHTML='';
+  document.getElementById('mbAnswer').textContent='';
+  renderBoard();
+  updateHUD();
+}
+
+function openGuess(){
+  const g=document.getElementById('guessGrid');
+  g.innerHTML='';
+  STATE.chars.forEach((c,i)=>{
+    const cell=document.createElement('div');
+    cell.className='mb-cell';
+    cell.textContent=c.name;
+    cell.onclick=()=>doGuess(i);
+    g.appendChild(cell);
+  });
+  document.getElementById('guessModal').style.display='block';
+}
+
+function closeGuess(){ document.getElementById('guessModal').style.display='none'; }
+
+function doGuess(i){
+  closeGuess();
+  const opp=STATE.cur===0?1:0;
+  const guessed=STATE.chars[i];
+  const secret=STATE.secrets[opp];
+  if(guessed.id===secret.id){
+    STATE.done=true;
+    document.getElementById('play').style.display='none';
+    document.getElementById('result').style.display='block';
+    document.getElementById('mbResultBody').innerHTML='<p style="font-size:1.5rem">🎉 اللاعب '+(STATE.cur+1)+' فاز! خمّن شخصية خصمه: <b>'+secret.name+'</b></p>';
+  } else {
+    alert('❌ خاطئ! شخصية خصمك ليست '+guessed.name);
+    endTurn();
+  }
+}
+</script>
+{% endblock %}

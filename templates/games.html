@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ── Catalogue: one unified card system for all games ── */
+.catalogue {
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: var(--space-7) var(--space-6) var(--space-8);
+}
+.catalogue-intro { text-align: center; max-width: 640px; margin: 0 auto var(--space-7); }
+.catalogue-intro .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-blue-tint);
+    border: 1px solid rgba(79, 140, 255, 0.32);
+    color: #a9c8ff;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+}
+.catalogue-intro h1 { font-size: var(--font-size-3xl); margin: var(--space-4) 0 var(--space-2); }
+.catalogue-intro p { color: var(--text-secondary); font-size: var(--font-size-md); }
+
+.catalogue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-5);
+    align-items: start;
+}
+
+/* Card: whole tile is the link, so one click anywhere starts the game */
+.cat-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    height: 100%;
+    padding: var(--space-5);
+    padding-inline-start: var(--space-6);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)), var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+    transition: var(--transition);
+}
+.cat-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-strong);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-lg);
+}
+.cat-card-top { display: flex; align-items: flex-start; gap: var(--space-4); }
+.cat-card-top > div { min-width: 0; }
+.cat-card h2 { font-size: var(--font-size-lg); font-weight: 700; }
+.cat-game-type { font-size: var(--font-size-xs); color: var(--accent-gold); font-weight: 700; }
+.cat-card p { color: var(--text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.cat-features { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.cat-features span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.cat-features svg.ico { width: 0.95rem; height: 0.95rem; }
+
+.cat-play {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-color);
+    color: var(--accent-blue);
+    font-weight: 800;
+    font-size: var(--font-size-sm);
+}
+.cat-card:hover .cat-play { color: var(--accent-gold); }
+.cat-play span { transition: transform var(--transition-fast); }
+.cat-card:hover .cat-play span { transform: translateX(-4px); }
+
+/* Extra tinted chips used by the catalogue */
+.icon-chip.red  { background: var(--accent-red-tint);  border-color: rgba(240, 82, 79, 0.32); }
+.icon-chip.pink { background: rgba(236, 72, 153, 0.16); border-color: rgba(236, 72, 153, 0.32); }
+
+@media (max-width: 480px) {
+    .catalogue { padding-inline: var(--space-4); }
+    .catalogue-grid { grid-template-columns: 1fr; }
+    .catalogue-intro h1 { font-size: var(--font-size-2xl); }
+    .cat-features span { white-space: normal; }
+    .cat-card { padding-inline-start: var(--space-5); }
+}
+</style>
+
+<section class="catalogue">
+    <div class="catalogue-intro reveal">
+        <span class="eyebrow"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>كل الألعاب في مكان واحد</span>
+        <h1>الألعاب</h1>
+        <p>اختر لعبتك، قسّم الحضور إلى فريقين، وابدأ المنافسة.</p>
+    </div>
+
+    <div class="cat-toolbar reveal">
+        <div class="cat-search">
+            <svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg>
+            <input id="catSearch" type="search" placeholder="ابحث باسم اللعبة…" aria-label="ابحث في الألعاب" autocomplete="off">
+        </div>
+        <div class="cat-filters" id="catFilters" role="group" aria-label="تصفية الألعاب حسب النوع">
+            <button class="cat-chip active" type="button" data-filter="all">الكل</button>
+            <button class="cat-chip" type="button" data-filter="مسابقات">مسابقات</button>
+            <button class="cat-chip" type="button" data-filter="استراتيجية">استراتيجية</button>
+            <button class="cat-chip" type="button" data-filter="ألغاز وتحقيق">ألغاز وتحقيق</button>
+            <button class="cat-chip" type="button" data-filter="كلمات ومهارات">كلمات ومهارات</button>
+        </div>
+        <span class="cat-count" id="catCount" role="status" aria-live="polite"></span>
+    </div>
+
+    <div class="catalogue-grid reveal-stagger" id="catGrid">
+        <a class="cat-card" href="/game/letters" data-cat="مسابقات" style="--cat-color: var(--accent-green)">
+            <div class="cat-card-top">
+                <span class="icon-chip green"><svg class="ico" aria-hidden="true"><use href="#i-shield"></use></svg></span>
+                <div>
+                    <h2>حروف مع أمين</h2>
+                    <span class="cat-game-type">لعبة لوحة</span>
+                </div>
+            </div>
+            <p>مسابقة سباق الحروف بين فريقين. كل إجابة صحيحة تمنح فريقك خلية، والهدف تكوين مسار متصل بين طرفي اللوحة السداسية.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-clock"></use></svg>مؤقّت</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>جرس تنافسي</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>28 خلية</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/quiz" data-cat="مسابقات" style="--cat-color: var(--accent-purple)">
+            <div class="cat-card-top">
+                <span class="icon-chip purple"><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg></span>
+                <div>
+                    <h2>س.ج</h2>
+                    <span class="cat-game-type">مسابقة ثقافية</span>
+                </div>
+            </div>
+            <p>بنك أسئلة ثقافي بفئات متعددة. اختر الفئة وقيمة النقاط، وأجب قبل نفاد الوقت — ويمكن للخصم سرقة السؤال.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg>فئات متعددة</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-star"></use></svg>200 – 600 نقطة</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>سرقة السؤال</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/auction" data-cat="استراتيجية" style="--cat-color: var(--accent-gold)">
+            <div class="cat-card-top">
+                <span class="icon-chip gold"><svg class="ico" aria-hidden="true"><use href="#i-wallet"></use></svg></span>
+                <div>
+                    <h2>مزاد اللاعبين</h2>
+                    <span class="cat-game-type">استراتيجية</span>
+                </div>
+            </div>
+            <p>نافس أصدقاءك في مزاد اللاعبين: اشترِ الأفضل ضمن ميزانيتك، ابنِ تشكيلتك، ودَع التحكيم يقرر النتيجة.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-football"></use></svg>لاعبون حقيقيون</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-wallet"></use></svg>ميزانية مرنة</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-gavel"></use></svg>تحكيم آلي</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/million" data-cat="استراتيجية" style="--cat-color: var(--accent-cyan)">
+            <div class="cat-card-top">
+                <span class="icon-chip cyan"><svg class="ico" aria-hidden="true"><use href="#i-crown"></use></svg></span>
+                <div>
+                    <h2>من سيربح المليون</h2>
+                    <span class="cat-game-type">مسابقة فردية</span>
+                </div>
+            </div>
+            <p>خمسة عشر سؤالًا بمبالغ تصاعدية، أربعة خيارات، وثلاث وسائل مساعدة. انسحب متى شئت واحتفظ بمكسبك.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>15 سؤالًا</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-shield"></use></svg>3 وسائل مساعدة</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-crown"></use></svg>انسحاب بالمكسب</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/codenames" data-cat="كلمات ومهارات" style="--cat-color: var(--accent-purple)">
+            <div class="cat-card-top">
+                <span class="icon-chip purple"><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg></span>
+                <div>
+                    <h2>كود نيمز</h2>
+                    <span class="cat-game-type">كلمات واستنتاج</span>
+                </div>
+            </div>
+            <p>كلمات متقاطعة ودلائل غامضة: خمّن الكلمة الصحيحة قبل أن يقع فريقك على الكلمة الخاسرة.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-megaphone"></use></svg>تلميح بكلمات</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>فريقان</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/detective" data-cat="ألغاز وتحقيق" style="--cat-color: var(--accent-blue)">
+            <div class="cat-card-top">
+                <span class="icon-chip"><svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg></span>
+                <div>
+                    <h2>المحقق</h2>
+                    <span class="cat-game-type">تحقيق</span>
+                </div>
+            </div>
+            <p>اجمع الأدلة، استجوب الشهود، واستنتج من يقف خلف الحادثة قبل أن تنفد محاولاتك.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg>أدلة</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>استنتاج</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/culprit" data-cat="ألغاز وتحقيق" style="--cat-color: var(--accent-red)">
+            <div class="cat-card-top">
+                <span class="icon-chip red"><svg class="ico" aria-hidden="true"><use href="#i-scale"></use></svg></span>
+                <div>
+                    <h2>من الفاعل؟</h2>
+                    <span class="cat-game-type">لغز جنائي</span>
+                </div>
+            </div>
+            <p>اقرأ الوقائع وقارن أقوال المشتبه بهم لتحديد المسؤول عن الحادثة من بينهم.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg>وقائع</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg>مشتبه بهم</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/spy" data-cat="ألغاز وتحقيق" style="--cat-color: var(--accent-gold)">
+            <div class="cat-card-top">
+                <span class="icon-chip gold"><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg></span>
+                <div>
+                    <h2>الجاسوس</h2>
+                    <span class="cat-game-type">خداع اجتماعي</span>
+                </div>
+            </div>
+            <p>سؤال واحد للجميع وإجابة سرية لشخص واحد. اسأل، لاحظ ردود الأفعال، واكشف الجاسوس.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg>أدوار سرية</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg>استنتاج</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/debate" data-cat="كلمات ومهارات" style="--cat-color: var(--accent-green)">
+            <div class="cat-card-top">
+                <span class="icon-chip green"><svg class="ico" aria-hidden="true"><use href="#i-megaphone"></use></svg></span>
+                <div>
+                    <h2>أقنعني!</h2>
+                    <span class="cat-game-type">نقاش وإقناع</span>
+                </div>
+            </div>
+            <p>قضية واحدة ورأيان متضادان. ادافع عن موقفك بالأدلة والمنطق، واكسب تصويت الجمهور.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-megaphone"></use></svg>جدال</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>تصويت</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/whoplayer" data-cat="مسابقات" style="--cat-color: var(--accent-cyan)">
+            <div class="cat-card-top">
+                <span class="icon-chip cyan"><svg class="ico" aria-hidden="true"><use href="#i-football"></use></svg></span>
+                <div>
+                    <h2>مين اللاعب؟</h2>
+                    <span class="cat-game-type">تخمين متدرج</span>
+                </div>
+            </div>
+            <p>تلميحات تتكشف واحدًا تلو الآخر. كلما خمّنت أبكر حصلت على نقاط أكثر.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg>تلميحات</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-star"></use></svg>نقاط متدرجة</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/link" data-cat="كلمات ومهارات" style="--cat-color: var(--accent-pink, #ec4899)">
+            <div class="cat-card-top">
+                <span class="icon-chip pink"><svg class="ico" aria-hidden="true"><use href="#i-link"></use></svg></span>
+                <div>
+                    <h2>الرابط المشترك</h2>
+                    <span class="cat-game-type">ربط أفكار</span>
+                </div>
+            </div>
+            <p>عناصر تبدو متباعدة، لكن ثمة رابطًا واحدًا يجمعها. اكتشفه قبل منافسيك.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg>تفكير جانبي</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>سرعة</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/minebali" data-cat="كلمات ومهارات" style="--cat-color: var(--accent-gold)">
+            <div class="cat-card-top">
+                <span class="icon-chip gold"><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg></span>
+                <div>
+                    <h2>مين في بالي؟</h2>
+                    <span class="cat-game-type">تخمين شخصيات</span>
+                </div>
+            </div>
+            <p>اكتشف الشخصية السرية بأسئلة نعم/لا. حتى لاعبين على نفس الجهاز.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg>أسئلة نعم/لا</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>1-2 لاعبين</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/lastone" data-cat="مسابقات" style="--cat-color: var(--accent-gold)">
+            <div class="cat-card-top">
+                <span class="icon-chip gold"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg></span>
+                <div>
+                    <h2>آخر واحد!</h2>
+                    <span class="cat-game-type">معرفة سريعة</span>
+                </div>
+            </div>
+            <p>أعطِ إجابات صحيحة ومختلفة ضمن التصنيف — من يتعثر يخسر!</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-clock"></use></svg>مؤقت</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>1-8 لاعبين</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+    </div>
+
+    <div class="empty-state" id="catEmpty" hidden>
+        <svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg>
+        <strong>ما لقينا نتيجة</strong>
+        <p>جرّب كلمة أخرى أو غيّر النوع من أدوات التصفية أعلاه.</p>
+    </div>
+</section>
+
+<script>
+(function () {
+    const grid = document.getElementById('catGrid');
+    const search = document.getElementById('catSearch');
+    const chips = document.querySelectorAll('#catFilters .cat-chip');
+    const count = document.getElementById('catCount');
+    const empty = document.getElementById('catEmpty');
+    if (!grid) return;
+
+    const cards = Array.from(grid.querySelectorAll('.cat-card'));
+    let filter = 'all';
+
+    // Arabic-normalised haystack so "حروف" matches "حروف" regardless of hamza/teh-marbuta
+    const norm = (s) => (s || '')
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        .toLowerCase();
+
+    const apply = () => {
+        const q = norm(search ? search.value.trim() : '');
+        let shown = 0;
+        cards.forEach(card => {
+            const matchCat = filter === 'all' || card.dataset.cat === filter;
+            const matchText = !q || norm(card.textContent).includes(q);
+            const ok = matchCat && matchText;
+            card.hidden = !ok;
+            if (ok) shown++;
+        });
+        if (count) count.textContent = shown + ' لعبة';
+        if (empty) empty.hidden = shown !== 0;
+    };
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            filter = chip.dataset.filter;
+            apply();
+        });
+    });
+
+    if (search) {
+        search.addEventListener('input', apply);
+        search.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { search.value = ''; apply(); }
+        });
+    }
+    apply();
+})();
+</script>
+{% endblock %}

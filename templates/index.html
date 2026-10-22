@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <span class="hero-eyebrow">منصة الألعاب الجماعية</span>
+        <h1 class="hero-title">ألعاب أمين</h1>
+        <p class="hero-subtitle">اللعب أحلى لما تكون المنافسة بينكم</p>
+        <p class="hero-desc">ثلاث عشرة لعبة جماعية وثقافية واستراتيجية — أسئلة، مزايدات، ألغاز، وتحديات سرعة. كلها في مكان واحد، وبالعربي.</p>
+        <div class="hero-buttons">
+            <a href="/games" class="btn btn-primary btn-lg"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>استكشف الألعاب</a>
+            <a href="/game/letters" class="btn btn-secondary btn-lg"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ مباراة جديدة</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><strong>13</strong><span>لعبة جاهزة</span></div>
+            <div class="hero-stat"><strong>2+</strong><span>فريق ومشاركون</span></div>
+            <div class="hero-stat"><strong>∞</strong><span>جلسات لعب</span></div>
+        </div>
+        <span class="scroll-cue" aria-hidden="true">مرّر للأسفل</span>
+    </div>
+    <div class="hero-decoration">
+        <div class="floating-shapes">
+            <span class="shape shape1" aria-hidden="true"><svg class="ico"><use href="#i-target"></use></svg></span>
+            <span class="shape shape2" aria-hidden="true"><svg class="ico"><use href="#i-trophy"></use></svg></span>
+            <span class="shape shape3" aria-hidden="true"><svg class="ico"><use href="#i-dice"></use></svg></span>
+            <span class="shape shape4" aria-hidden="true"><svg class="ico"><use href="#i-football"></use></svg></span>
+        </div>
+    </div>
+</section>
+
+<section class="games-section">
+    <div class="section-head reveal">
+        <span class="eyebrow"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>الأبرز</span>
+        <h2 class="section-title">ألعاب تبدأ فورًا</h2>
+        <span class="section-subtitle">أربع تجارب جاهزة للعب مع الحضور — والباقي في كتالوج الألعاب</span>
+    </div>
+    <div class="games-grid reveal-stagger">
+        <div class="game-card" onclick="window.location.href='/game/letters'">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-shield"></use></svg></div>
+            <h3>حروف مع أمين</h3>
+            <p>اختبروا معرفتكم، اختاروا الحروف، واصنعوا طريق الفوز عبر اللوحة السداسية</p>
+            <div class="game-card-meta">
+                <span class="badge badge-blue">2 فرق</span>
+                <span class="badge badge-green">مسابقة</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+
+        <div class="game-card" onclick="window.location.href='/game/quiz'">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg></div>
+            <h3>س.ج</h3>
+            <p>ست فئات وثلاثة وستون سؤالًا، والنقاط الأعلى للأسئلة الأصعب</p>
+            <div class="game-card-meta">
+                <span class="badge badge-blue">2 فرق</span>
+                <span class="badge badge-purple">ثقافة</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+
+        <div class="game-card" onclick="window.location.href='/game/auction'">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-wallet"></use></svg></div>
+            <h3>مزاد اللاعبين</h3>
+            <p>نافس أصحابك في المزاد، واصنع التشكيلة الأقوى بميزانيتك</p>
+            <div class="game-card-meta">
+                <span class="badge badge-blue">2+ مشاركين</span>
+                <span class="badge badge-gold">استراتيجية</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+
+        <div class="game-card" onclick="window.location.href='/game/million'">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-crown"></use></svg></div>
+            <h3>من سيربح المليون</h3>
+            <p>خمسة عشر سؤالًا بمبالغ تصاعدية، وثلاث وسائل مساعدة</p>
+            <div class="game-card-meta">
+                <span class="badge badge-green">فردي</span>
+                <span class="badge badge-gold">تحدي</span>
+            </div>
+            <button class="btn btn-play">العب الآن</button>
+        </div>
+    </div>
+    <div style="text-align:center;margin-top:1.5rem" class="reveal">
+        <a href="/games" class="btn btn-secondary"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>عرض كل الألعاب</a>
+    </div>
+</section>
+
+<section class="how-to-section">
+    <div class="section-head reveal">
+        <span class="eyebrow"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>خطوات بسيطة</span>
+        <h2 class="section-title">كيف تلعب؟</h2>
+    </div>
+    <div class="steps-grid reveal-stagger">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h4>اختر اللعبة</h4>
+            <p>اختر من بين الألعاب المتاحة</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <h4>اضبط الإعدادات</h4>
+            <p>حدد الفرق والإعدادات</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h4>قسّم الفرق</h4>
+            <p>نظّم المشاركين</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <h4>ابدأ التحدي</h4>
+            <p>ابدأ اللعب واستمتع</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">5</div>
+            <h4>تابع النتائج</h4>
+            <p>حتى إعلان الفائز</p>
+        </div>
+    </div>
+</section>
+
+<section class="why-section">
+    <div class="section-head reveal">
+        <span class="eyebrow"><svg class="ico" aria-hidden="true"><use href="#i-star"></use></svg>ليش تلعبون هنا؟</span>
+        <h2 class="section-title">مصممة للجلسة، مش للشاشة</h2>
+    </div>
+    <div class="games-grid reveal-stagger">
+        <div class="game-card">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg></div>
+            <h3>ألعاب جماعية</h3>
+            <p>شاشة واحدة تجمع الفريقين: النتيجة والدور والتكاليف أمام الجميع</p>
+        </div>
+        <div class="game-card">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg></div>
+            <h3>بدون تنصيب</h3>
+            <p>تفتح من المتصفح مباشرة على أي جهاز — لا حسابات ولا تحميل</p>
+        </div>
+        <div class="game-card">
+            <div class="game-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg></div>
+            <h3>بنك أسئلة عربي</h3>
+            <p>أسئلة من إعداد المدرّسين، مع فئات وقيم نقاط قابلة للتعديل</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

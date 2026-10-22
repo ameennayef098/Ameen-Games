@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.culprit-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
+.culprit-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:1rem}
+.suspect{background:var(--bg-secondary);border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;cursor:pointer;border:2px solid transparent;transition:.2s}
+.suspect:hover{border-color:var(--accent)}
+.suspect.accused{border-color:var(--accent-red)}
+.suspect.revealed-culprit{border-color:var(--accent-green);background:rgba(34,197,94,.1)}
+.clue{background:var(--bg-secondary);border-radius:8px;padding:.5rem .8rem;margin:.3rem 0;font-size:.9rem}
+.clue.unlocked{border-left:3px solid var(--accent-green)}
+.vote-section{margin-top:1rem;padding:1rem;background:var(--bg-card);border-radius:12px;border:1px solid var(--border-color)}
+.round-indicator{display:flex;align-items:center;gap:.5rem;margin:.5rem 0;padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800}
+.round-indicator .round-num{background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.round-clue-count{color:var(--text-muted);font-size:.85rem}
+.discussion-timer{text-align:center;padding:1rem;background:var(--bg-card);border-radius:12px;margin:1rem 0;border:1px solid var(--border-color)}
+.discussion-timer .timer-text{font-size:2.5rem;font-weight:900;color:var(--accent-gold)}
+.discussion-timer .timer-label{color:var(--text-muted);font-size:.9rem}
+.discussion-phase{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;padding:1.5rem;margin:1rem 0;border:2px solid var(--accent);text-align:center}
+.discussion-phase h3{color:var(--accent-gold);margin-bottom:.5rem}
+.team-score{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.team-box{background:var(--bg-card);border:2px solid var(--border-color);border-radius:12px;padding:1rem;text-align:center}
+.team-box.active-turn{border-color:var(--accent-gold);box-shadow:0 0 15px rgba(245,158,11,.2)}
+.team-box .team-name{font-weight:800;font-size:1.1rem}
+.team-box .team-score-val{font-size:2rem;font-weight:900;color:var(--accent-gold)}
+.score-display{padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800;color:var(--accent-gold);display:inline-flex;align-items:center;gap:.5rem}
+.accuse-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000}
+.accuse-modal-content{background:var(--bg-card);border:2px solid var(--accent-red);border-radius:16px;padding:2rem;max-width:400px;text-align:center;animation:modalIn .3s ease-out}
+@keyframes modalIn{0%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
+.result-reveal{animation:revealDramatic 1.5s ease-out}
+@keyframes revealDramatic{0%{opacity:0;transform:scale(.8)}50%{opacity:1;transform:scale(1.05)}100%{transform:scale(1)}}
+.fs-btn{background:rgba(255,255,255,.07);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);padding:.35rem .7rem;cursor:pointer;font-family:inherit;font-weight:800;font-size:.8rem}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+.round-controls{display:flex;gap:.5rem;margin:.5rem 0;justify-content:center}
+.round-btn{padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}
+.round-btn:hover{border-color:var(--accent)}
+.round-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(max-width:768px){.culprit-layout{grid-template-columns:1fr}.team-score{grid-template-columns:1fr}}
+</style>
+
+<h1 style="text-align:center">⚖️ من الفاعل؟</h1>
+<p style="text-align:center;color:var(--text-secondary)">حدد المسؤول عن الحادثة من بين المشتبه بهم</p>
+
+<div id="caseSelect" style="max-width:600px;margin:2rem auto">
+  <div class="culprit-card" id="culpSettings" style="margin-bottom:1rem">
+    <h4>⚙️ إعدادات اللعبة</h4>
+    <div style="margin-top:1rem">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+        <input type="checkbox" id="teamMode" onchange="toggleTeamMode()">
+        <span>👥 وضع الفرق (فريقان يتنافسان)</span>
+      </label>
+    </div>
+    <div id="teamNames" style="display:none;margin-top:1rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <input type="text" id="team1Name" placeholder="اسم الفريق الأول" value="الفريق الأزرق">
+        <input type="text" id="team2Name" placeholder="اسم الفريق الثاني" value="الفريق الأحمر">
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;gap:.8rem" id="caseList"></div>
+</div>
+
+<div id="playArea" style="display:none">
+  <div style="display:flex;gap:1rem;margin:1rem 0;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-secondary" onclick="showCaseSelect()">← قضية أخرى</button>
+    <button class="btn btn-secondary" onclick="resetCase()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة</button>
+    <div class="score-display" id="scoreDisplay">النقاط: <span id="totalScore">0</span></div>
+    <div id="teamScores"></div>
+    <div style="flex:1"></div>
+    <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+  </div>
+
+  <div class="round-indicator" id="roundIndicator">
+    <span class="round-num" id="roundNum">1</span>
+    <span>الجولة</span>
+    <span class="round-clue-count" id="roundClues"></span>
+  </div>
+
+  <div class="discussion-phase" id="discussionPhase" style="display:none">
+    <h3>📢 مرحلة المناقشة</h3>
+    <p style="color:var(--text-secondary)">ناقش الأدلة مع فريقك قبل التصويت!</p>
+    <div class="discussion-timer">
+      <div class="timer-text" id="discussionTimer">2:00</div>
+      <div class="timer-label">وقت المناقشة</div>
+    </div>
+    <div class="round-controls">
+      <button class="round-btn primary" onclick="endDiscussion()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> إنهاء المناقشة</button>
+    </div>
+  </div>
+
+  <div class="culprit-layout">
+    <div>
+      <div class="culprit-card">
+        <h4>📋 الحادثة</h4>
+        <p id="incident"></p>
+      </div>
+      <div class="culprit-card" style="margin-top:1rem">
+        <h4>👥 المشتبه بهم</h4>
+        <div id="suspectList"></div>
+      </div>
+      <div class="culprit-card" style="margin-top:1rem">
+        <h4>📌 معلومات أولية</h4>
+        <div id="initialInfo"></div>
+      </div>
+    </div>
+    <div>
+      <div class="culprit-card">
+        <h4>🔎 الأدلة</h4>
+        <p style="font-size:.85rem;color:var(--text-muted)">تُكشف الأدلة على مراحل</p>
+        <div id="clueList"></div>
+        <div class="round-controls" id="roundControls">
+          <button class="round-btn" onclick="nextRound()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> الجولة التالية</button>
+        </div>
+      </div>
+      <div class="vote-section">
+        <h4>🗳️ اتهامك</h4>
+        <p style="font-size:.9rem;color:var(--text-secondary)">من تعتقد أنه المسؤول؟</p>
+        <select id="accuseSelect" style="width:100%;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text)"></select>
+        <button class="btn btn-danger" style="width:100%;margin-top:.8rem" onclick="confirmAccusation()"><svg class="ico" aria-hidden="true"><use href="#i-scale"></use></svg> تقديم الاتهام</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultArea" style="display:none;margin-top:1.5rem;background:var(--bg-card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent-gold)"></div>
+</div>
+
+<div class="accuse-modal" id="accuseModal" style="display:none">
+  <div class="accuse-modal-content">
+    <h3 style="color:var(--accent-red)">⚖️ تأكيد الاتهام</h3>
+    <p style="margin:1rem 0">هل أنت متأكد أن المتهم هو:</p>
+    <h2 id="accuseName" style="color:var(--accent-red)"></h2>
+    <p style="color:var(--text-muted);font-size:.9rem;margin-top:.5rem">هذا القرار نهائي!</p>
+    <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem">
+      <button class="btn btn-danger" onclick="finalizeAccusation()">✅ نعم، متأكد</button>
+      <button class="btn btn-secondary" onclick="cancelAccusation()">❌ تراجع</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentCase=null, unlockedClues=[], currentRound=0, cluesPerRound=2, totalScore=0, teamMode=false;
+let teamScores=[0,0], currentTeam=0, discussionInterval=null, discussionEndTime=null, pendingAccusation=null;
+
+function toggleTeamMode(){
+  teamMode = document.getElementById('teamMode').checked;
+  document.getElementById('teamNames').style.display = teamMode ? 'block' : 'none';
+  updateTeamDisplay();
+}
+
+function toggleFullscreen(){
+  var el = document.documentElement;
+  if (!document.fullscreenElement) {
+    (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    document.getElementById('fsBtn').textContent = '⛶ خروج من ملء الشاشة';
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    document.getElementById('fsBtn').textContent = '⛶ ملء الشاشة';
+  }
+}
+document.addEventListener('fullscreenchange', function(){
+  var b = document.getElementById('fsBtn');
+  if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+});
+
+async function loadCases(){
+  const r = await fetch('/api/content/culprit?status=approved&per_page=50');
+  const d = await r.json();
+  document.getElementById('caseList').innerHTML = d.items.map(function(c){ return '<div class="culprit-card" style="cursor:pointer" onclick="loadCase(\''+c.id+'\')"><h4>📂 '+c.title+'</h4><p style="font-size:.9rem;color:var(--text-secondary)">'+c.incident.substring(0,80)+'...</p><span class="badge '+(c.difficulty==='easy'?'badge-green':c.difficulty==='medium'?'badge-gold':'badge-red')+'">'+c.difficulty+'</span></div>'; }).join('') || '<p>لا توجد قضايا بعد</p>';
+}
+
+async function loadCase(id){
+  const r = await fetch('/api/content/culprit?status=approved&per_page=50');
+  const d = await r.json();
+  currentCase = d.items.find(function(c){ return c.id===id; });
+  if(!currentCase) return;
+  unlockedClues = [];
+  currentRound = 0;
+  totalScore = 0;
+  teamScores = [0,0];
+  currentTeam = 0;
+  document.getElementById('caseSelect').style.display='none';
+  document.getElementById('playArea').style.display='block';
+  document.getElementById('resultArea').style.display='none';
+  document.getElementById('discussionPhase').style.display='none';
+  document.getElementById('incident').textContent = currentCase.incident;
+  document.getElementById('suspectList').innerHTML = currentCase.suspects.map(function(s,i){ return '<div class="suspect" id="suspect'+i+'"><b>'+s.name+'</b><p style="margin:.2rem 0;font-size:.85rem;color:var(--text-muted)">الدافع: '+s.motive+'</p></div>'; }).join('');
+  document.getElementById('initialInfo').innerHTML = (currentCase.initial_info||[]).map(function(t){ return '<div style="margin:.3rem 0;font-size:.9rem">• '+t+'</div>'; }).join('');
+  document.getElementById('accuseSelect').innerHTML = currentCase.suspects.map(function(s){ return '<option value="'+s.name+'">'+s.name+'</option>'; }).join('');
+  renderClues();
+  updateRoundDisplay();
+  updateScoreDisplay();
+  updateTeamDisplay();
+  startDiscussion();
+}
+
+function renderClues(){
+  document.getElementById('clueList').innerHTML = (currentCase.clues||[]).map(function(c,i){
+    const unlocked = unlockedClues.includes(i);
+    return '<div class="clue '+(unlocked?'unlocked':'')+'">'+(unlocked?'🔓':'🔒')+' '+(unlocked?c.text:'دليل مغلق — يُكشف في الجولة '+(Math.floor(i/cluesPerRound)+1))+'</div>';
+  }).join('');
+}
+
+function updateRoundDisplay(){
+  document.getElementById('roundNum').textContent = currentRound + 1;
+  const totalClues = (currentCase.clues||[]).length;
+  const revealed = unlockedClues.length;
+  document.getElementById('roundClues').textContent = revealed + ' / ' + totalClues + ' دليل';
+}
+
+function nextRound(){
+  if (currentRound < Math.ceil((currentCase.clues||[]).length / cluesPerRound)) {
+    currentRound++;
+    const start = (currentRound-1) * cluesPerRound;
+    const end = Math.min(start + cluesPerRound, (currentCase.clues||[]).length);
+    for (var i = start; i < end; i++) unlockedClues.push(i);
+    renderClues();
+    updateRoundDisplay();
+    if (unlockedClues.length >= (currentCase.clues||[]).length) {
+      document.getElementById('roundControls').innerHTML = '<p style="color:var(--accent-green);font-weight:800">✅ تم كشف جميع الأدلة!</p>';
+    }
+  }
+  startDiscussion();
+}
+
+function startDiscussion(){
+  var phase = document.getElementById('discussionPhase');
+  phase.style.display = 'block';
+  discussionEndTime = Date.now() + 120000;
+  if (discussionInterval) clearInterval(discussionInterval);
+  discussionInterval = setInterval(function(){
+    var left = Math.max(0, discussionEndTime - Date.now());
+    var m = Math.floor(left/60000);
+    var s = Math.floor((left%60000)/1000);
+    document.getElementById('discussionTimer').textContent = m + ':' + (s<10?'0':'') + s;
+    if (left <= 0) endDiscussion();
+  }, 1000);
+}
+
+function endDiscussion(){
+  if (discussionInterval) { clearInterval(discussionInterval); discussionInterval = null; }
+  document.getElementById('discussionPhase').style.display = 'none';
+  currentTeam = (currentTeam + 1) % (teamMode ? 2 : 1);
+  updateTeamDisplay();
+}
+
+function updateTeamDisplay(){
+  var el = document.getElementById('teamScores');
+  if (!teamMode) { el.innerHTML = ''; return; }
+  var t1 = document.getElementById('team1Name').value || 'الفريق الأزرق';
+  var t2 = document.getElementById('team2Name').value || 'الفريق الأحمر';
+  el.innerHTML = '<div class="team-score"><div class="team-box'+(currentTeam===0?' active-turn':'')+'"><div class="team-name">'+t1+'</div><div class="team-score-val">'+teamScores[0]+'</div></div><div class="team-box'+(currentTeam===1?' active-turn':'')+'"><div class="team-name">'+t2+'</div><div class="team-score-val">'+teamScores[1]+'</div></div></div>';
+}
+
+function updateScoreDisplay(){
+  document.getElementById('totalScore').textContent = totalScore;
+}
+
+function confirmAccusation(){
+  var accused = document.getElementById('accuseSelect').value;
+  if (!accused) { alert('اختر المتهم أولاً'); return; }
+  pendingAccusation = accused;
+  document.getElementById('accuseName').textContent = accused;
+  document.getElementById('accuseModal').style.display = 'flex';
+}
+
+function cancelAccusation(){
+  pendingAccusation = null;
+  document.getElementById('accuseModal').style.display = 'none';
+}
+
+function finalizeAccusation(){
+  document.getElementById('accuseModal').style.display = 'none';
+  var accused = pendingAccusation;
+  pendingAccusation = null;
+  var correct = currentCase.culprit === accused;
+  var cluesUsed = unlockedClues.length;
+  var totalClues = (currentCase.clues||[]).length;
+  var bonus = Math.max(0, (totalClues - cluesUsed) * 10);
+  var roundBonus = Math.max(0, (5 - currentRound) * 5);
+  var score = correct ? (100 + bonus + roundBonus) : 0;
+  
+  if (teamMode) {
+    teamScores[currentTeam] += score;
+  }
+  totalScore += score;
+  updateScoreDisplay();
+  updateTeamDisplay();
+  
+  var win = correct;
+  var result = document.getElementById('resultArea');
+  result.style.display='block';
+  result.classList.add('result-reveal');
+  result.innerHTML = '<h3>'+(win?'🎉 اتهام صحيح!':'❌ اتهام خاطئ')+'</h3><p style="margin:.8rem 0">اتهمت: <b>'+accused+'</b></p>'+(win?'<p style="color:var(--accent-green);font-weight:800">النقاط المكتسبة: '+score+' (أساسي: 100 + مكافأة أدلة: '+bonus+' + مكافأة جولات: '+roundBonus+')</p>':'')+'<div style="margin-top:1rem;padding:1rem;background:var(--bg-secondary);border-radius:8px"><b>الحل:</b><p style="margin:.5rem 0">'+currentCase.explanation+'</p></div><button class="btn btn-primary" style="margin-top:1rem" onclick="showCaseSelect()">قضية أخرى</button>';
+}
+
+function showCaseSelect(){
+  document.getElementById('caseSelect').style.display='block';
+  document.getElementById('playArea').style.display='none';
+  if (discussionInterval) { clearInterval(discussionInterval); discussionInterval = null; }
+}
+
+function resetCase(){
+  if(currentCase) loadCase(currentCase.id);
+}
+
+loadCases();
+</script>
+{% endblock %}

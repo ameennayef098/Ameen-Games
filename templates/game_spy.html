@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.spy-step{display:none;max-width:600px;margin:1.5rem auto;padding:1.5rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border-color)}
+.spy-step.active{display:block}
+.spy-topic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin:1rem 0}
+.spy-topic-btn{padding:.7rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;font-size:.95rem;transition:var(--transition)}
+.spy-topic-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.spy-topic-btn.selected{border-color:var(--accent-gold);background:rgba(245,158,11,.12)}
+.spy-input{width:100%;padding:.6rem .8rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;margin:.4rem 0}
+.spy-name-input{width:100%;padding:.6rem .8rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;margin:.4rem 0}
+.spy-btn{padding:.6rem 1.5rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);margin:.3rem}
+.spy-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.spy-btn-primary{border-color:var(--accent-green);color:var(--accent-green)}
+.spy-btn-gold{border-color:var(--accent-gold);color:var(--accent-gold)}
+.spy-btn-danger{border-color:var(--accent-red);color:var(--accent-red)}
+.spy-role-card{text-align:center;padding:2rem;border-radius:var(--radius);margin:1rem auto;max-width:400px}
+.spy-role-card.spy{background:rgba(225,29,72,.15);border:2px solid #e11d48}
+.spy-role-card.normal{background:rgba(16,185,129,.15);border:2px solid #10b981}
+.spy-word-display{font-size:2.5rem;font-weight:900;padding:1.5rem;background:var(--bg-card);border-radius:14px;margin:1rem auto;max-width:400px;border:2px solid var(--accent);text-align:center}
+.spy-handover-card{background:#000;border:none;border-radius:var(--radius);max-width:400px;margin:1rem auto;padding:3rem 1.5rem;text-align:center;color:#fff;box-shadow:none}
+.spy-handover-card .spy-handover-text{font-size:1.5rem;font-weight:900;color:#fff;line-height:1.6}
+.spy-handover-card .spy-handover-btn{display:block;width:100%;padding:.9rem;margin-top:1.5rem;border-radius:8px;border:1px solid #fff;background:transparent;color:#fff;font-size:1.15rem;font-weight:800;cursor:pointer;transition:var(--transition)}
+.spy-handover-card .spy-handover-btn:hover{background:#fff;color:#000}
+.spy-hint-box{padding:1rem;border-radius:8px;background:rgba(245,158,11,.1);border:1px solid var(--accent-gold);margin:1rem 0;text-align:center}
+.spy-desc-item{padding:.6rem .8rem;border-radius:8px;background:var(--bg-secondary);margin:.4rem 0}
+.spy-desc-item .name{font-weight:700;margin-left:.5rem}
+.spy-vote-btn{display:block;width:100%;padding:.6rem;margin:.3rem 0;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;font-size:1rem;transition:var(--transition)}
+.spy-vote-btn:hover{border-color:var(--accent-blue)}
+.spy-vote-btn.selected{border-color:var(--accent-gold);background:rgba(245,158,11,.15)}
+.spy-mc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin:1rem 0}
+.spy-mc-btn{padding:.8rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer;font-size:1rem;transition:var(--transition)}
+.spy-mc-btn:hover{border-color:var(--accent-blue)}
+.spy-mc-btn.selected{border-color:var(--accent-green);background:rgba(16,185,129,.12)}
+.spy-score-table{width:100%;border-collapse:collapse;margin:1rem 0}
+.spy-score-table th,.spy-score-table td{padding:.6rem;border:1px solid var(--border-color);text-align:center}
+.spy-score-table th{background:var(--bg-secondary);font-weight:700}
+.spy-score-table tr:nth-child(even){background:rgba(255,255,255,.02)}
+@media(max-width:600px){.spy-topic-grid,.spy-mc-grid{grid-template-columns:1fr}}
+</style>
+<h1 style="text-align:center;margin:.5rem 0">🕽️‍♂️ الجاسوس</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1rem">لعبة خداع واستنتاج — اكتشف الجاسوس قبل أن يكتشف الكلمة</p>
+<div style="text-align:center;margin-bottom:1rem">
+<button class="spy-btn" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
+</div>
+
+<div class="spy-step active" id="spyStep2">
+<h3 style="text-align:center;margin-bottom:1rem">👥 عدد اللاعبين</h3>
+<div style="text-align:center">
+<input type="number" class="spy-input" id="spyCount" min="3" max="10" value="5" style="max-width:200px">
+<br>
+<button class="spy-btn spy-btn-primary" onclick="goToStep3()">التالي ←</button>
+</div>
+</div>
+
+<div class="spy-step" id="spyStep3">
+<h3 style="text-align:center;margin-bottom:1rem">✏️ أسماء اللاعبين</h3>
+<div id="spyNameInputs"></div>
+<div style="text-align:center;margin-top:1rem">
+<button class="spy-btn spy-btn-gold" onclick="startGame()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء</button>
+</div>
+</div>
+
+<div class="spy-step" id="spyStep4">
+<h3 style="text-align:center;margin-bottom:1rem">🎭 توزيع الأدوار</h3>
+<div id="spyRoleCard"></div>
+<div style="text-align:center">
+<button class="spy-btn spy-btn-primary" id="spyRoleBtn" onclick="nextRole()">👁️ اعرض دوري</button>
+</div>
+</div>
+
+<div class="spy-step" id="spyStep5">
+<h3 style="text-align:center;margin-bottom:1rem">🗣️ الوصف</h3>
+<div id="spyDescArea"></div>
+</div>
+
+<div class="spy-step" id="spyStep6">
+<h3 style="text-align:center;margin-bottom:1rem">🗳️ التصويت</h3>
+<div id="spyVoteArea"></div>
+</div>
+
+<div class="spy-step" id="spyStep7">
+<h3 style="text-align:center;margin-bottom:1rem">🎯 فرصة الجاسوس</h3>
+<div id="spyGuessArea"></div>
+</div>
+
+<div class="spy-step" id="spyStep8">
+<h3 style="text-align:center;margin-bottom:1rem">🏆 النتائج النهائية</h3>
+<div id="spyFinalResults"></div>
+<div style="text-align:center;margin-top:1rem">
+<button class="spy-btn spy-btn-primary" onclick="resetGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة</button>
+<button class="spy-btn" onclick="location.href='/games'">العودة</button>
+</div>
+</div>
+
+<script>
+var spyPlayers=[],spyTopic=null,spyIdx=0,spyCurrentRoleIdx=0,spyDescriptions=[],spyVotes={},spyRound=1,spyScores={},spyRoleViewed=false,spyDescIdx=0,spyVoteIdx=0,spyTopicPool=[],spyHintWord='',spyMcOptions=[];
+async function loadSpyContent(){
+var r=await fetch('/api/content/spy?status=approved&per_page=500');
+var d=await r.json();
+return d.items||[];
+}
+async function initSpy(){
+spyTopicPool=await loadSpyContent();
+if(!spyTopicPool.length){alert('لا توجد كلمات في المكتبة');return}
+// الموضوع يُسحب عشوائياً عند بدء المباراة فقط — لا يظهر في صفحة البداية
+showStep('spyStep2');
+}
+function goToStep3(){
+var count=Math.max(3,Math.min(10,parseInt(document.getElementById('spyCount').value)||5));
+var container=document.getElementById('spyNameInputs');
+container.innerHTML='';
+for(var i=0;i<count;i++){
+var input=document.createElement('input');
+input.type='text';input.className='spy-name-input';input.id='spyName'+i;
+input.placeholder='اسم اللاعب '+(i+1);
+container.appendChild(input);
+container.appendChild(document.createElement('br'));
+}
+showStep('spyStep3');
+}
+async function startGame(){
+var count=parseInt(document.getElementById('spyCount').value)||5;
+spyPlayers=[];
+for(var i=0;i<count;i++){
+var name=document.getElementById('spyName'+i).value.trim();
+spyPlayers.push(name||('لاعب '+(i+1)));
+}
+var r=await fetch('/api/content/spy?status=approved&per_page=500');
+var d=await r.json();var pool=d.items||[];
+if(!pool.length){alert('لا توجد كلمات في المكتبة');return}
+spyTopic=pool[Math.floor(Math.random()*pool.length)];
+spyIdx=Math.floor(Math.random()*spyPlayers.length);
+spyScores={};spyPlayers.forEach(function(p){spyScores[p]=0});
+spyRound=1;
+spyDescriptions=[];
+showStep('spyStep4');
+spyCurrentRoleIdx=0;spyRoleViewed=false;
+renderRole();
+}
+
+function renderRole(){
+spyRoleViewed=false;
+var card=document.getElementById('spyRoleCard');
+card.innerHTML='<div class="spy-handover-card"><div class="spy-handover-text">اعطي الجهاز ل '+spyPlayers[spyCurrentRoleIdx]+'</div><button class="spy-handover-btn" id="spyHandoverBtn" onclick="revealRole()">👁️ اعرض دوري</button></div>';
+var btn=document.getElementById('spyRoleBtn');
+btn.style.display='none';
+btn.textContent='👁️ اعرض دوري';
+btn.className='spy-btn spy-btn-primary';
+}
+function revealRole(){
+spyRoleViewed=true;
+var isSpy=spyCurrentRoleIdx===spyIdx;
+var card=document.getElementById('spyRoleCard');
+if(isSpy){
+card.innerHTML='<div class="spy-role-card spy"><h3>'+spyPlayers[spyCurrentRoleIdx]+'</h3><p style="font-size:1.3rem;font-weight:800;color:#e11d48">🕵️ أنت الجاسوس!</p><p>لا تعرف الكلمة — حاول اكتشافها دون أن تنكشف</p></div>';
+}else{
+card.innerHTML='<div class="spy-role-card normal"><h3>'+spyPlayers[spyCurrentRoleIdx]+'</h3><p style="font-size:1.3rem;font-weight:800;color:#10b981">👤 لاعب عادي</p><div class="spy-word-display">'+spyTopic.word+'</div></div>';
+}
+var btn=document.getElementById('spyRoleBtn');
+btn.style.display='';
+btn.textContent='التالي ← مرر الجهاز';
+btn.className='spy-btn spy-btn-gold';
+}
+function nextRole(){
+if(!spyRoleViewed){revealRole();return}
+spyCurrentRoleIdx++;
+if(spyCurrentRoleIdx>=spyPlayers.length){
+startDescriptionPhase();
+}else{
+renderRole();
+}
+}
+function startDescriptionPhase(){
+showStep('spyStep5');
+spyDescIdx=0;
+renderDescriptionPhase();
+}
+function renderDescriptionPhase(){
+var isSpy=spyDescIdx===spyIdx;
+var area=document.getElementById('spyDescArea');
+var html='<p style="text-align:center;margin-bottom:1rem">مرر الجهاز إلى: <b>'+spyPlayers[spyDescIdx]+'</b></p>';
+if(isSpy){
+html+='<div class="spy-hint-box"><p style="color:var(--accent-gold);font-weight:700">💡 تلميح الجاسوس</p><p>'+spyHintWord+'</p></div>';
+}
+html+='<input type="text" class="spy-input" id="spyDescInput" placeholder="اكتب وصفاً قصيراً (كلمة واحدة أو عبارة قصيرة)" maxlength="50">';
+html+='<div style="text-align:center;margin-top:.8rem"><button class="spy-btn spy-btn-gold" onclick="submitDescription()">التالي ←</button></div>';
+area.innerHTML=html;
+}
+function submitDescription(){
+var desc=document.getElementById('spyDescInput').value.trim();
+if(!desc){alert('أدخل وصفاً');return}
+spyDescriptions.push({player:spyPlayers[spyDescIdx],desc:desc});
+spyDescIdx++;
+if(spyDescIdx>=spyPlayers.length){
+showDescSummary();
+}else{
+renderDescriptionPhase();
+}
+}
+
+function showDescSummary(){
+var area=document.getElementById('spyDescArea');
+var html='<p style="text-align:center;margin-bottom:1rem">📋 ملخص الأوصاف</p>';
+spyDescriptions.forEach(function(d){
+html+='<div class="spy-desc-item"><span class="name">'+d.player+':</span>'+d.desc+'</div>';
+});
+html+='<div style="text-align:center;margin-top:1rem">';
+if(spyRound<3){
+html+='<button class="spy-btn spy-btn-danger" onclick="startVoting()">🗳️ التصويت</button>';
+html+='<button class="spy-btn" onclick="nextRound()">🔄 جولة أخرى</button>';
+}else{
+html+='<button class="spy-btn spy-btn-danger" onclick="startVoting()">🗳️ التصويت</button>';
+}
+html+='</div>';
+area.innerHTML=html;
+}
+function nextRound(){
+spyRound++;
+spyDescriptions=[];
+showStep('spyStep5');
+spyDescIdx=0;
+renderDescriptionPhase();
+}
+function startVoting(){
+showStep('spyStep6');
+spyVoteIdx=0;
+spyVotes={};
+renderVotingPhase();
+}
+function renderVotingPhase(){
+var area=document.getElementById('spyVoteArea');
+var voter=spyPlayers[spyVoteIdx];
+var html='<p style="text-align:center;margin-bottom:1rem">مرر الجهاز إلى: <b>'+voter+'</b></p>';
+html+='<div id="spyVoteCard"></div>';
+area.innerHTML=html;
+document.getElementById('spyVoteCard').innerHTML='<div style="text-align:center"><button class="spy-btn spy-btn-primary" onclick="showVoteOptions()">🗳️ أنا '+voter+' — صوّت</button></div>';
+}
+function showVoteOptions(){
+var voter=spyPlayers[spyVoteIdx];
+var area=document.getElementById('spyVoteCard');
+var others=spyPlayers.filter(function(_,i){return i!==spyVoteIdx});
+var html='<p style="text-align:center;margin-bottom:.5rem">من تعتقد أنه الجاسوس؟</p>';
+html+='<div id="spyVoteBtns">';
+others.forEach(function(p){
+var idx=spyPlayers.indexOf(p);
+html+='<button class="spy-vote-btn" onclick="castVote('+idx+')">'+p+'</button>';
+});
+html+='</div>';
+html+='<div style="text-align:center;margin-top:1rem"><button class="spy-btn spy-btn-gold" onclick="nextVoter()">التالي ←</button></div>';
+area.innerHTML=html;
+}
+function castVote(targetIdx){
+spyVotes[spyVoteIdx]=targetIdx;
+document.querySelectorAll('.spy-vote-btn').forEach(function(b){b.classList.remove('selected')});
+event.target.classList.add('selected');
+}
+function nextVoter(){
+spyVoteIdx++;
+if(spyVoteIdx>=spyPlayers.length){
+tallyVotes();
+}else{
+renderVotingPhase();
+}
+}
+
+function tallyVotes(){
+var counts={};
+Object.values(spyVotes).forEach(function(t){counts[t]=(counts[t]||0)+1});
+var maxVotes=Math.max(...Object.values(counts));
+var accused=Object.entries(counts).filter(function(e){return e[1]===maxVotes}).map(function(e){return parseInt(e[0])});
+var spyCaught=accused.includes(spyIdx)&&accused.length===1;
+var resultText,resultColor,resultDetail;
+if(spyCaught){
+resultText='🎉 تم كشف الجاسوس!';resultColor='#10b981';
+resultDetail=spyPlayers[spyIdx]+' كان الجاسوس. الكلمة السرية كانت: '+spyTopic.word;
+Object.keys(spyVotes).forEach(function(voter){
+if(spyVotes[voter]===spyIdx){spyScores[spyPlayers[voter]]+=100}
+});
+}else if(accused.length>1){
+resultText='🤝 تعادل!';resultColor='#f59e0b';
+resultDetail='تعادل بين: '+accused.map(function(i){return spyPlayers[i]}).join(', ')+'. الكلمة السرية كانت: '+spyTopic.word;
+spyScores[spyPlayers[spyIdx]]+=100;
+}else{
+resultText='🕵️ الجاسوس أفلت!';resultColor='#e11d48';
+resultDetail='الجاسوس كان '+spyPlayers[spyIdx]+'. الكلمة السرية: '+spyTopic.word;
+spyScores[spyPlayers[spyIdx]]+=100;
+}
+spyLastResult={text:resultText,color:resultColor,detail:resultDetail};
+showStep('spyStep7');
+renderSpyGuess();
+}
+function renderSpyGuess(){
+spyMcOptions=generateMcOptions();
+var area=document.getElementById('spyGuessArea');
+area.innerHTML='<p style="text-align:center;margin-bottom:1rem">أي كلمة كانت يحاول الجاسوس اكتشافها؟</p><div class="spy-mc-grid">'+spyMcOptions.map(function(w,i){
+return '<button class="spy-mc-btn" onclick="spyGuess('+i+')">'+w+'</button>';
+}).join('')+'</div>';
+}
+function generateMcOptions(){
+var category=spyTopic.category;
+var sameCat=spyTopicPool.filter(function(t){return t.category===category&&t.word!==spyTopic.word});
+var shuffled=sameCat.sort(function(){return Math.random()-.5});
+var options=shuffled.slice(0,7).map(function(t){return t.word});
+options.push(spyTopic.word);
+options=options.sort(function(){return Math.random()-.5});
+return options;
+}
+function spyGuess(i){
+var picked=spyMcOptions[i];
+document.querySelectorAll('.spy-mc-btn').forEach(function(b){b.classList.remove('selected')});
+document.querySelectorAll('.spy-mc-btn')[i].classList.add('selected');
+if(picked===spyTopic.word){
+spyScores[spyPlayers[spyIdx]]+=50;
+showFinalResults(true);
+}else{
+showFinalResults(false);
+}
+}
+function showFinalResults(spyGuessed){
+var area=document.getElementById('spyFinalResults');
+var html='<p style="text-align:center;font-size:1.5rem;font-weight:800;color:'+spyLastResult.color+'">'+spyLastResult.text+'</p>';
+html+='<p style="text-align:center;color:var(--text-secondary);margin:.5rem 0">'+spyLastResult.detail+'</p>';
+if(spyGuessed){
+html+='<p style="text-align:center;color:var(--accent-green);font-weight:700">🎯 الجاسوس خمّن الكلمة وحصل على +50 نقطة!</p>';
+}else{
+html+='<p style="text-align:center;color:var(--accent-red)">❌ الجاسوس فشل في تخمين الكلمة</p>';
+}
+html+='<table class="spy-score-table"><thead><tr><th>اللاعب</th><th>النقاط</th></tr></thead><tbody>';
+Object.entries(spyScores).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){
+var isSpy=e[0]===spyPlayers[spyIdx];
+html+='<tr><td>'+(isSpy?'🕵️ ':'')+e[0]+'</td><td>'+e[1]+'</td></tr>';
+});
+html+='</tbody></table>';
+area.innerHTML=html;
+showStep('spyStep8');
+}
+function showStep(id){
+document.querySelectorAll('.spy-step').forEach(function(s){s.classList.remove('active')});
+document.getElementById(id).classList.add('active');
+}
+function resetGame(){
+spyPlayers=[];spyTopic=null;spyIdx=0;spyDescriptions=[];spyVotes={};spyRound=1;spyScores={};spyRoleViewed=false;spyDescIdx=0;spyVoteIdx=0;spyHintWord='';spyMcOptions=[];
+var resetBtn=document.getElementById('spyRoleBtn');
+if(resetBtn){resetBtn.style.display=''}
+document.getElementById('spyCount').value=5;
+showStep('spyStep2');
+}
+function toggleFullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+initSpy();
+</script>
+{% endblock %}

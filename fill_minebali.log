@@ -1,0 +1,53 @@
+bank before: 81
+attribute fixes: 0
+near-duplicates dropped: 0
+  أنمي — have 33, generating 20
+    round 1: +7 (total 7/20) rejected=13 err=
+    round 2: +7 (total 14/20) rejected=13 err=
+    round 3: +9 (total 20/20) rejected=8 err=
+    -> added 20
+  مسلسلات — have 16, generating 20
+    round 1: +10 (total 10/20) rejected=10 err=
+    round 2: +10 (total 20/20) rejected=7 err=
+    -> added 20
+  مشاهير — have 14, generating 20
+    round 1: +10 (total 10/20) rejected=8 err=
+    round 2: +10 (total 20/20) rejected=6 err=
+    -> added 20
+  الصحابة — have 6, generating 20
+    round 1: +8 (total 8/20) rejected=12 err=
+    round 2: +2 (total 10/20) rejected=18 err=
+    round 3: +5 (total 15/20) rejected=15 err=
+    round 4: +0 (total 15/20) rejected=16 err=
+    round 5: +0 (total 15/20) rejected=15 err=
+    round 6: +0 (total 15/20) rejected=15 err=
+    -> added 15
+  أبطال الأفلام — have 4, generating 20
+    round 1: +10 (total 10/20) rejected=6 err=
+    round 2: +10 (total 20/20) rejected=7 err=
+    -> added 20
+  أبطال الألعاب — have 3, generating 20
+    round 1: +8 (total 8/20) rejected=12 err=
+    round 2: +8 (total 16/20) rejected=12 err=
+    round 3: +5 (total 20/20) rejected=9 err=
+    -> added 20
+  شخصيات كرتونية — have 3, generating 20
+    round 1: +10 (total 10/20) rejected=9 err=
+ound 4: +0 (total 0/20) rejected=20 err=
+    round 5: +0 (total 0/20) rejected=20 err=
+    -> added 0
+  أبطال الألعاب — have 3, generating 20
+    round 1: +0 (total 0/20) rejected=20 err=
+    round 2: +0 (total 0/20) rejected=20 err=
+    round 3: +0 (total 0/20) rejected=20 err=
+    round 4: +0 (total 0/20) rejected=20 err=
+    round 5: +0 (total 0/20) rejected=20 err=
+    -> added 0
+  شخصيات كرتونية — have 3, generating 20
+    round 1: +0 (total 0/20) rejected=20 err=
+    round 2: +0 (total 0/20) rejected=20 err=
+    round 3: +0 (total 0/20) rejected=20 err=
+    round 4: +0 (total 0/20) rejected=20 err=
+    round 5: +0 (total 0/20) rejected=20 err=
+    -> added 0
+  العلماء والمخترعون — have 2, generating 20

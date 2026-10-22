@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> | ألعاب أمين</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">🎮</span>
+            <span class="logo-text">ألعاب أمين</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">الرئيسية</a>
+            <a href="/games" class="nav-link">الألعاب</a>
+            <a href="/how-to-play" class="nav-link">طريقة اللعب</a>
+            <a href="/about" class="nav-link">عن الموقع</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-primary" onclick="window.location.href='/games'">🎮 ابدأ اللعب</button>
+            <a href="/admin" class="nav-link" style="opacity:.4;font-size:1.1rem;" title="لوحة الإدارة">🔒</a>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/">الرئيسية</a>
+        <a href="/games">الألعاب</a>
+        <a href="/how-to-play">طريقة اللعب</a>
+        <a href="/about">عن الموقع</a>
+        <a href="/admin" style="opacity:.5">🔒 لوحة الإدارة</a>
+    </div>
+    
+    <main class="main-content">
+        
+<style>
+.fifa-card{width:250px;height:350px;margin:0 auto;border-radius:18px;position:relative;
+  background:linear-gradient(160deg,#f8ecc2 0%,#e6c96a 42%,#c9a227 78%,#a8871c 100%);
+  color:#2f2600;padding:12px 15px;box-shadow:0 14px 34px rgba(0,0,0,.5);
+  clip-path:polygon(0 0,100% 0,100% 87%,87% 100%,0 100%);font-family:Cairo,sans-serif;}
+.fifa-card.legend{background:linear-gradient(160deg,#2b2118 0%,#5a4326 40%,#c9a227 100%);color:#f6e6b4;}
+.fifa-top{display:flex;justify-content:space-between;align-items:flex-start}
+.fifa-rating{font-size:46px;font-weight:900;line-height:1}
+.fifa-pos{font-size:15px;font-weight:800;letter-spacing:1px}
+.fifa-meta{text-align:left;font-size:11px;font-weight:800;line-height:1.5}
+.fifa-photo{height:132px;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;opacity:.85}
+.fifa-photo img{max-height:130px;max-width:100%;object-fit:contain}
+.fifa-name{text-align:center;font-size:21px;font-weight:900;border-top:2px solid rgba(0,0,0,.18);
+  padding-top:7px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fifa-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px 16px;margin-top:7px;font-size:12px;font-weight:800}
+.fifa-stats span{display:flex;justify-content:space-between}
+.pick-box{max-height:150px;overflow-y:auto;background:var(--bg-secondary);border-radius:10px;padding:.45rem}
+.pick-item{display:block;padding:.18rem .3rem;font-size:.8rem;cursor:pointer}
+.pitch{background:linear-gradient(#14532d,#166534);border-radius:14px;padding:12px;position:relative;min-height:300px}
+.pitch-line{position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.25)}
+.pitch-row{display:flex;justify-content:space-around;align-items:center;margin:12px 0;position:relative;z-index:2;flex-wrap:wrap;gap:.35rem}
+.pitch-player{background:rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.35);border-radius:10px;
+  padding:4px 7px;text-align:center;min-width:74px;color:#fff;font-size:10px;font-weight:800}
+.pitch-player .r{font-size:14px;color:#fde047}
+.auc-layout{display:grid;grid-template-columns:290px 1fr 270px;gap:.9rem;align-items:start}
+@media(max-width:1200px){.auc-layout{grid-template-columns:1fr}}
+.bid-turn{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.05));
+  border:2px solid var(--accent-gold);border-radius:14px;padding:.9rem;text-align:center}
+.bid-turn .who{font-size:1.35rem;font-weight:900;color:var(--accent-gold)}
+.order-bar{display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;font-size:.75rem}
+.order-chip{padding:.2rem .6rem;border-radius:50px;background:var(--bg-secondary);border:1px solid var(--border-color)}
+.order-chip.on{background:var(--accent-gold);color:#1a1206;border-color:transparent;font-weight:900}
+.fs-btn{background:rgba(255,255,255,.07);border:1px solid var(--border-color);border-radius:10px;
+  color:var(--text-primary);padding:.3rem .65rem;cursor:pointer;font-family:inherit;font-weight:800;font-size:.78rem}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+:fullscreen .game-container{max-width:100%;padding:.5rem}
+</style>
+
+<div id="auction-setup" class="setup-screen">
+    <h2>💰 مزاد اللاعبين — إعداد المزاد</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group"><label>عدد المشاركين</label>
+            <select id="participantCount" onchange="renderParticipantInputs()">
+                <option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option>
+            </select></div>
+        <div class="form-group"><label>عدد اللاعبين لكل مشارك</label>
+            <input type="number" id="playersNeeded" value="5" min="1" max="15"></div>
+    </div>
+
+    <div id="participantInputs"></div>
+
+    <h3 style="margin:1.2rem 0 .5rem;">الميزانية</h3>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+        <div class="form-group"><label>المبلغ الكلي لكل مشارك</label><input type="number" id="budget" value="100" min="1"></div>
+        <div class="form-group"><label>الوحدة</label>
+            <select id="budgetUnit"><option value="مليون">مليون</option><option value="مليار">مليار</option><option value="كوينز">كوينز</option></select></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="form-group"><label>السعر الافتتاحي</label><input type="number" id="initialPrice" value="5" min="1"></div>
+        <div class="form-group"><label>أدنى زيادة</label><input type="number" id="minBid" value="5" min="1"></div>
+        <div class="form-group"><label>مدة الدور</label>
+            <select id="bidDuration">
+                <option value="0">بدون مؤقت</option><option value="15">15 ثانية</option>
+                <option value="30" selected>30 ثانية</option><option value="60">60 ثانية</option>
+            </select></div>
+    </div>
+
+    <h3 style="margin:1.2rem 0 .5rem;">فئات اللاعبين</h3>
+    <div class="form-group"><label>الحقبة</label>
+        <select id="eraFilter" onchange="updatePoolSummary()">
+            <option value="both">حاليون ومعتزلون</option><option value="current">حاليون فقط</option><option value="retired">معتزلون فقط</option>
+        </select></div>
+    <p style="color:var(--text-secondary);font-size:.83rem;margin-bottom:.5rem;">
+        اختر فئة أو أكثر (يمكن الدمج). ترتيب العرض: <b>حراسة ← دفاع ← وسط ← هجوم</b>.
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div><div style="font-weight:700;margin-bottom:.35rem;">الدوريات</div><div id="leagueBox" class="pick-box"></div></div>
+        <div><div style="font-weight:700;margin-bottom:.35rem;">الأندية</div><div id="clubBox" class="pick-box"></div></div>
+        <div><div style="font-weight:700;margin-bottom:.35rem;">المنتخبات</div><div id="nationBox" class="pick-box"></div></div>
+        <div><div style="font-weight:700;margin-bottom:.35rem;">ملخص</div>
+            <div id="poolSummary" style="background:var(--bg-secondary);border-radius:12px;padding:.9rem;font-size:.88rem;">جاري التحميل...</div></div>
+    </div>
+
+    <div class="form-group" style="margin-top:1rem;"><label><input type="checkbox" id="soundEnabled" checked> تفعيل الأصوات</label></div>
+
+    <div class="setup-actions">
+        <button class="btn btn-primary btn-lg" onclick="startAuction()">🎮 ابدأ المزاد</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+</div>
+
+<div id="auction-game" class="game-container" style="display:none;">
+    <div class="auc-layout">
+        <div>
+            <div id="cardSlot"></div>
+            <div id="playerMeta" style="text-align:center;margin-top:.5rem;font-size:.82rem;color:var(--text-secondary);"></div>
+            <div class="order-bar" style="margin-top:.5rem;" id="orderBar"></div>
+        </div>
+
+        <div>
+            <div class="bid-turn" id="bidTurnBox">
+                <div style="font-size:.75rem;color:var(--text-muted)">الدور على</div>
+                <div class="who" id="turnWho">—</div>
+                <div style="font-size:.85rem;margin-top:.3rem;" id="turnAction">—</div>
+                <div style="display:flex;gap:.5rem;justify-content:center;margin-top:.7rem;flex-wrap:wrap;">
+                    <button class="btn btn-success btn-lg" id="bidBtn" onclick="doBid()">🔨 زايد</button>
+                    <button class="btn btn-secondary btn-lg" id="passBtn" onclick="doPass()">🚪 تمرير</button>
+                </div>
+                <div style="margin-top:.5rem;font-size:.78rem;color:var(--text-muted)" id="turnTimer"></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin:.8rem 0;">
+                <div class="stat-card"><div class="number" id="currentBid" style="font-size:1.5rem;">0</div><div class="label">المزايدة الحالية</div></div>
+                <div class="stat-card"><div class="number" id="currentBidder" style="font-size:.95rem;color:var(--accent-gold);">لا يوجد</div><div class="label">أعلى مزايد</div></div>
+                <div class="stat-card"><div class="number" id="roundInfo" style="font-size:1rem;">0/0</div><div class="label">جولة</div></div>
+            </div>
+
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.7rem;">
+                <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+                <button class="btn btn-secondary btn-sm" onclick="finishAuction()">🛑 إنهاء المزاد</button>
+                <span id="playerStatus" class="badge badge-blue">معروض</span>
+            </div>
+
+            <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:.8rem;">
+                <div style="font-weight:800;margin-bottom:.4rem;font-size:.9rem;">سجل المزايدات</div>
+                <div id="bidHistory" style="max-height:150px;overflow-y:auto;font-size:.8rem;"></div>
+            </div>
+        </div>
+
+        <div>
+            <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:.8rem;margin-bottom:.7rem;">
+                <div style="font-weight:800;margin-bottom:.4rem;font-size:.9rem;">المشاركون</div>
+                <div id="participantsList"></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:.8rem;">
+                <div style="font-weight:800;margin-bottom:.4rem;font-size:.9rem;">سجل الميزانية</div>
+                <div id="ledger" style="max-height:200px;overflow-y:auto;font-size:.76rem;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="auction-results" class="game-container" style="display:none;">
+    <div class="page-header"><h1>🏆 نتائج المزاد</h1></div>
+    <div class="form-group" style="max-width:320px;margin:0 auto 1rem;">
+        <label>التشكيلة التكتيكية</label>
+        <select id="globalFormation" onchange="applyFormationToAll()">
+            <option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option>
+            <option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option>
+            <option value="2-1-1">1-2-1-1</option>
+        </select>
+    </div>
+    <div id="resultsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1rem;"></div>
+    <div style="text-align:center;margin-top:1.5rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-gold btn-lg" onclick="runAiMatch()">🤖 دع الذكاء الاصطناعي يحكّم المباراة</button>
+        <button class="btn btn-secondary" onclick="resetAuction()">🔄 مزاد جديد</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+    </div>
+    <div id="aiMatchBox" style="display:none;margin-top:1.25rem;background:var(--bg-card);border:1px solid var(--accent-gold);border-radius:14px;padding:1.25rem;"></div>
+</div>
+
+    </main>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon">🎮</span>
+                <span>ألعاب أمين</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">الرئيسية</a>
+                <a href="/games">الألعاب</a>
+                <a href="/library">مكتبة الأسئلة</a>
+                <a href="/about">عن الموقع</a>
+            </div>
+            <div class="footer-version">الإصدار 1.0.0</div>
+            <div class="footer-rights">© 2024 ألعاب أمين — جميع الحقوق محفوظة</div>
+        </div>
+    </footer>
+    
+    <script src="/static/js/main.js"></script>
+    
+<script>
+var A = null;
+var ALL_PLAYERS = [];
+var GROUP_ORDER = ['GK', 'DEF', 'MID', 'ATT'];
+var GROUP_AR = {GK:'حراسة', DEF:'دفاع', MID:'وسط', ATT:'هجوم'};
+
+function toggleFullscreen() {
+    var el = document.documentElement;
+    if (!document.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+}
+document.addEventListener('fullscreenchange', function () {
+    var b = document.getElementById('fsBtn');
+    if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+});
+
+function loadMeta() {
+    fetch('/api/players/meta').then(function (r) { return r.json(); }).then(function (m) {
+        fillPick('leagueBox', m.leagues, 'league');
+        fillPick('clubBox', m.clubs, 'club');
+        fillPick('nationBox', m.nations, 'nation');
+        updatePoolSummary();
+    });
+    fetch('/api/players').then(function (r) { return r.json(); }).then(function (d) {
+        ALL_PLAYERS = d.players; updatePoolSummary();
+    });
+}
+function fillPick(boxId, items, kind) {
+    document.getElementById(boxId).innerHTML = items.map(function (v) {
+        return '<label class="pick-item"><input type="checkbox" data-kind="' + kind + '" value="' + v +
+               '" onchange="updatePoolSummary()"> ' + v + '</label>';
+    }).join('');
+}
+function picked(kind) {
+    var out = [];
+    document.querySelectorAll('input[data-kind="' + kind + '"]:checked').forEach(function (c) { out.push(c.value); });
+    return out;
+}
+function groupOf(pos) {
+    if (pos === 'GK') return 'GK';
+    if (['CB','LB','RB'].indexOf(pos) >= 0) return 'DEF';
+    if (['CDM','CM','CAM'].indexOf(pos) >= 0) return 'MID';
+    return 'ATT';
+}
+function filteredPool() {
+    var era = document.getElementById('eraFilter').value;
+    var lg = picked('league'), cl = picked('club'), na = picked('nation');
+    return ALL_PLAYERS.filter(function (p) {
+        if (era !== 'both' && p.era !== era) return false;
+        if (lg.length && lg.indexOf(p.league) < 0) return false;
+        if (cl.length && cl.indexOf(p.club) < 0) return false;
+        if (na.length && na.indexOf(p.nationality) < 0) return false;
+        return true;
+    });
+}
+function updatePoolSummary() {
+    var el = document.getElementById('poolSummary');
+    if (!el) return;
+    if (!ALL_PLAYERS.length) { el.textContent = 'جاري التحميل...'; return; }
+    var pool = filteredPool();
+    var g = {GK:0,DEF:0,MID:0,ATT:0};
+    pool.forEach(function (p) { g[groupOf(p.position)]++; });
+    el.innerHTML = '<b>' + pool.length + '</b> لاعب متاح<br>' +
+        'حراسة ' + g.GK + ' · دفاع ' + g.DEF + ' · وسط ' + g.MID + ' · هجوم ' + g.ATT;
+}
+function renderParticipantInputs() {
+    var n = parseInt(document.getElementById('participantCount').value);
+    var html = '';
+    for (var i = 0; i < n; i++) {
+        html += '<div class="form-group"><label>اسم المشارك ' + (i + 1) + '</label>' +
+                '<input type="text" id="pname' + i + '" value="مشارك ' + (i + 1) + '"></div>';
+    }
+    document.getElementById('participantInputs').innerHTML = html;
+    if (n === 5) {
+        document.getElementById('playersNeeded').value = '5';
+    }
+}
+function fmt(n) { return Number(n).toLocaleString('ar-EG'); }
+
+/* ===== pool ordered by position: GK -> DEF -> MID -> ATT (random inside each group) ===== */
+function orderedPool(pool) {
+    var out = [];
+    GROUP_ORDER.forEach(function (g) {
+        var grp = pool.filter(function (p) { return groupOf(p.position) === g; });
+        for (var i = grp.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = grp[i]; grp[i] = grp[j]; grp[j] = t;
+        }
+        out = out.concat(grp);
+    });
+    return out;
+}
+
+function startAuction() {
+    var n = parseInt(document.getElementById('participantCount').value);
+    var budget = parseInt(document.getElementById('budget').value) || 100;
+    var unit = document.getElementById('budgetUnit').value;
+    var need = parseInt(document.getElementById('playersNeeded').value) || 5;
+    var init = parseInt(document.getElementById('initialPrice').value) || 5;
+    var minBid = parseInt(document.getElementById('minBid').value) || 5;
+    var dur = parseInt(document.getElementById('bidDuration').value) || 0;
+    SoundManager.enabled = document.getElementById('soundEnabled').checked;
+
+    var parts = [];
+    for (var i = 0; i < n; i++) {
+        var nm = (document.getElementById('pname' + i).value || '').trim() || ('مشارك ' + (i + 1));
+        parts.push({ name: nm, budget: budget, squad: [], maxPlayers: need });
+    }
+    var pool = filteredPool();
+    if (pool.length < 2) { showToast('لا يوجد لاعبون بهذه الفئات', 'error'); return; }
+
+    A = { unit: unit, initialPrice: init, minBid: minBid, bidDuration: dur,
+          participants: parts, need: need, pool: orderedPool(pool), usedIds: {},
+          round: 0, startIdx: 0, turnIdx: 0, currentBid: 0, lastBidder: null,
+          active: [], withdrawn: {}, over: false, bidHistory: [], ledger: [],
+          currentPlayer: null, timerId: null, endTime: null };
+
+    document.getElementById('auction-setup').style.display = 'none';
+    document.getElementById('auction-results').style.display = 'none';
+    document.getElementById('auction-game').style.display = 'block';
+    nextPlayer();
+}
+
+function availablePlayers() {
+    return A.pool.filter(function (p) { return !A.usedIds[p.id]; });
+}
+
+function randomReplacement(currentPlayer) {
+    var group = groupOf(currentPlayer.position);
+    var candidates = A.pool.filter(function (p) {
+        return !A.usedIds[p.id] && groupOf(p.position) === group && p.id !== currentPlayer.id;
+    });
+    if (!candidates.length) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function nextPlayer() {
+    if (!A || A.over) return;
+    var avail = availablePlayers();
+    var doneAll = A.participants.every(function (p) { return p.squad.length >= A.need; });
+    if (!avail.length || doneAll) { finishAuction(); return; }
+
+    var p = avail[0];                       // pool is already ordered GK→DEF→MID→ATT
+    A.currentPlayer = p;
+    A.currentBid = 0;
+    A.lastBidder = null;
+    A.withdrawn = {};
+    A.active = A.participants.map(function () { return true; });
+    A.turnIdx = A.startIdx % A.participants.length;   // starting bidder rotates every round
+    A.round++;
+
+    renderPlayerCard(p);
+    renderOrderBar();
+    renderBidHistory();
+    renderLedger();
+    promptTurn();
+}
+
+function renderOrderBar() {
+    var g = groupOf(A.currentPlayer.position);
+    document.getElementById('orderBar').innerHTML = GROUP_ORDER.map(function (x) {
+        return '<span class="order-chip ' + (x === g ? 'on' : '') + '">' + GROUP_AR[x] + '</span>';
+    }).join('');
+}
+
+function renderPlayerCard(p) {
+    var legend = p.era === 'retired' ? ' legend' : '';
+    var initials = p.name.split(' ').map(function (w) { return w.charAt(0); }).join('').slice(0, 2);
+    var photo = p.image ? '<img src="' + p.image + '" alt="">' : '<span>' + initials + '</span>';
+    document.getElementById('cardSlot').innerHTML =
+        '<div class="fifa-card' + legend + '">' +
+          '<div class="fifa-top">' +
+            '<div><div class="fifa-rating">' + p.rating + '</div><div class="fifa-pos">' + p.position + '</div></div>' +
+            '<div class="fifa-meta">' + (p.era === 'retired' ? 'أسطورة' : 'حالي') + '<br>' + p.nationality + '<br>' + p.club + '</div>' +
+          '</div>' +
+          '<div class="fifa-photo">' + photo + '</div>' +
+          '<div class="fifa-name">' + p.name + '</div>' +
+          '<div class="fifa-stats">' +
+            '<span>السرعة <b>' + p.pace + '</b></span><span>التسديد <b>' + p.shooting + '</b></span>' +
+            '<span>التمرير <b>' + p.passing + '</b></span><span>المراوغة <b>' + p.dribbling + '</b></span>' +
+            '<span>الدفاع <b>' + p.defending + '</b></span><span>القوة <b>' + p.physical + '</b></span>' +
+          '</div>' +
+        '</div>';
+    document.getElementById('playerMeta').textContent =
+        p.league_name + ' · ' + p.club + ' · ' + GROUP_AR[groupOf(p.position)];
+    document.getElementById('currentBid').textContent = '0';
+    document.getElementById('currentBidder').textContent = 'لا يوجد';
+    document.getElementById('roundInfo').textContent = A.round + '/' + A.participants.length * A.need;
+    document.getElementById('playerStatus').textContent = 'معروض للبيع';
+    document.getElementById('playerStatus').className = 'badge badge-blue';
+}
+
+function promptTurn() {
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var activeCount = A.active.filter(Boolean).length;
+
+    if (activeCount === 0) { endRound(); return; }
+    if (activeCount === 1 && A.lastBidder !== null && A.active[A.lastBidder]) { endRound(); return; }
+
+    // skip participants who already passed
+    var guard = 0;
+    while (!A.active[A.turnIdx] && guard++ < A.participants.length * 2) {
+        A.turnIdx = (A.turnIdx + 1) % A.participants.length;
+    }
+
+    var p = A.participants[A.turnIdx];
+    var nextAmount = A.currentBid === 0 ? A.initialPrice : A.currentBid + A.minBid;
+    var canAfford = p.budget >= nextAmount;
+
+    document.getElementById('turnWho').textContent = p.name;
+    document.getElementById('turnAction').innerHTML =
+        A.currentBid === 0
+            ? 'هل تفتح المزايدة بـ <b>' + fmt(A.initialPrice) + ' ' + A.unit + '</b>؟'
+            : 'المزايدة الحالية <b>' + fmt(A.currentBid) + ' ' + A.unit + '</b> — زايد إلى <b>' +
+              fmt(nextAmount) + ' ' + A.unit + '</b> أو مرّر.';
+    var bb = document.getElementById('bidBtn');
+    bb.textContent = '🔨 زايد' + (A.currentBid === 0 ? ' (' + fmt(A.initialPrice) + ')' : ' (' + fmt(nextAmount) + ')');
+    bb.disabled = !canAfford;
+    if (!canAfford) document.getElementById('turnAction').innerHTML += '<br><span style="color:var(--accent-red)">ميزانية هذا المشارك لا تكفي — يجب التمرير</span>';
+
+    renderParticipants();
+    startTurnTimer();
+}
+
+function startTurnTimer() {
+    var el = document.getElementById('turnTimer');
+    if (!A.bidDuration) { el.textContent = 'بدون مؤقت'; return; }
+    A.endTime = Date.now() + A.bidDuration * 1000;
+    el.textContent = '⏱️ ' + A.bidDuration;
+    A.timerId = setInterval(function () {
+        var left = Math.max(0, Math.ceil((A.endTime - Date.now()) / 1000));
+        el.textContent = '⏱️ ' + left + ' ثانية';
+        el.style.color = left <= 5 ? 'var(--accent-red)' : '';
+        if (left <= 0) { clearInterval(A.timerId); A.timerId = null; doPass(true); }
+    }, 200);
+}
+
+function doBid() {
+    if (!A || A.over) return;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var p = A.participants[A.turnIdx];
+    var amount = A.currentBid === 0 ? A.initialPrice : A.currentBid + A.minBid;
+    if (amount > p.budget) { showToast('الميزانية لا تسمح', 'error'); return; }
+    A.currentBid = amount;
+    A.lastBidder = A.turnIdx;
+    A.bidHistory.unshift({ player: A.currentPlayer.name, bidder: p.name, amount: amount });
+    document.getElementById('currentBid').textContent = fmt(amount) + ' ' + A.unit;
+    document.getElementById('currentBidder').textContent = p.name;
+    renderBidHistory();
+    SoundManager.play('bid');
+    A.turnIdx = (A.turnIdx + 1) % A.participants.length;
+    promptTurn();
+}
+
+function doPass(auto) {
+    if (!A || A.over) return;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var p = A.participants[A.turnIdx];
+    A.active[A.turnIdx] = false;
+    A.withdrawn[A.turnIdx] = true;
+    showToast((auto ? '⏱️ ' : '') + p.name + ' مرّر');
+    A.turnIdx = (A.turnIdx + 1) % A.participants.length;
+    promptTurn();
+}
+
+function renderBidHistory() {
+    document.getElementById('bidHistory').innerHTML = A.bidHistory.slice(0, 40).map(function (b) {
+        return '<div style="padding:.2rem 0;border-bottom:1px solid var(--border-color);"><b>' + b.bidder +
+               '</b> زايد بـ ' + fmt(b.amount) + ' على ' + b.player + '</div>';
+    }).join('') || '<span style="color:var(--text-muted)">لا مزايدات بعد</span>';
+}
+
+function renderParticipants() {
+    document.getElementById('participantsList').innerHTML = A.participants.map(function (p, i) {
+        var isTurn = (i === A.turnIdx && !A.over);
+        var passed = A.withdrawn[i];
+        return '<div class="participant-card ' + (isTurn ? 'active' : '') + '" style="' +
+               (passed ? 'opacity:.5;' : '') + (isTurn ? 'border-color:var(--accent-gold);' : '') + '">' +
+               '<div style="display:flex;justify-content:space-between;"><b>' + p.name + '</b>' +
+               '<span style="color:var(--accent-gold)">' + fmt(p.budget) + ' ' + A.unit + '</span></div>' +
+               '<div style="font-size:.72rem;color:var(--text-secondary)">' + p.squad.length + '/' + p.maxPlayers +
+               (isTurn ? ' · 🎯 دوره الآن' : '') + (passed ? ' · مرّر' : '') +
+               (i === A.lastBidder ? ' · 🔨 أعلى مزايد' : '') + '</div></div>';
+    }).join('');
+}
+
+function renderLedger() {
+    document.getElementById('ledger').innerHTML = A.ledger.slice(0, 30).map(function (l) {
+        return '<div style="padding:.25rem 0;border-bottom:1px solid var(--border-color);"><b>' + l.player +
+               '</b> → ' + l.buyer + '<br><span style="color:var(--text-muted)">' + fmt(l.before) + ' ← ' +
+               fmt(l.after) + ' ' + A.unit + '</span></div>';
+    }).join('') || '<span style="color:var(--text-muted)">لا عمليات بعد</span>';
+}
+
+function endRound() {
+    if (!A || A.over) return;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var p = A.currentPlayer;
+    A.usedIds[p.id] = true;
+
+    if (A.lastBidder !== null) {
+        var w = A.participants[A.lastBidder];
+        var before = w.budget;
+        w.budget -= A.currentBid;
+        w.squad.push(p);
+        A.ledger.unshift({ player: p.name, buyer: w.name, price: A.currentBid, before: before, after: w.budget });
+        document.getElementById('playerStatus').textContent = 'تم بيعه إلى ' + w.name;
+        document.getElementById('playerStatus').className = 'badge badge-green';
+        showToast('بيع ' + p.name + ' إلى ' + w.name + ' بـ ' + fmt(A.currentBid) + ' ' + A.unit, 'success');
+        SoundManager.play('correct');
+    } else {
+        var replacement = randomReplacement(p);
+        if (replacement) {
+            showToast('لم يُبع ' + p.name + ' — استبدال بـ ' + replacement.name, 'error');
+            A.currentPlayer = replacement;
+            A.currentBid = 0;
+            A.lastBidder = null;
+            A.withdrawn = {};
+            A.active = A.participants.map(function () { return true; });
+            A.turnIdx = A.startIdx % A.participants.length;
+            renderPlayerCard(replacement);
+            renderOrderBar();
+            renderBidHistory();
+            renderLedger();
+            renderParticipants();
+            promptTurn();
+            return;
+        } else {
+            document.getElementById('playerStatus').textContent = 'لم يُبع';
+            document.getElementById('playerStatus').className = 'badge badge-gold';
+            showToast('لم يُبع ' + p.name, 'error');
+        }
+    }
+    A.startIdx = (A.startIdx + 1) % A.participants.length;   // next round starts with the next participant
+    renderParticipants(); renderLedger();
+    setTimeout(nextPlayer, 1100);
+}
+
+function finishAuction() {
+    if (!A || A.over) return;
+    A.over = true;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    document.getElementById('auction-game').style.display = 'none';
+    document.getElementById('auction-results').style.display = 'block';
+    if (A.participants.length === 5 && A.need === 5) {
+        document.getElementById('globalFormation').value = '2-1-1';
+    }
+    applyFormationToAll();
+}
+
+function evaluateSquad(squad) {
+    if (!squad.length) return { score: 0, notes: ['لا يوجد لاعبون'], quality: 0 };
+    var g = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
+    squad.forEach(function (p) { g[groupOf(p.position)]++; });
+    var quality = Math.round(squad.reduce(function (s, p) { return s + p.rating; }, 0) / squad.length);
+    var balance = 100 - (Math.abs(g.DEF - 4) * 6 + Math.abs(g.MID - 4) * 6 + Math.abs(g.ATT - 3) * 6);
+    var notes = [];
+    if (g.GK === 0) notes.push('لا يوجد حارس مرمى');
+    if (g.DEF < 3) notes.push('الدفاع ضعيف');
+    if (g.MID < 3) notes.push('نقص في خط الوسط');
+    if (g.ATT < 2) notes.push('الهجوم ضعيف');
+    if (!notes.length) notes.push('تشكيلة متوازنة');
+    return { score: Math.max(0, Math.round(quality * 0.7 + Math.max(0, balance) * 0.3)), notes: notes, quality: quality };
+}
+function autoAssign(squad, formation) {
+    var rows = formation.split('-').map(Number);
+    var need = { GK: 1, DEF: rows[0], MID: rows[1], ATT: rows[rows.length - 1] };
+    var by = { GK: [], DEF: [], MID: [], ATT: [] };
+    squad.forEach(function (p) { by[groupOf(p.position)].push(p); });
+    Object.keys(by).forEach(function (k) { by[k].sort(function (a, b) { return b.rating - a.rating; }); });
+    var lines = [by.GK.slice(0, 1), by.DEF.slice(0, need.DEF), by.MID.slice(0, need.MID), by.ATT.slice(0, need.ATT)];
+    var used = {};
+    lines.forEach(function (l) { l.forEach(function (p) { used[p.id] = true; }); });
+    return { lines: lines, bench: squad.filter(function (p) { return !used[p.id]; }) };
+}
+function applyFormationToAll() {
+    var formation = document.getElementById('globalFormation').value;
+    document.getElementById('resultsGrid').innerHTML = A.participants.map(function (p) {
+        var ev = evaluateSquad(p.squad);
+        var layout = autoAssign(p.squad, formation);
+        var rowsHtml = layout.lines.slice().reverse().map(function (line) {
+            return '<div class="pitch-row">' + line.map(function (pl) {
+                return '<div class="pitch-player"><div class="r">' + pl.rating + '</div>' + pl.name +
+                       '<div style="opacity:.8">' + pl.position + '</div></div>';
+            }).join('') + '</div>';
+        }).join('');
+        var bench = layout.bench.map(function (b) { return b.name + ' (' + b.rating + ')'; }).join('، ') || 'لا يوجد';
+        var sold = p.squad.reduce(function (s, pl) { return s + pl.price; }, 0);
+        return '<div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:1rem;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">' +
+              '<h3>' + p.name + '</h3>' +
+              '<div style="text-align:left;"><div style="font-size:1.9rem;font-weight:900;color:var(--accent-gold)">' + ev.score + '</div>' +
+              '<div style="font-size:.68rem;color:var(--text-muted)">تقييم التشكيلة</div></div></div>' +
+            '<div class="pitch"><div class="pitch-line"></div>' + rowsHtml + '</div>' +
+            '<div style="margin-top:.7rem;font-size:.82rem;">' +
+              '<div>الميزانية المتبقية: <b>' + fmt(p.budget) + ' ' + A.unit + '</b></div>' +
+              '<div>قيمة اللاعبين: <b>' + fmt(sold) + ' ' + A.unit + '</b></div>' +
+              '<div>متوسط التقييم: <b>' + ev.quality + '</b></div>' +
+              '<div>الاحتياط: ' + bench + '</div>' +
+              '<div style="margin-top:.35rem;color:var(--accent-gold)">' + ev.notes.join(' · ') + '</div></div></div>';
+    }).join('');
+}
+function runAiMatch() {
+    var box = document.getElementById('aiMatchBox');
+    box.style.display = 'block';
+    box.innerHTML = '<div style="text-align:center;">⏳ الذكاء الاصطناعي يحلل التشكيلات ويكتب سيناريو المباراة...</div>';
+    var squads = A.participants.map(function (p) {
+        var ev = evaluateSquad(p.squad);
+        return { name: p.name, rating: ev.score, squad: p.squad.map(function (x) { return { name: x.name, rating: x.rating }; }) };
+    });
+    fetch('/api/ai/match', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({squads: squads})})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.error) { box.innerHTML = '<div style="color:var(--accent-red)">' + d.error + '</div>'; return; }
+            box.innerHTML = '<h3 style="color:var(--accent-gold)">🏆 الفائز: ' + (d.winner || '—') +
+                ' <span style="font-size:1.1rem">(' + (d.score || '') + ')</span></h3>' +
+                '<p style="margin:.8rem 0;line-height:2;">' + (d.scenario || '') + '</p>' +
+                '<p style="color:var(--text-secondary)"><b>السبب:</b> ' + (d.reason || '') + '</p>';
+        })
+        .catch(function (e) { box.innerHTML = '<div style="color:var(--accent-red)">تعذّر الاتصال: ' + e + '</div>'; });
+}
+function resetAuction() {
+    document.getElementById('auction-results').style.display = 'none';
+    document.getElementById('auction-game').style.display = 'none';
+    document.getElementById('auction-setup').style.display = 'block';
+    A = null;
+}
+renderParticipantInputs();
+loadMeta();
+</script>
+
+</body>
+</html>

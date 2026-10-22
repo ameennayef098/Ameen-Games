@@ -1,0 +1,899 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ── Question library ── */
+.lib { max-width: var(--container-wide); margin-inline: auto; padding: var(--space-5) var(--space-6) var(--space-8); }
+
+.lib-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-6); }
+.lib-stats .stat-card { padding: var(--space-4) var(--space-3); }
+.lib-stats .number { font-size: var(--font-size-xl); }
+.lib-stats .label { font-size: var(--font-size-xs); }
+
+/* Tabs: real buttons in a pill rail */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    margin-bottom: var(--space-5);
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.6rem 1.1rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+.tab:hover { color: var(--text-primary); background: var(--bg-card); }
+.tab.active { background: var(--gradient-brand); color: var(--text-on-accent); }
+.tab .badge { font-size: 0.65rem; }
+[hidden] { display: none !important; }
+
+/* Filter toolbar: search on its own row, labelled selects below */
+.lib-toolbar { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4); }
+.lib-search input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+}
+.lib-search input:focus { outline: none; border-color: var(--accent-blue); box-shadow: var(--ring); }
+.lib-search input::placeholder { color: var(--text-muted); }
+.lib-filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.lib-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.lib-field > span { font-size: var(--font-size-xs); font-weight: 700; color: var(--text-muted); }
+.lib-field select {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+}
+
+.lib-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); }
+.lib-total { margin-inline-start: auto; font-size: var(--font-size-sm); color: var(--text-muted); }
+
+.lib-bulk {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-card);
+    border: 1px solid var(--accent-gold);
+    border-radius: var(--radius);
+}
+
+/* Table: own scroll container so the page never widens */
+.lib-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+.lib-table { width: 100%; min-width: 940px; border-collapse: collapse; font-size: var(--font-size-sm); }
+.lib-table th, .lib-table td { padding: 0.65rem 0.75rem; text-align: right; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+.lib-table tbody tr:nth-child(even) td { background: rgba(255, 255, 255, 0.018); }
+.lib-table tbody tr:hover td { background: var(--bg-card-hover); }
+.lib-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    font-weight: 800;
+    letter-spacing: var(--tracking-wide);
+    white-space: nowrap;
+}
+.lib-table .col-check { width: 2.5rem; }
+.lib-table .col-q { min-width: 240px; }
+.lib-table .col-a { min-width: 110px; color: var(--accent-gold); font-weight: 700; }
+.lib-table .col-num { width: 4rem; text-align: center; font-variant-numeric: tabular-nums; }
+.lib-table .col-actions { white-space: nowrap; }
+.lib-empty { text-align: center; padding: var(--space-7) !important; color: var(--text-muted); }
+
+.chk { width: 1.05rem; height: 1.05rem; accent-color: var(--accent-blue); }
+.small-btn { padding: 0.3rem 0.6rem; font-size: var(--font-size-xs); border-radius: var(--radius-sm); }
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-3); margin-top: var(--space-5); color: var(--text-secondary); font-size: var(--font-size-sm); }
+
+/* Categories */
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--space-4); }
+.cat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; }
+.cat-card img, .cat-card .ph {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    background: var(--bg-secondary);
+}
+.cat-card .body { padding: var(--space-4); }
+.cat-card .meta { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 0.35rem; }
+.bar { height: 6px; margin-top: var(--space-3); background: var(--bg-secondary); border-radius: var(--radius-pill); overflow: hidden; }
+.bar div { height: 100%; background: var(--accent-green); }
+.pct { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 0.3rem; }
+.cat-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+
+/* Review queue */
+.rev-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+.rev-body b { display: block; }
+.rev-answer { display: block; margin-top: 0.2rem; color: var(--accent-gold); font-weight: 700; }
+.rev-meta { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 0.35rem; }
+.rev-actions { display: flex; flex: 0 0 auto; gap: var(--space-2); }
+
+/* AI panel */
+.ai-panel { max-width: 640px; padding: var(--space-6); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); }
+.ai-panel h3 { font-size: var(--font-size-md); }
+.ai-status { margin: var(--space-4) 0; color: var(--text-secondary); }
+.ai-sub { font-size: var(--font-size-sm); color: var(--text-secondary); }
+.ai-sep { margin: var(--space-6) 0; border-color: var(--border-color); }
+.ai-submit { width: 100%; }
+.ai-result { margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--text-secondary); }
+.ai-sample { margin-top: var(--space-2); padding: var(--space-3); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.color-input { width: 100%; height: 44px; padding: 0; background: var(--bg-inset); border: 1px solid var(--border-color); border-radius: var(--radius); }
+
+@media (max-width: 480px) {
+    .lib { padding-inline: var(--space-4); }
+    .tab { padding: 0.5rem 0.75rem; font-size: var(--font-size-xs); }
+    .form-row { grid-template-columns: 1fr; }
+    .lib-total { margin-inline-start: 0; }
+    .rev-item { flex-direction: column; }
+    .ai-panel { padding: var(--space-5) var(--space-4); }
+}
+</style>
+
+<section class="lib">
+    <header class="page-header">
+        <h1>📚 مكتبة الأسئلة</h1>
+        <p>استعراض وإدارة الأسئلة والفئات وقائمة المراجعة</p>
+    </header>
+
+    <div class="lib-stats" id="libStats"></div>
+
+    <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="q" onclick="switchTab('q')" role="tab" aria-selected="true">الأسئلة</button>
+        <button type="button" class="tab" data-tab="cat" onclick="switchTab('cat')" role="tab" aria-selected="false">الفئات</button>
+        <button type="button" class="tab" data-tab="rev" onclick="switchTab('rev')" role="tab" aria-selected="false">المراجعة <span id="revBadge" class="badge badge-gold">0</span></button>
+        <button type="button" class="tab" data-tab="ai" onclick="switchTab('ai')" role="tab" aria-selected="false">إعدادات الذكاء الاصطناعي</button>
+    </div>
+
+    <!-- ===== QUESTIONS TAB ===== -->
+    <div id="tab-q" role="tabpanel">
+        <form class="lib-toolbar" onsubmit="return false;">
+            <div class="lib-search">
+                <label class="sr-only" for="fSearch">بحث في الأسئلة</label>
+                <input type="search" id="fSearch" placeholder="ابحث في نص السؤال أو الإجابة…" oninput="debouncedLoad()">
+            </div>
+            <div class="lib-filters">
+                <label class="lib-field">
+                    <span>اللعبة</span>
+                    <select id="fGame" onchange="loadQ(1)">
+                        <option value="">كل الألعاب</option>
+                        <option value="letters">حروف مع أمين</option>
+                        <option value="quiz">س.ج</option>
+                        <option value="million">من سيربح المليون</option>
+                    </select>
+                </label>
+                <label class="lib-field">
+                    <span>الحرف</span>
+                    <select id="fLetter" onchange="loadQ(1)"><option value="">كل الحروف</option></select>
+                </label>
+                <label class="lib-field">
+                    <span>الفئة</span>
+                    <select id="fCat" onchange="loadQ(1)"><option value="">كل الفئات</option></select>
+                </label>
+                <label class="lib-field">
+                    <span>الصعوبة</span>
+                    <select id="fDiff" onchange="loadQ(1)">
+                        <option value="">كل الصعوبات</option>
+                        <option value="under">تحت المتوسط</option><option value="easy">سهل</option>
+                        <option value="medium">متوسط</option>
+                        <option value="hard">صعب</option>
+                    </select>
+                </label>
+                <label class="lib-field">
+                    <span>الحالة</span>
+                    <select id="fStatus" onchange="loadQ(1)">
+                        <option value="">كل الحالات</option>
+                        <option value="approved">معتمد</option>
+                        <option value="pending_review">يحتاج مراجعة</option>
+                        <option value="archived">مؤرشف</option>
+                    </select>
+                </label>
+                <label class="lib-field">
+                    <span>المصدر</span>
+                    <select id="fSource" onchange="loadQ(1)">
+                        <option value="">كل المصادر</option>
+                        <option value="manual">يدوي</option>
+                        <option value="ai">ذكاء اصطناعي</option>
+                        <option value="import">استيراد</option>
+                    </select>
+                </label>
+                <label class="lib-field">
+                    <span>الترتيب</span>
+                    <select id="fSort" onchange="loadQ(1)">
+                        <option value="newest">الأحدث</option>
+                        <option value="oldest">الأقدم</option>
+                        <option value="az">أبجدي</option>
+                    </select>
+                </label>
+            </div>
+        </form>
+
+        <div class="lib-actions">
+            <button type="button" class="btn btn-primary btn-sm" onclick="openQForm()">➕ سؤال جديد</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="exportQ()">⬇️ تصدير</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('importFile').click()">⬆️ استيراد</button>
+            <input type="file" id="importFile" accept=".json" class="sr-only" onchange="importQ(this)">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="checkDups()">🔍 كشف التكرار</button>
+            <span id="libTotal" class="lib-total"></span>
+        </div>
+
+        <div id="bulkBar" class="lib-bulk" hidden>
+            <b id="bulkCount">0</b> محدد
+            <button type="button" class="btn btn-success small-btn" onclick="bulkStatus('approved')">اعتماد</button>
+            <button type="button" class="btn btn-secondary small-btn" onclick="bulkStatus('archived')">أرشفة</button>
+            <button type="button" class="btn btn-danger small-btn" onclick="bulkDelete()">حذف</button>
+        </div>
+
+        <div class="lib-table-wrap">
+            <table class="lib-table">
+                <thead>
+                    <tr>
+                        <th class="col-check"><label class="sr-only" for="chkAll">تحديد الكل</label><input type="checkbox" class="chk" id="chkAll" onchange="toggleAll(this)"></th>
+                        <th class="col-q">السؤال</th>
+                        <th class="col-a">الإجابة</th>
+                        <th class="col-game">اللعبة</th>
+                        <th class="col-cat">الفئة/الحرف</th>
+                        <th class="col-num">النقاط</th>
+                        <th class="col-diff">الصعوبة</th>
+                        <th class="col-status">الحالة</th>
+                        <th class="col-src">المصدر</th>
+                        <th class="col-actions">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="qBody"></tbody>
+            </table>
+        </div>
+        <div class="pager" id="pager"></div>
+    </div>
+
+    <!-- ===== CATEGORIES TAB ===== -->
+    <div id="tab-cat" role="tabpanel" hidden>
+        <div class="lib-actions">
+            <button type="button" class="btn btn-primary btn-sm" onclick="openCatForm()">➕ فئة جديدة</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadCats()">🔄 تحديث</button>
+        </div>
+        <div class="cat-grid" id="catGrid"></div>
+    </div>
+
+    <!-- ===== REVIEW TAB ===== -->
+    <div id="tab-rev" role="tabpanel" hidden>
+        <div class="lib-actions">
+            <button type="button" class="btn btn-success btn-sm" onclick="approvePending(null)">✅ اعتماد الكل</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadPending()">🔄 تحديث</button>
+        </div>
+        <div id="pendingList"></div>
+    </div>
+
+    <!-- ===== AI TAB ===== -->
+    <div id="tab-ai" role="tabpanel" hidden>
+        <div class="ai-panel">
+            <h3>حالة مزوّد الذكاء الاصطناعي</h3>
+            <div id="aiStatus" class="ai-status">جاري الفحص…</div>
+            <button type="button" class="btn btn-primary" onclick="testAI()">🔌 اختبار الاتصال</button>
+
+            <hr class="ai-sep">
+
+            <h3>توليد أسئلة</h3>
+            <div class="form-group">
+                <label for="aiGame">اللعبة</label>
+                <select id="aiGame" onchange="aiGameChanged()">
+                    <option value="letters">حروف مع أمين</option>
+                    <option value="quiz">س.ج</option>
+                </select>
+            </div>
+            <div class="form-group" id="aiLetterWrap">
+                <label for="aiLetter">الحرف</label>
+                <select id="aiLetter"></select>
+            </div>
+            <div class="form-group" id="aiCatWrap" hidden>
+                <label for="aiCat">الفئة</label>
+                <select id="aiCat"></select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="aiCount">عدد الأسئلة (حتى 20)</label>
+                    <input type="number" id="aiCount" value="10" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label for="aiDiff">الصعوبة</label>
+                    <select id="aiDiff">
+                        <option value="under">تحت المتوسط (200)</option><option value="easy">سهل (200)</option>
+                        <option value="medium" selected>متوسط (400)</option>
+                        <option value="hard">صعب (600)</option>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-gold btn-lg ai-submit" onclick="runAI()">🤖 توليد وإرسال إلى المراجعة</button>
+            <div id="aiResult" class="ai-result"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Question form modal -->
+<div id="qFormModal" class="modal-overlay">
+    <div class="modal" style="max-width:640px;">
+        <h2 id="qFormTitle">سؤال جديد</h2>
+        <input type="hidden" id="qfId">
+        <div class="form-group">
+            <label for="qfGame">اللعبة</label>
+            <select id="qfGame" onchange="qfGameChanged()">
+                <option value="letters">حروف مع أمين</option>
+                <option value="quiz">س.ج</option>
+                <option value="million">من سيربح المليون</option>
+            </select>
+        </div>
+        <div class="form-group" id="qfLetterWrap">
+            <label for="qfLetter">الحرف</label>
+            <select id="qfLetter"></select>
+        </div>
+        <div class="form-group" id="qfCatWrap">
+            <label for="qfCat">الفئة</label>
+            <select id="qfCat"></select>
+        </div>
+        <div class="form-group">
+            <label for="qfQuestion">نص السؤال</label>
+            <textarea id="qfQuestion" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="qfAnswer">الإجابة الصحيحة</label>
+            <input type="text" id="qfAnswer">
+        </div>
+        <div class="form-group">
+            <label for="qfAlternatives">إجابات بديلة مقبولة (افصل بفاصلة)</label>
+            <input type="text" id="qfAlternatives">
+        </div>
+        <div class="form-group">
+            <label for="qfHint">تلميح (اختياري)</label>
+            <input type="text" id="qfHint">
+        </div>
+        <div class="form-group">
+            <label for="qfExplanation">شرح (اختياري)</label>
+            <textarea id="qfExplanation" rows="2"></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="qfDiff">الصعوبة</label>
+                <select id="qfDiff">
+                    <option value="under">تحت المتوسط</option><option value="easy">سهل</option>
+                    <option value="medium">متوسط</option>
+                    <option value="hard">صعب</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="qfPoints">النقاط</label>
+                <select id="qfPoints">
+                    <option value="200">200</option>
+                    <option value="400">400</option>
+                    <option value="600">600</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="qfImage">صورة السؤال (اختياري)</label>
+            <input type="file" id="qfImage" accept="image/*">
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="saveQuestion()">💾 حفظ</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('qFormModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Category form modal -->
+<div id="catFormModal" class="modal-overlay">
+    <div class="modal">
+        <h2 id="catFormTitle">فئة جديدة</h2>
+        <input type="hidden" id="cfId">
+        <div class="form-group">
+            <label for="cfName">اسم الفئة</label>
+            <input type="text" id="cfName">
+        </div>
+        <div class="form-group">
+            <label for="cfDesc">وصف</label>
+            <input type="text" id="cfDesc">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cfIcon">أيقونة (إيموجي)</label>
+                <input type="text" id="cfIcon" value="📚" maxlength="4">
+            </div>
+            <div class="form-group">
+                <label for="cfColor">اللون</label>
+                <input type="color" id="cfColor" value="#8b5cf6" class="color-input">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="cfImage">صورة الفئة</label>
+            <input type="file" id="cfImage" accept="image/*">
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="saveCategory()">💾 حفظ</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('catFormModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Generic confirm modal -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal" style="max-width:420px;text-align:center;">
+        <h3 id="cfmTitle">تأكيد</h3>
+        <p id="cfmBody" style="color:var(--text-secondary);margin:1rem 0;"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-danger" id="cfmOk">تأكيد</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('confirmModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var AR_LETTERS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','هـ','و','ي'];
+var CATS = [];
+var rows = [];
+var selected = {};
+var page = 1;
+var debTimer = null;
+var editingQ = null;
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function confirmBox(title, body, fn) {
+    document.getElementById('cfmTitle').textContent = title;
+    document.getElementById('cfmBody').textContent = body;
+    document.getElementById('cfmOk').onclick = function () { closeModal('confirmModal'); fn(); };
+    openModal('confirmModal');
+}
+
+function switchTab(t) {
+    ['q','cat','rev','ai'].forEach(function (x) {
+        document.getElementById('tab-' + x).hidden = (x !== t);
+    });
+    document.querySelectorAll('.tab').forEach(function (e) {
+        var on = e.dataset.tab === t;
+        e.classList.toggle('active', on);
+        e.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if (t === 'cat') loadCats();
+    if (t === 'rev') loadPending();
+    if (t === 'ai') testAI();
+}
+
+function debouncedLoad() { clearTimeout(debTimer); debTimer = setTimeout(function () { loadQ(1); }, 350); }
+
+function loadStats() {
+    fetch('/api/stats').then(function (r) { return r.json(); }).then(function (s) {
+        document.getElementById('libStats').innerHTML =
+            card(s.total, 'إجمالي الأسئلة') + card(s.approved, 'معتمدة', 'var(--accent-green)') +
+            card(s.pending_review, 'تحتاج مراجعة', 'var(--accent-gold)') + card(s.archived, 'مؤرشفة', 'var(--text-muted)') +
+            card(s.categories, 'الفئات', 'var(--accent-purple)') + card(s.ai_generated, 'مولّدة بالذكاء', 'var(--accent-cyan)') +
+            card(s.letters, 'حروف', 'var(--accent-blue)') + card(s.quiz, 'س.ج', 'var(--accent-blue)') +
+            card(s.million, 'المليون', 'var(--accent-gold)') + card(s.pending_queue, 'في قائمة المراجعة', 'var(--accent-gold)');
+        document.getElementById('revBadge').textContent = s.pending_queue;
+    });
+}
+function card(n, l, c) {
+    return '<div class="stat-card"><div class="number" style="' + (c ? 'color:' + c : '') + '">' + n + '</div><div class="label">' + l + '</div></div>';
+}
+
+function loadCatsInto() {
+    return fetch('/api/categories').then(function (r) { return r.json(); }).then(function (d) {
+        CATS = d.categories;
+        document.getElementById('fCat').innerHTML = '<option value="">كل الفئات</option>' +
+            CATS.map(function (c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
+        document.getElementById('qfCat').innerHTML = CATS.map(function (c) {
+            return '<option value="' + c.id + '">' + c.name + '</option>';
+        }).join('');
+        document.getElementById('aiCat').innerHTML = CATS.map(function (c) {
+            return '<option value="' + c.id + '">' + c.name + '</option>';
+        }).join('');
+        document.getElementById('fLetter').innerHTML = '<option value="">كل الحروف</option>' +
+            AR_LETTERS.map(function (l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
+        document.getElementById('qfLetter').innerHTML = AR_LETTERS.map(function (l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
+        document.getElementById('aiLetter').innerHTML = AR_LETTERS.map(function (l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
+    });
+}
+
+function loadQ(p) {
+    page = p || page;
+    var params = new URLSearchParams({
+        game: document.getElementById('fGame').value,
+        letter: document.getElementById('fLetter').value,
+        category: document.getElementById('fCat').value,
+        difficulty: document.getElementById('fDiff').value,
+        status: document.getElementById('fStatus').value,
+        source: document.getElementById('fSource').value,
+        sort: document.getElementById('fSort').value,
+        search: document.getElementById('fSearch').value,
+        page: page, per_page: 50
+    });
+    fetch('/api/questions?' + params).then(function (r) { return r.json(); }).then(function (d) {
+        rows = d.questions;
+        selected = {};
+        document.getElementById('bulkBar').hidden = true;
+        document.getElementById('chkAll').checked = false;
+        document.getElementById('qBody').innerHTML = rows.map(function (q) {
+            var diffAr = {under:'تحت المتوسط',easy:'سهل',medium:'متوسط',hard:'صعب'}[q.difficulty] || '';
+            var stAr = {approved:'معتمد',pending_review:'مراجعة',archived:'مؤرشف'}[q.status] || q.status;
+            var srcAr = {manual:'يدوي',ai:'ذكاء',import:'استيراد'}[q.source] || q.source || 'يدوي';
+            var stCls = q.status === 'approved' ? 'badge-green' : (q.status === 'archived' ? 'badge-blue' : 'badge-gold');
+            var diffCls = (q.difficulty === 'under' || q.difficulty === 'easy') ? 'badge-green' : (q.difficulty === 'hard' ? 'badge-red' : 'badge-gold');
+            return '<tr>' +
+                '<td class="col-check"><input type="checkbox" class="chk" data-id="' + q.id + '" onchange="toggleSel(this)"></td>' +
+                '<td class="col-q">' + esc(q.question) + '</td>' +
+                '<td class="col-a">' + esc(q.answer) + '</td>' +
+                '<td>' + (q.game === 'letters' ? 'حروف' : (q.game === 'million' ? 'المليون' : 'س.ج')) + '</td>' +
+                '<td>' + esc(q.letter || q.category_name || '-') + '</td>' +
+                '<td class="col-num">' + (q.points || '-') + '</td>' +
+                '<td><span class="badge ' + diffCls + '">' + diffAr + '</span></td>' +
+                '<td><span class="badge ' + stCls + '">' + stAr + '</span></td>' +
+                '<td>' + srcAr + '</td>' +
+                '<td class="col-actions">' +
+                  '<button type="button" class="btn btn-secondary small-btn" onclick="viewQ(\'' + q.id + '\')">عرض</button> ' +
+                  '<button type="button" class="btn btn-secondary small-btn" onclick="editQ(\'' + q.id + '\')">تعديل</button> ' +
+                  '<button type="button" class="btn btn-secondary small-btn" onclick="dupQ(\'' + q.id + '\')">نسخ</button> ' +
+                  '<button type="button" class="btn btn-secondary small-btn" onclick="archQ(\'' + q.id + '\')">أرشفة</button> ' +
+                  '<button type="button" class="btn btn-danger small-btn" onclick="delQ(\'' + q.id + '\')">حذف</button>' +
+                '</td></tr>';
+        }).join('') || '<tr><td colspan="10" class="lib-empty">لا نتائج مطابقة للفلاتر الحالية</td></tr>';
+        document.getElementById('libTotal').textContent = d.total + ' نتيجة';
+        document.getElementById('pager').innerHTML =
+            '<button type="button" class="btn btn-secondary btn-sm" ' + (d.page <= 1 ? 'disabled' : '') + ' onclick="loadQ(' + (d.page - 1) + ')">السابق</button>' +
+            '<span>صفحة ' + d.page + ' من ' + d.pages + '</span>' +
+            '<button type="button" class="btn btn-secondary btn-sm" ' + (d.page >= d.pages ? 'disabled' : '') + ' onclick="loadQ(' + (d.page + 1) + ')">التالي</button>';
+    });
+}
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function toggleSel(cb) { if (cb.checked) selected[cb.dataset.id] = true; else delete selected[cb.dataset.id]; updBulk(); }
+function toggleAll(cb) {
+    document.querySelectorAll('#qBody .chk').forEach(function (c) { c.checked = cb.checked; toggleSel(c); });
+}
+function updBulk() {
+    var n = Object.keys(selected).length;
+    document.getElementById('bulkBar').hidden = !n;
+    document.getElementById('bulkCount').textContent = n;
+}
+function bulkStatus(st) {
+    fetch('/api/questions/bulk-status', {method:'POST',headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ids: Object.keys(selected), status: st})})
+        .then(function () { showToast('تم التحديث'); loadQ(); loadStats(); });
+}
+function bulkDelete() {
+    confirmBox('حذف الأسئلة', 'سيتم حذف ' + Object.keys(selected).length + ' سؤالاً نهائياً.', function () {
+        fetch('/api/questions/bulk-delete', {method:'POST',headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ids: Object.keys(selected)})})
+            .then(function () { showToast('تم الحذف'); loadQ(); loadStats(); });
+    });
+}
+function delQ(id) {
+    confirmBox('حذف سؤال', 'لا يمكن التراجع عن الحذف.', function () {
+        fetch('/api/questions/' + id, {method:'DELETE'}).then(function () { showToast('تم الحذف'); loadQ(); loadStats(); });
+    });
+}
+function archQ(id) {
+    fetch('/api/questions/' + id + '/archive', {method:'POST'}).then(function () { showToast('تمت الأرشفة'); loadQ(); loadStats(); });
+}
+function dupQ(id) {
+    fetch('/api/questions/' + id + '/duplicate', {method:'POST'}).then(function () { showToast('تم النسخ'); loadQ(); loadStats(); });
+}
+function viewQ(id) {
+    var q = rows.filter(function (x) { return x.id === id; })[0];
+    if (!q) return;
+    alert('السؤال: ' + q.question + '\n\nالإجابة: ' + q.answer +
+          '\nالبدائل: ' + ((q.alternatives || []).join('، ') || '—') +
+          '\nالتلميح: ' + (q.hint || '—') + '\nالشرح: ' + (q.explanation || '—'));
+}
+function editQ(id) { openQForm(rows.filter(function (x) { return x.id === id; })[0]); }
+
+function qfGameChanged() {
+    var g = document.getElementById('qfGame').value;
+    document.getElementById('qfLetterWrap').hidden = (g !== 'letters');
+    document.getElementById('qfCatWrap').hidden = (g === 'letters');
+}
+function aiGameChanged() {
+    var g = document.getElementById('aiGame').value;
+    document.getElementById('aiLetterWrap').hidden = (g !== 'letters');
+    document.getElementById('aiCatWrap').hidden = (g === 'letters');
+}
+
+function openQForm(q) {
+    editingQ = q || null;
+    document.getElementById('qFormTitle').textContent = q ? 'تعديل سؤال' : 'سؤال جديد';
+    document.getElementById('qfId').value = q ? q.id : '';
+    document.getElementById('qfGame').value = q ? q.game : 'letters';
+    document.getElementById('qfLetter').value = q && q.letter ? q.letter : 'أ';
+    if (q && q.category_id) document.getElementById('qfCat').value = q.category_id;
+    document.getElementById('qfQuestion').value = q ? q.question : '';
+    document.getElementById('qfAnswer').value = q ? q.answer : '';
+    document.getElementById('qfAlternatives').value = q ? (q.alternatives || []).join('، ') : '';
+    document.getElementById('qfHint').value = q ? (q.hint || '') : '';
+    document.getElementById('qfExplanation').value = q ? (q.explanation || '') : '';
+    document.getElementById('qfDiff').value = q ? (q.difficulty || 'medium') : 'medium';
+    document.getElementById('qfPoints').value = q && q.points ? q.points : 200;
+    qfGameChanged();
+    openModal('qFormModal');
+}
+
+function saveQuestion() {
+    var id = document.getElementById('qfId').value;
+    var game = document.getElementById('qfGame').value;
+    var payload = {
+        game: game,
+        question: document.getElementById('qfQuestion').value.trim(),
+        answer: document.getElementById('qfAnswer').value.trim(),
+        alternatives: document.getElementById('qfAlternatives').value.split(/[،,]/).map(function (s) { return s.trim(); }).filter(Boolean),
+        hint: document.getElementById('qfHint').value.trim(),
+        explanation: document.getElementById('qfExplanation').value.trim(),
+        difficulty: document.getElementById('qfDiff').value,
+        status: 'approved', source: 'manual'
+    };
+    if (game === 'letters') payload.letter = document.getElementById('qfLetter').value;
+    else { payload.category_id = document.getElementById('qfCat').value; payload.points = parseInt(document.getElementById('qfPoints').value); }
+
+    var url = id ? '/api/questions/' + id : '/api/questions';
+    var method = id ? 'PUT' : 'POST';
+    fetch(url, {method: method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.error) { showToast(d.error, 'error'); return; }
+            var fileInput = document.getElementById('qfImage');
+            if (fileInput.files.length) {
+                var fd = new FormData();
+                fd.append('file', fileInput.files[0]);
+                fetch('/api/questions/' + d.id + '/image', {method:'POST', body: fd})
+                    .then(function () { finishSave(); });
+            } else finishSave();
+        });
+}
+function finishSave() {
+    showToast('تم الحفظ');
+    closeModal('qFormModal');
+    document.getElementById('qfImage').value = '';
+    loadQ(); loadStats();
+}
+
+function exportQ() {
+    var g = document.getElementById('fGame').value;
+    window.location.href = '/api/questions/export' + (g ? '?game=' + g : '');
+}
+
+function importQ(input) {
+    if (!input.files.length) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var data;
+        try { data = JSON.parse(e.target.result); } catch (err) { showToast('ملف JSON غير صالح', 'error'); return; }
+        var list = Array.isArray(data) ? data : (data.questions || []);
+        fetch('/api/questions/import', {method:'POST',headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({questions: list, mode: 'preview'})})
+            .then(function (r) { return r.json(); })
+            .then(function (rep) {
+                confirmBox('معاينة الاستيراد',
+                    'في الملف: ' + rep.total_in_file + '\nجديدة: ' + rep.new_count +
+                    '\nتحديث: ' + rep.update_count + '\nمكررة: ' + rep.duplicate_count +
+                    '\nغير صالحة: ' + rep.invalid_count + '\n\nهل تريد الاستيراد؟',
+                    function () {
+                        fetch('/api/questions/import', {method:'POST',headers:{'Content-Type':'application/json'},
+                            body: JSON.stringify({questions: list, mode: 'apply'})})
+                            .then(function () { showToast('تم الاستيراد'); loadQ(1); loadStats(); });
+                    });
+            });
+    };
+    reader.readAsText(input.files[0]);
+    input.value = '';
+}
+
+function checkDups() {
+    fetch('/api/questions/duplicates').then(function (r) { return r.json(); }).then(function (d) {
+        if (!d.count) { showToast('لا توجد أسئلة مكررة'); return; }
+        alert('عدد الأسئلة المكررة: ' + d.count + '\n\n' + d.duplicates.slice(0, 10).map(function (x, i) {
+            return (i + 1) + ') ' + x.a.question;
+        }).join('\n'));
+    });
+}
+
+function loadCats() {
+    fetch('/api/categories').then(function (r) { return r.json(); }).then(function (d) {
+        CATS = d.categories;
+        document.getElementById('catGrid').innerHTML = CATS.map(function (c) {
+            var pct = Math.min(100, Math.round((c.approved_count || 0) / 36 * 100));
+            var img = c.image ? '<img src="' + c.image + '" alt="">' : '<div class="ph">' + (c.icon || '📚') + '</div>';
+            return '<div class="cat-card">' + img +
+                '<div class="body"><b>' + esc(c.name) + '</b>' +
+                '<div class="meta">' + (c.question_count || 0) + ' سؤال · ' +
+                '200:' + (c.count_200 || 0) + ' 400:' + (c.count_400 || 0) + ' 600:' + (c.count_600 || 0) + '</div>' +
+                '<div class="bar"><div style="width:' + pct + '%"></div></div>' +
+                '<div class="pct">' + pct + '% من 36</div>' +
+                '<div class="cat-actions">' +
+                  '<button type="button" class="btn btn-secondary small-btn" onclick="editCat(\'' + c.id + '\')">تعديل</button>' +
+                  '<button type="button" class="btn btn-primary small-btn" onclick="genForCat(\'' + c.id + '\')">🤖 توليد</button>' +
+                  '<button type="button" class="btn btn-danger small-btn" onclick="delCat(\'' + c.id + '\')">حذف</button>' +
+                '</div></div></div>';
+        }).join('') || '<p class="lib-empty">لا فئات بعد</p>';
+    });
+}
+
+function openCatForm() {
+    document.getElementById('catFormTitle').textContent = 'فئة جديدة';
+    document.getElementById('cfId').value = '';
+    document.getElementById('cfName').value = '';
+    document.getElementById('cfDesc').value = '';
+    document.getElementById('cfIcon').value = '📚';
+    document.getElementById('cfColor').value = '#8b5cf6';
+    openModal('catFormModal');
+}
+function editCat(id) {
+    var c = CATS.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    document.getElementById('catFormTitle').textContent = 'تعديل فئة';
+    document.getElementById('cfId').value = c.id;
+    document.getElementById('cfName').value = c.name;
+    document.getElementById('cfDesc').value = c.description || '';
+    document.getElementById('cfIcon').value = c.icon || '📚';
+    document.getElementById('cfColor').value = c.color || '#8b5cf6';
+    openModal('catFormModal');
+}
+function saveCategory() {
+    var id = document.getElementById('cfId').value;
+    var payload = {
+        name: document.getElementById('cfName').value.trim(),
+        description: document.getElementById('cfDesc').value.trim(),
+        icon: document.getElementById('cfIcon').value.trim() || '📚',
+        color: document.getElementById('cfColor').value
+    };
+    if (!payload.name) { showToast('اسم الفئة مطلوب', 'error'); return; }
+    var url = id ? '/api/categories/' + id : '/api/categories';
+    var method = id ? 'PUT' : 'POST';
+    fetch(url, {method: method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.error) { showToast(d.error, 'error'); return; }
+            var f = document.getElementById('cfImage');
+            if (f.files.length) {
+                var fd = new FormData();
+                fd.append('file', f.files[0]);
+                fetch('/api/categories/' + d.id + '/image', {method:'POST', body: fd})
+                    .then(function () { afterCatSave(); });
+            } else afterCatSave();
+        });
+}
+function afterCatSave() {
+    showToast('تم الحفظ');
+    closeModal('catFormModal');
+    document.getElementById('cfImage').value = '';
+    loadCats(); loadCatsInto(); loadStats();
+}
+function delCat(id) {
+    confirmBox('حذف فئة', 'سيتم حذف الفئة (الأسئلة تبقى في المكتبة).', function () {
+        fetch('/api/categories/' + id, {method:'DELETE'}).then(function () { showToast('تم الحذف'); loadCats(); loadCatsInto(); });
+    });
+}
+function genForCat(id) {
+    switchTab('ai');
+    document.getElementById('aiGame').value = 'quiz';
+    aiGameChanged();
+    document.getElementById('aiCat').value = id;
+    showToast('اختر العدد ثم اضغط توليد');
+}
+
+function loadPending() {
+    fetch('/api/pending').then(function (r) { return r.json(); }).then(function (d) {
+        document.getElementById('revBadge').textContent = d.questions.length;
+        document.getElementById('pendingList').innerHTML = d.questions.map(function (q) {
+            return '<div class="rev-item">' +
+                '<div class="rev-body"><b>' + esc(q.question) + '</b><span class="rev-answer">' + esc(q.answer) + '</span>' +
+                '<div class="rev-meta">' + (q.letter || q.category_name || '') +
+                ' · ' + (q.points || '') + ' · ' + (q.difficulty || '') + '</div></div>' +
+                '<div class="rev-actions">' +
+                '<button type="button" class="btn btn-success small-btn" onclick="approvePending([\'' + q.id + '\'])">قبول</button>' +
+                '<button type="button" class="btn btn-danger small-btn" onclick="rejectPending(\'' + q.id + '\')">رفض</button>' +
+                '</div></div>';
+        }).join('') || '<p class="lib-empty">قائمة المراجعة فارغة</p>';
+    });
+}
+function approvePending(ids) {
+    fetch('/api/pending/approve', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ids: ids})})
+        .then(function (r) { return r.json(); }).then(function (d) {
+            showToast('تم اعتماد ' + d.approved + ' سؤال');
+            loadPending(); loadStats(); loadQ(1);
+        });
+}
+function rejectPending(id) {
+    fetch('/api/pending/reject', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ids:[id]})})
+        .then(function () { showToast('تم الرفض'); loadPending(); loadStats(); });
+}
+
+function testAI() {
+    var el = document.getElementById('aiStatus');
+    el.innerHTML = 'جاري الفحص…';
+    fetch('/api/ai/test').then(function (r) { return r.json(); }).then(function (d) {
+        if (d.status === 'ok') {
+            el.innerHTML = '<span style="color:var(--accent-green)">✓ الاتصال ناجح</span><br>' +
+                '<span class="ai-sub">النموذج: ' + d.model + '</span>';
+        } else if (d.status === 'no_key') {
+            el.innerHTML = '<span style="color:var(--accent-red)">✗ لا يوجد مفتاح</span><br>' +
+                '<span class="ai-sub">أضف <code>NVIDIA_API_KEY</code> كمتغير بيئة ثم أعد تشغيل الخادم.</span>';
+        } else {
+            el.innerHTML = '<span style="color:var(--accent-red)">✗ خطأ: ' + (d.message || '') + '</span>';
+        }
+    }).catch(function () { el.innerHTML = '<span style="color:var(--accent-red)">تعذّر الاتصال بالخادم</span>'; });
+}
+
+function runAI() {
+    var g = document.getElementById('aiGame').value;
+    var payload = {
+        game: g,
+        count: parseInt(document.getElementById('aiCount').value) || 5,
+        difficulty: document.getElementById('aiDiff').value
+    };
+    if (g === 'letters') payload.letter = document.getElementById('aiLetter').value;
+    else payload.category = document.getElementById('aiCat').value;
+
+    var box = document.getElementById('aiResult');
+    box.innerHTML = '⏳ جاري التوليد…';
+    fetch('/api/ai/generate', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify(payload)})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.error) { box.innerHTML = '<span style="color:var(--accent-red)">' + d.error + '</span>'; return; }
+            box.innerHTML = '<div style="color:var(--accent-green)">✓ تم توليد ' + d.count +
+                ' سؤال وأُرسلت إلى قائمة المراجعة' + (d.rejected_count ? ' (رُفض ' + d.rejected_count + ')' : '') + '</div>' +
+                d.questions.slice(0, 5).map(function (q) {
+                    return '<div class="ai-sample"><b>' + esc(q.question) + '</b><br><span class="rev-answer">' + esc(q.answer) + '</span></div>';
+                }).join('');
+            loadStats(); loadPending();
+        })
+        .catch(function (e) { box.innerHTML = '<span style="color:var(--accent-red)">تعذّر الاتصال: ' + e + '</span>'; });
+}
+
+loadStats();
+loadCatsInto().then(function () { loadQ(1); });
+loadCats();
+</script>
+{% endblock %}

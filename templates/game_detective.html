@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.inv-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
+.inv-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:1rem}
+.inv-card h4{margin:0 0 .5rem;color:var(--accent-gold)}
+.inv-evidence{margin:.4rem 0;padding:.5rem .8rem;border-radius:8px;background:var(--bg-secondary);cursor:pointer;border:1px solid transparent;transition:.2s}
+.inv-evidence:hover{border-color:var(--accent)}
+.inv-evidence.unlocked{border-color:var(--accent-green)}
+.inv-evidence.locked{opacity:.5;cursor:not-allowed}
+.inv-theory{display:grid;gap:.6rem;margin-top:1rem}
+.inv-theory textarea{padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);min-height:80px;resize:vertical;font-family:inherit}
+.inv-theory input{padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);font-family:inherit}
+.progress-bar{height:8px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;margin:.5rem 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-green));transition:width .5s ease;border-radius:4px}
+.hint-btn{background:linear-gradient(135deg,#f59e0b,#d97706);color:#1a1206;border:none;border-radius:10px;padding:.5rem 1rem;font-weight:800;cursor:pointer;font-family:inherit;font-size:.9rem;transition:.2s}
+.hint-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(245,158,11,.35)}
+.hint-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.fs-btn{background:rgba(255,255,255,.07);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);padding:.35rem .7rem;cursor:pointer;font-family:inherit;font-weight:800;font-size:.8rem}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+.diff-select{display:flex;gap:.5rem;margin:.5rem 0}
+.diff-btn{flex:1;padding:.6rem;border-radius:10px;border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text);font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}
+.diff-btn.active{border-color:var(--accent);background:var(--accent);color:#fff}
+.diff-btn:hover:not(.active){border-color:var(--accent)}
+.timer-display{font-size:2rem;font-weight:900;text-align:center;color:var(--accent-gold);padding:.5rem}
+.timer-warning{color:var(--accent-red)!important;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.case-reveal{animation:revealSlide 1s ease-out}
+@keyframes revealSlide{0%{opacity:0;transform:translateY(30px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.case-reveal h3{animation:revealText 1.5s ease-out}
+@keyframes revealText{0%{opacity:0;transform:translateX(20px)}100%{opacity:1;transform:translateX(0)}}
+.theory-field{margin:.5rem 0}
+.theory-field label{display:block;font-size:.85rem;color:var(--text-muted);margin-bottom:.3rem}
+.points-display{padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800;color:var(--accent-gold);display:inline-flex;align-items:center;gap:.5rem}
+@media(max-width:768px){.inv-layout{grid-template-columns:1fr}}
+</style>
+
+<h1 style="text-align:center">🔍 المحقق</h1>
+<p style="text-align:center;color:var(--text-secondary)">حقق في القضية، اجمع الأدلة، ثم قدّم نظريتك</p>
+
+<div id="caseSelect" style="max-width:600px;margin:2rem auto">
+  <div class="inv-card" id="detSettings" style="margin-bottom:1rem">
+    <h4>⚙️ إعدادات اللعبة</h4>
+    <div class="diff-select" style="margin-top:1rem">
+      <button class="diff-btn active" data-diff="easy" onclick="setDiff('easy')">سهل</button>
+      <button class="diff-btn" data-diff="medium" onclick="setDiff('medium')">متوسط</button>
+      <button class="diff-btn" data-diff="hard" onclick="setDiff('hard')">صعب</button>
+    </div>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-top:.5rem">السهل: 10 نقاط · المتوسط: 7 نقاط · الصعب: 4 نقاط</p>
+    <div style="margin-top:1rem">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+        <input type="checkbox" id="timerMode" onchange="toggleTimerMode()">
+        <span>⏱️ تفعيل المؤقت (اختياري)</span>
+      </label>
+      <div id="timerSetting" style="display:none;margin-top:.5rem">
+        <label style="font-size:.85rem;color:var(--text-muted)">مدة التحقيق (بالدقائق):</label>
+        <input type="number" id="timerMinutes" value="10" min="1" max="60" style="width:100%;padding:.5rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);margin-top:.3rem">
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;gap:.8rem" id="caseList"></div>
+</div>
+
+<div id="playArea" style="display:none">
+  <div style="display:flex;gap:1rem;margin:1rem 0;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-secondary" onclick="showCaseSelect()">← قضية أخرى</button>
+    <button class="btn btn-secondary" onclick="resetCase()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة</button>
+    <div class="points-display">💰 نقاط التحقيق: <span id="invPoints">10</span></div>
+    <div id="timerDisplay" class="timer-display" style="display:none"></div>
+    <div style="flex:1"></div>
+    <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+  </div>
+
+  <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <span style="font-weight:800">📊 تقدم التحقيق</span>
+      <span id="progressText" style="color:var(--accent-green);font-weight:800">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="inv-layout">
+    <div>
+      <div class="inv-card">
+        <h4>📋 القضية</h4>
+        <p id="caseIntro"></p>
+        <p id="caseSetting" style="color:var(--text-secondary);font-size:.9rem"></p>
+      </div>
+      <div class="inv-card" style="margin-top:1rem">
+        <h4>👥 الشخصيات</h4>
+        <div id="charList"></div>
+      </div>
+      <div class="inv-card" style="margin-top:1rem">
+        <h4>⏱️ التسلسل الزمني</h4>
+        <div id="timeline"></div>
+      </div>
+    </div>
+    <div>
+      <div class="inv-card">
+        <h4>🔎 الأدلة</h4>
+        <p style="font-size:.85rem;color:var(--text-muted)">اضغط لفتح الدليل (يستهلك نقطة تحقيق)</p>
+        <div id="evidenceList"></div>
+      </div>
+      <div class="inv-card" style="margin-top:1rem">
+        <h4>📝 نظريتك</h4>
+        <div class="inv-theory">
+          <div class="theory-field">
+            <label>من المسؤول؟</label>
+            <input id="theoryWho" placeholder="اسم الشخصية المسؤولة">
+          </div>
+          <div class="theory-field">
+            <label>ما الذي حدث؟</label>
+            <textarea id="theoryWhat" placeholder="صف ما حدث بالتفصيل"></textarea>
+          </div>
+          <div class="theory-field">
+            <label>كيف حدث؟</label>
+            <textarea id="theoryHow" placeholder="اشرح كيف وقعت الجريمة"></textarea>
+          </div>
+          <div class="theory-field">
+            <label>ما الأدلة؟</label>
+            <textarea id="theoryEvidence" placeholder="اذكر الأدلة التي تدعم نظريتك"></textarea>
+          </div>
+          <div style="display:flex;gap:.5rem;margin-top:.5rem">
+            <button class="btn btn-gold" onclick="submitTheory()">📤 تقديم النظرية</button>
+            <button class="hint-btn" id="hintBtn" onclick="getHint()">💡 تلميح (-5 نقاط)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="theoryResult" style="display:none;margin-top:1.5rem;background:var(--bg-card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent-gold)"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentCase=null, unlockedIds=[], invPoints=10, difficulty='easy', timerMode=false, timerInterval=null, timerEndTime=null;
+
+function setDiff(d) {
+  difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.diff === d); });
+  var points = d === 'easy' ? 10 : d === 'medium' ? 7 : 4;
+  if (!currentCase) invPoints = points;
+}
+
+function toggleTimerMode() {
+  timerMode = document.getElementById('timerMode').checked;
+  document.getElementById('timerSetting').style.display = timerMode ? 'block' : 'none';
+}
+
+function toggleFullscreen() {
+  var el = document.documentElement;
+  if (!document.fullscreenElement) {
+    (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    document.getElementById('fsBtn').textContent = '⛶ خروج من ملء الشاشة';
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    document.getElementById('fsBtn').textContent = '⛶ ملء الشاشة';
+  }
+}
+document.addEventListener('fullscreenchange', function () {
+  var b = document.getElementById('fsBtn');
+  if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+});
+
+async function loadCases(){
+  const r = await fetch('/api/content/detective?status=approved&per_page=50');
+  const d = await r.json();
+  const list = document.getElementById('caseList');
+  list.innerHTML = d.items.map(function(c){ return '<div class="inv-card" style="cursor:pointer" onclick="loadCase(\''+c.id+'\')"><h4>📂 '+c.title+'</h4><p style="font-size:.9rem;color:var(--text-secondary)">'+c.intro.substring(0,80)+'...</p><span class="badge '+(c.difficulty==='easy'?'badge-green':c.difficulty==='medium'?'badge-gold':'badge-red')+'">'+c.difficulty+'</span></div>'; }).join('') || '<p>لا توجد قضايا بعد</p>';
+}
+
+async function loadCase(id){
+  const r = await fetch('/api/content/detective?status=approved&per_page=50');
+  const d = await r.json();
+  currentCase = d.items.find(function(c){ return c.id===id; });
+  if(!currentCase) return;
+  unlockedIds = [];
+  invPoints = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 7 : 4;
+  document.getElementById('caseSelect').style.display='none';
+  document.getElementById('playArea').style.display='block';
+  document.getElementById('theoryResult').style.display='none';
+  document.getElementById('caseIntro').textContent = currentCase.intro;
+  document.getElementById('caseSetting').textContent = currentCase.setting || '';
+  document.getElementById('charList').innerHTML = currentCase.characters.map(function(c){ return '<div style="margin:.5rem 0;padding:.5rem;background:var(--bg-secondary);border-radius:8px"><b>'+c.name+'</b> <span style="color:var(--text-muted);font-size:.8rem">('+c.role+')</span><p style="margin:.3rem 0 0;font-size:.9rem">\"'+c.statement+'"</p></div>'; }).join('');
+  document.getElementById('timeline').innerHTML = (currentCase.timeline||[]).map(function(t){ return '<div style="margin:.3rem 0;padding:.3rem .5rem;background:var(--bg-secondary);border-radius:6px;font-size:.9rem">• '+t+'</div>'; }).join('');
+  renderEvidence();
+  updatePoints();
+  updateProgress();
+  updateHintBtn();
+  startTimer();
+}
+
+function renderEvidence(){
+  const list = document.getElementById('evidenceList');
+  const evidence = currentCase.evidence||[];
+  list.innerHTML = evidence.map(function(e){
+    const unlocked = unlockedIds.includes(e.id) || !e.hidden;
+    return '<div class="inv-evidence '+(unlocked?'unlocked':'locked')+'" onclick="unlockEvidence(\''+e.id+'\','+e.hidden+')">'+(unlocked?'🔓':'🔒')+' '+(unlocked?e.text:'دليل مغلق — اضغط لفتحه')+'</div>';
+  }).join('');
+}
+
+function unlockEvidence(id, hidden){
+  if(unlockedIds.includes(id)) return;
+  if(!hidden) { unlockedIds.push(id); renderEvidence(); updateProgress(); return; }
+  if(invPoints<=0){ alert('لا توجد نقاط تحقيق متبقية!'); return; }
+  invPoints--;
+  unlockedIds.push(id);
+  renderEvidence();
+  updatePoints();
+  updateProgress();
+  updateHintBtn();
+}
+
+function updatePoints(){
+  document.getElementById('invPoints').textContent = invPoints;
+}
+
+function updateProgress(){
+  const total = (currentCase.evidence||[]).filter(function(e){ return e.hidden; }).length;
+  const unlocked = unlockedIds.filter(function(id){ return currentCase.evidence.find(function(e){ return e.id===id && e.hidden; }); }).length;
+  document.getElementById('progressText').textContent = unlocked + ' / ' + total;
+  document.getElementById('progressFill').style.width = (total ? (unlocked/total*100) : 0) + '%';
+}
+
+function updateHintBtn(){
+  document.getElementById('hintBtn').disabled = invPoints < 5;
+}
+
+function getHint(){
+  if (invPoints < 5) { alert('تحتاج 5 نقاط على الأقل للحصول على تلميح'); return; }
+  invPoints -= 5;
+  updatePoints();
+  updateHintBtn();
+  var hints = currentCase.key_evidence || [];
+  var hintText = '';
+  if (hints.length) {
+    var ev = currentCase.evidence.find(function(e){ return e.id===hints[0]; });
+    if (ev) hintText = 'تلميح: ابحث عن دليل يتعلق بـ "' + ev.text.substring(0, 50) + '..."';
+  }
+  if (!hintText) hintText = 'تلميح: ' + currentCase.reasoning.substring(0, 100) + '...';
+  alert(hintText);
+}
+
+function startTimer(){
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  var display = document.getElementById('timerDisplay');
+  if (!timerMode) { display.style.display = 'none'; return; }
+  display.style.display = 'block';
+  var minutes = parseInt(document.getElementById('timerMinutes').value) || 10;
+  timerEndTime = Date.now() + minutes * 60 * 1000;
+  timerInterval = setInterval(function(){
+    var left = Math.max(0, timerEndTime - Date.now());
+    var m = Math.floor(left/60000);
+    var s = Math.floor((left%60000)/1000);
+    display.textContent = m + ':' + (s<10?'0':'') + s;
+    if (left < 60000) display.classList.add('timer-warning');
+    if (left <= 0) {
+      clearInterval(timerInterval);
+      display.textContent = '⏰ انتهى الوقت!';
+    }
+  }, 1000);
+}
+
+function submitTheory(){
+  const who = document.getElementById('theoryWho').value.trim();
+  const what = document.getElementById('theoryWhat').value.trim();
+  const how = document.getElementById('theoryHow').value.trim();
+  const ev = document.getElementById('theoryEvidence').value.trim();
+  if(!who || !what || !how){ alert('أكمل جميع الحقول قبل التقديم'); return; }
+  
+  const correctWho = who.includes(currentCase.solution.split(' ')[0]) || currentCase.solution.includes(who);
+  const evList = ev.split(',').map(function(e){ return e.trim(); }).filter(Boolean);
+  const keyEv = currentCase.key_evidence || [];
+  const evMatch = evList.filter(function(e){
+    return keyEv.some(function(k){ return currentCase.evidence.find(function(ce){ return ce.id===k && ce.text.includes(e); }); }) ||
+           currentCase.reasoning.includes(e);
+  }).length;
+  
+  let score = 0;
+  if(correctWho) score += 40;
+  score += Math.min(25, evMatch * 8);
+  if(what.length > 20) score += 15;
+  if(how.length > 20) score += 10;
+  score += Math.min(10, invPoints);
+  
+  const win = score >= 60;
+  const result = document.getElementById('theoryResult');
+  result.style.display='block';
+  result.classList.add('case-reveal');
+  result.innerHTML = '<h3>'+(win?'🎉 إجابة صحيحة!':'❌ إجابة غير دقيقة')+'</h3><p style="margin:.8rem 0">النقاط: <b style="color:var(--accent-gold)">'+score+'</b>/100</p><div style="margin-top:1rem;padding:1rem;background:var(--bg-secondary);border-radius:8px"><b>الحل الصحيح:</b><p style="margin:.5rem 0">'+currentCase.solution+'</p><b>التبرير:</b><p style="margin:.5rem 0">'+currentCase.reasoning+'</p></div><button class="btn btn-primary" style="margin-top:1rem" onclick="showCaseSelect()">قضية أخرى</button>';
+}
+
+function showCaseSelect(){
+  document.getElementById('caseSelect').style.display='block';
+  document.getElementById('playArea').style.display='none';
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function resetCase(){
+  if(currentCase) loadCase(currentCase.id);
+}
+
+loadCases();
+</script>
+{% endblock %}

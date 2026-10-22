@@ -1,0 +1,176 @@
+model: nvidia/nemotron-3.5-lightning-30b-a3b   workers: 4
+targets (48):
+   anime          الأنمي والمانجا          medium    7
+   anime          الأنمي والمانجا          hard     11
+   novels         الروايات والكتب          easy      9
+   novels         الروايات والكتب          medium   25
+   world_wars     الحروب والنزاعات         easy     13
+   world_wars     الحروب والنزاعات         medium    7
+   world_wars     الحروب والنزاعات         hard     21
+   kings_leaders  الملوك والقادة           easy     30
+   kings_leaders  الملوك والقادة           medium   11
+   kings_leaders  الملوك والقادة           hard      6
+   landmarks      المعالم والآثار          easy     32
+   landmarks      المعالم والآثار          medium   21
+   landmarks      المعالم والآثار          hard     27
+   olympics       الأولمبياد والألعاب الأو easy     13
+   olympics       الأولمبياد والألعاب الأو medium   17
+   olympics       الأولمبياد والألعاب الأو hard     11
+   animals_wild   الحيوانات البرية         medium    8
+   animals_wild   الحيوانات البرية         hard     12
+   quran          القرآن الكريم            easy     16
+   quran          القرآن الكريم            medium    2
+   quran          القرآن الكريم            hard      6
+   prophets       الأنبياء والرسل          easy      9
+   seerah         السيرة النبوية           medium    9
+   islamic_history التاريخ الإسلامي         easy      5
+   india_cinema   السينما والدراما         easy      8
+   india_cinema   السينما والدراما         medium    4
+   india_cinema   السينما والدراما         hard     16
+   smartphones    الهواتف والتطبيقات       easy     25
+   smartphones    الهواتف والتطبيقات       medium   19
+   smartphones    الهواتف والتطبيقات       hard     34
+   cybersecurity  الأمن السيبراني          easy     31
+   cybersecurity  الأمن السيبراني          medium   20
+   cybersecurity  الأمن السيبراني          hard     16
+   ai_ml          الذكاء الاصطناعي         easy     24
+   ai_ml          الذكاء الاصطناعي         medium   13
+   ai_ml          الذكاء الاصطناعي         hard     27
+   aviation       الطيران والطائرات        easy     18
+   aviation       الطيران والطائرات        medium   15
+   aviation       الطيران والطائرات        hard     18
+   seas_oceans    البحار والمحيطات         easy     20
+   seas_oceans    البحار والمحيطات         medium   12
+   seas_oceans    البحار والمحيطات         hard     32
+   weather_climate الطقس والمناخ            easy     31
+   weather_climate الطقس والمناخ            medium   16
+   weather_climate الطقس والمناخ            hard     12
+   solar_energy   الطاقة الشمسية           easy     16
+   solar_energy   الطاقة الشمسية           medium   13
+   solar_energy   الطاقة الشمسية           hard     33
+total need: 801
+    + 13  الأنمي والمانجا          medium   (cat total so far saved)
+    +  5  الأنمي والمانجا          hard     (cat total so far saved)
+    +  4  الروايات والكتب          easy     (cat total so far saved)
+    (model nvidia/nemotron-3.5-lightning-30b-a3b unavailable — using nvidia/nemotron-3-ultra-550b-a55b instead)
+    + 14  الروايات والكتب          medium   (cat total so far saved)
+    + 18  الحروب والنزاعات         easy     (cat total so far saved)
+    + 12  الحروب والنزاعات         medium   (cat total so far saved)
+    + 21  الحروب والنزاعات         hard     (cat total so far saved)
+    +  2  الملوك والقادة           easy     (cat total so far saved)
+    +  1  الملوك والقادة           medium   (cat total so far saved)
+    + 10  الملوك والقادة           hard     (cat total so far saved)
+    +  4  المعالم والآثار          easy     (cat total so far saved)
+    + 14  المعالم والآثار          medium   (cat total so far saved)
+    + 19  المعالم والآثار          hard     (cat total so far saved)
+    + 17  الأولمبياد والألعاب الأو easy     (cat total so far saved)
+    + 20  الأولمبياد والألعاب الأو medium   (cat total so far saved)
+    + 11  الأولمبياد والألعاب الأو hard     (cat total so far saved)
+    +  2  الحيوانات البرية         medium   (cat total so far saved)
+    +  3  الحيوانات البرية         hard     (cat total so far saved)
+    +  4  القرآن الكريم            easy     (cat total so far saved)
+    +  5  القرآن الكريم            medium   (cat total so far saved)
+    +  5  القرآن الكريم            hard     (cat total so far saved)
+    + 20  الأنبياء والرسل          easy     (cat total so far saved)
+    + 19  السيرة النبوية           medium   (cat total so far saved)
+    +  2  التاريخ الإسلامي         easy     (cat total so far saved)
+    + 32  السينما والدراما         easy     (cat total so far saved)
+    + 17  السينما والدراما         medium   (cat total so far saved)
+    + 15  السينما والدراما         hard     (cat total so far saved)
+    + 19  الهواتف والتطبيقات       easy     (cat total so far saved)
+    +  4  الهواتف والتطبيقات       medium   (cat total so far saved)
+    + 17  الهواتف والتطبيقات       hard     (cat total so far saved)
+    +  1  الأمن السيبراني          easy     (cat total so far saved)
+    + 15  الأمن السيبراني          medium   (cat total so far saved)
+    +  6  الأمن السيبراني          hard     (cat total so far saved)
+    + 19  الذكاء الاصطناعي         easy     (cat total so far saved)
+    + 16  الذكاء الاصطناعي         medium   (cat total so far saved)
+    + 14  الذكاء الاصطناعي         hard     (cat total so far saved)
+    + 18  الطيران والطائرات        easy     (cat total so far saved)
+    +  2  الطيران والطائرات        medium   (cat total so far saved)
+    + 16  الطيران والطائرات        hard     (cat total so far saved)
+    +  2  البحار والمحيطات         easy     (cat total so far saved)
+    + 20  البحار والمحيطات         medium   (cat total so far saved)
+    + 21  البحار والمحيطات         hard     (cat total so far saved)
+    + 19  الطقس والمناخ            easy     (cat total so far saved)
+    +  2  الطقس والمناخ            medium   (cat total so far saved)
+    +  1  الطقس والمناخ            hard     (cat total so far saved)
+    +  4  الطاقة الشمسية           easy     (cat total so far saved)
+    +  1  الطاقة الشمسية           medium   (cat total so far saved)
+    + 15  الطاقة الشمسية           hard     (cat total so far saved)
+  round  1: +541
+    + 69  الأنمي والمانجا          hard     (cat total so far saved)
+    +  2  الروايات والكتب          easy     (cat total so far saved)
+    +  1  الروايات والكتب          medium   (cat total so far saved)
+    + 12  الملوك والقادة           easy     (cat total so far saved)
+    + 21  الملوك والقادة           medium   (cat total so far saved)
+    + 18  المعالم والآثار          easy     (cat total so far saved)
+    +  1  المعالم والآثار          medium   (cat total so far saved)
+    + 20  المعالم والآثار          hard     (cat total so far saved)
+    + 11  الحيوانات البرية         medium   (cat total so far saved)
+    +  1  الحيوانات البرية         hard     (cat total so far saved)
+    + 11  القرآن الكريم            easy     (cat total so far saved)
+    + 15  القرآن الكريم            hard     (cat total so far saved)
+    +  1  التاريخ الإسلامي         easy     (cat total so far saved)
+    +  3  السينما والدراما         hard     (cat total so far saved)
+    +  8  الهواتف والتطبيقات       easy     (cat total so far saved)
+    + 20  الهواتف والتطبيقات       medium   (cat total so far saved)
+    +  1  الأمن السيبراني          easy     (cat total so far saved)
+    +  2  الأمن السيبراني          medium   (cat total so far saved)
+    + 11  الأمن السيبراني          hard     (cat total so far saved)
+    + 20  الذكاء الاصطناعي         easy     (cat total so far saved)
+    + 14  الذكاء الاصطناعي         hard     (cat total so far saved)
+    + 19  الطيران والطائرات        medium   (cat total so far saved)
+    + 19  الطيران والطائرات        hard     (cat total so far saved)
+    +  3  البحار والمحيطات         easy     (cat total so far saved)
+    + 11  البحار والمحيطات         hard     (cat total so far saved)
+    +  1  الطقس والمناخ            easy     (cat total so far saved)
+    +  4  الطقس والمناخ            medium   (cat total so far saved)
+    + 15  الطقس والمناخ            hard     (cat total so far saved)
+    + 12  الطاقة الشمسية           medium   (cat total so far saved)
+    +  1  الطاقة الشمسية           hard     (cat total so far saved)
+  round  2: +347
+    + 15  الروايات والكتب          easy     (cat total so far saved)
+    +  4  الروايات والكتب          medium   (cat total so far saved)
+    + 17  الملوك والقادة           easy     (cat total so far saved)
+    + 14  المعالم والآثار          easy     (cat total so far saved)
+    +  1  المعالم والآثار          medium   (cat total so far saved)
+    + 20  الحيوانات البرية         hard     (cat total so far saved)
+    +  6  القرآن الكريم            easy     (cat total so far saved)
+    + 19  التاريخ الإسلامي         easy     (cat total so far saved)
+    +  8  الهواتف والتطبيقات       hard     (cat total so far saved)
+    +  1  الأمن السيبراني          easy     (cat total so far saved)
+    +  7  الأمن السيبراني          medium   (cat total so far saved)
+    + 18  البحار والمحيطات         easy     (cat total so far saved)
+    + 13  الطقس والمناخ            easy     (cat total so far saved)
+    +  3  الطقس والمناخ            medium   (cat total so far saved)
+    +  2  الطاقة الشمسية           hard     (cat total so far saved)
+  round  3: +148
+    +  7  الروايات والكتب          medium   (cat total so far saved)
+    + 18  المعالم والآثار          medium   (cat total so far saved)
+    +  2  الهواتف والتطبيقات       hard     (cat total so far saved)
+    +  3  الأمن السيبراني          easy     (cat total so far saved)
+    + 15  الطقس والمناخ            medium   (cat total so far saved)
+    + 19  الطاقة الشمسية           easy     (cat total so far saved)
+    +  1  الطاقة الشمسية           hard     (cat total so far saved)
+  round  4: +65
+    + 32  الهواتف والتطبيقات       hard     (cat total so far saved)
+    +  1  الأمن السيبراني          easy     (cat total so far saved)
+    +  2  الطاقة الشمسية           hard     (cat total so far saved)
+  round  5: +35
+    +  1  الأمن السيبراني          easy     (cat total so far saved)
+    +  5  الطاقة الشمسية           hard     (cat total so far saved)
+  round  6: +6
+    +  4  الطاقة الشمسية           hard     (cat total so far saved)
+  round  7: +4
+    +  6  الأمن السيبراني          easy     (cat total so far saved)
+    +  5  الطاقة الشمسية           hard     (cat total so far saved)
+  round  8: +11
+    +  2  الأمن السيبراني          easy     (cat total so far saved)
+  round  9: +2
+    +  1  الأمن السيبراني          easy     (cat total so far saved)
+  round 10: +1
+  round 11: +0
+  no progress this round — stopping
+DONE: 1160 accepted in 1731s
+   ! short: الأمن السيبراني          easy    17 of 31

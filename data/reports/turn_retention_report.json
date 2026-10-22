@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-10-21T15:09:06",
+  "playwright_version": "1.64.0",
+  "url": "http://localhost:5555/game/quiz",
+  "template_on_disk": {
+    "noAnswerBtn": 2,
+    "markNoAnswer": 3
+  },
+  "served_page": {
+    "noAnswerBtn": 2,
+    "markNoAnswer": 2
+  },
+  "stale_template": false,
+  "status": "FAIL",
+  "results": [
+    "T1 CORRECT KEEPS TURN: PASS — turn 'دور الفريق الأول' -> 'دور الفريق الأول' (flipped=False); score delta = +200 (expected +200); s1 0->200, s2 0->0",
+    "T2 WRONG PASSES TURN: PASS — turn 'دور الفريق الأول' -> 'دور الفريق الثاني' (flipped=True); steal UI re-shown=True",
+    "T5 SKIP KEEPS TURN: PASS — turn 'دور الفريق الثاني' -> 'دور الفريق الثاني' (changed=False)",
+    "T6 CELL IS CONSUMED: PASS — checked cells #0 disabled=True, #1 disabled=True, #2 disabled=True",
+    "T3 NO-ANSWER MOVES TO OTHER TEAM: PASS — turn 'دور الفريق الثاني' -> 'دور الفريق الأول' (flipped=True); banner='🤐 لم يجب الفريق الثاني — فرصة لـ الفريق الأول'",
+    "T4 NO-ANSWER TWICE KEEPS TURN: FAIL — modal closed=True; turn 'دور الفريق الثاني' -> 'دور الفريق الأول' (original team kept turn=False)"
+  ],
+  "details": [
+    "categories selected: ['sports', 'science', 'history', 'geography', 'movies', 'general']",
+    "catCount = (6/6)",
+    "timerDuration = 0",
+    "board cells: 36",
+    "SERVED page: 'noAnswerBtn' occurrences = 2, 'markNoAnswer' occurrences = 2",
+    "TEMPLATE file: 'noAnswerBtn' = 2, 'markNoAnswer' = 3",
+    "#noAnswerBtn visible on served page: False",
+    "initial state: turn='دور الفريق الأول' s1=0 s2=0 remaining='متبقٍ 36 سؤال'",
+    "T1 before: turn='دور الفريق الأول' s1=0 s2=0 (cell 0 text='200', pts=200)",
+    "T1 after : turn='دور الفريق الأول' s1=200 s2=0",
+    "T1 CORRECT KEEPS TURN: PASS — turn 'دور الفريق الأول' -> 'دور الفريق الأول' (flipped=False); score delta = +200 (expected +200); s1 0->200, s2 0->0",
+    "T2 after wrong: turn='دور الفريق الثاني' (was 'دور الفريق الأول'), steal attempt offered to other team (answer hidden again)=True, banner='🥷 فرصة سرقة لـ: الفريق الثاني'",
+    "T2 WRONG PASSES TURN: PASS — turn 'دور الفريق الأول' -> 'دور الفريق الثاني' (flipped=True); steal UI re-shown=True",
+    "T2 follow-up correct-by-other-team: turn='دور الفريق الثاني', s1=0, s2=200",
+    "T5 before: turn='دور الفريق الثاني' ; after skip: turn='دور الفريق الثاني'",
+    "T5 SKIP KEEPS TURN: PASS — turn 'دور الفريق الثاني' -> 'دور الفريق الثاني' (changed=False)",
+    "T6 CELL IS CONSUMED: PASS — checked cells #0 disabled=True, #1 disabled=True, #2 disabled=True",
+    "T3 NO-ANSWER MOVES TO OTHER TEAM: PASS — turn 'دور الفريق الثاني' -> 'دور الفريق الأول' (flipped=True); banner='🤐 لم يجب الفريق الثاني — فرصة لـ الفريق الأول'",
+    "T4 after 2nd no-answer: modal closed=True, turn='دور الفريق الأول' (original was 'دور الفريق الثاني')",
+    "T4 NO-ANSWER TWICE KEEPS TURN: FAIL — modal closed=True; turn 'دور الفريق الثاني' -> 'دور الفريق الأول' (original team kept turn=False)"
+  ]
+}

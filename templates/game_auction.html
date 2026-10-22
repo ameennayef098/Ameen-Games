@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ==========================================================================
+   مزاد اللاعبين — game-local styles on top of the shared design system.
+   Presentation only: bidding, budgeting, pool ordering and the AI judge are untouched.
+   ========================================================================== */
+
+/* --- Setup screen --- */
+.setup-screen > h2 {
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    font-size: var(--font-size-xl);
+}
+.section-title {
+    margin: 1.2rem 0 .5rem; font-size: var(--font-size-md); font-weight: 900; color: var(--text-primary);
+}
+.section-title::before {
+    content: ""; display: inline-block; width: 4px; height: 1.05em; margin-inline-end: .5rem;
+    border-radius: var(--radius-pill); background: var(--accent-gold); vertical-align: -.15em;
+}
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.setup-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.setup-grid.cols-231 { grid-template-columns: 2fr 1fr; }
+
+.pick-box {
+    max-height: 150px; overflow-y: auto; background: var(--bg-inset);
+    border: 1px solid var(--border-color); border-radius: var(--radius);
+    padding: .5rem; box-shadow: var(--shadow-inset);
+}
+.pick-item {
+    display: flex; align-items: center; gap: .4rem; padding: .28rem .35rem;
+    font-size: .82rem; cursor: pointer; border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+.pick-item:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.pick-item input { accent-color: var(--accent-gold); width: 15px; height: 15px; flex: 0 0 auto; }
+
+.pool-summary {
+    background: var(--bg-inset); border: 1px solid var(--border-color); border-radius: var(--radius);
+    padding: .9rem; font-size: .88rem; color: var(--text-secondary); box-shadow: var(--shadow-inset);
+}
+.pool-summary b { color: var(--accent-gold); font-weight: 900; font-size: 1.15rem; }
+
+.pool-empty {
+    display: none; margin-top: var(--space-3); padding: var(--space-4); text-align: center;
+    background: var(--accent-red-tint); border: 1px solid rgba(240, 82, 79, .45);
+    border-radius: var(--radius); color: var(--text-primary); font-weight: 800; font-size: .9rem;
+}
+.setup-actions .btn { min-width: 10rem; }
+
+/* --- Layout --- */
+.auc-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) 290px; gap: var(--space-4); align-items: start; }
+@media(max-width:1200px){ .auc-layout { grid-template-columns: 1fr; } }
+@media(max-width:620px){
+    .setup-grid, .setup-grid.cols-3, .setup-grid.cols-231 { grid-template-columns: 1fr; }
+    .setup-actions .btn { min-width: 0; }
+}
+
+/* --- FIFA card (geometry preserved) --- */
+.fifa-card {
+    width: 250px; height: 350px; margin: 0 auto; border-radius: 18px; position: relative;
+    background: linear-gradient(160deg,#f8ecc2 0%,#e6c96a 42%,#c9a227 78%,#a8871c 100%);
+    color: #2f2600; padding: 12px 15px; box-shadow: 0 14px 34px rgba(0,0,0,.5);
+    clip-path: polygon(0 0,100% 0,100% 87%,87% 100%,0 100%); font-family: var(--font-sans);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+.fifa-card:hover { transform: translateY(-4px) rotate(-1deg); box-shadow: 0 20px 40px rgba(0,0,0,.55); }
+.fifa-card.legend { background: linear-gradient(160deg,#2b2118 0%,#5a4326 40%,#c9a227 100%); color: #f6e6b4; }
+.fifa-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.fifa-rating { font-size: 46px; font-weight: 900; line-height: 1; }
+.fifa-pos { font-size: 15px; font-weight: 800; letter-spacing: 1px; }
+.fifa-meta { text-align: left; font-size: 11px; font-weight: 800; line-height: 1.5; }
+.fifa-photo { height: 132px; display: flex; align-items: center; justify-content: center; font-size: 56px; font-weight: 900; opacity: .85; }
+.fifa-photo img { max-height: 130px; max-width: 100%; object-fit: contain; }
+.fifa-name {
+    text-align: center; font-size: 21px; font-weight: 900; border-top: 2px solid rgba(0,0,0,.18);
+    padding-top: 7px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fifa-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 16px; margin-top: 7px; font-size: 12px; font-weight: 800; }
+.fifa-stats span { display: flex; justify-content: space-between; }
+.fifa-era {
+    display: inline-block; padding: .05rem .45rem; border-radius: var(--radius-pill);
+    background: rgba(0,0,0,.22); font-size: .68rem; font-weight: 900; letter-spacing: .5px;
+}
+.fifa-card.legend .fifa-era { background: rgba(246,230,180,.22); }
+.player-meta { text-align: center; margin-top: .5rem; font-size: .82rem; color: var(--text-secondary); font-weight: 700; }
+
+/* --- Order bar --- */
+.order-bar { display: flex; gap: .3rem; flex-wrap: wrap; justify-content: center; font-size: .75rem; }
+.order-chip {
+    padding: .22rem .65rem; border-radius: var(--radius-pill); background: var(--bg-inset);
+    border: 1px solid var(--border-color); color: var(--text-muted); font-weight: 800;
+    transition: all var(--transition-fast);
+}
+.order-chip.on {
+    background: var(--accent-gold); color: #1a1206; border-color: transparent; font-weight: 900;
+    box-shadow: var(--shadow-glow-gold);
+}
+
+/* --- Turn indicator --- */
+.bid-turn {
+    background: linear-gradient(135deg, rgba(246,167,20,.20), rgba(246,167,20,.05)), var(--bg-card);
+    border: 2px solid var(--accent-gold); border-radius: var(--radius-lg);
+    padding: 1rem; text-align: center; box-shadow: var(--shadow-glow-gold), var(--shadow-inset);
+}
+.bid-turn .turn-label { font-size: .75rem; color: var(--text-muted); font-weight: 800; }
+.bid-turn .who { font-size: 1.35rem; font-weight: 900; color: var(--accent-gold); }
+.bid-turn .turn-action { font-size: .9rem; font-weight: 700; color: var(--text-primary); }
+.bid-turn .turn-action b { color: var(--accent-gold); font-weight: 900; }
+.turn-warn { color: var(--accent-red); font-weight: 800; }
+.turn-timer { margin-top: .5rem; font-size: .78rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 800; }
+.turn-timer.danger { color: var(--accent-red); animation: pulse 1s ease-in-out infinite; }
+.turn-actions { display: flex; gap: .6rem; justify-content: center; margin-top: .8rem; flex-wrap: wrap; }
+
+/* --- Panels --- */
+.panel {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius); padding: .85rem;
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+}
+.panel h4 { margin: 0 0 .5rem; font-size: .92rem; font-weight: 900; color: var(--text-primary); }
+
+.participant-card {
+    padding: .5rem .6rem; margin-bottom: .4rem; border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); background: var(--bg-inset);
+    transition: all var(--transition-fast);
+}
+.participant-card.active { border-color: var(--accent-gold); background: var(--accent-gold-tint); box-shadow: 0 0 0 1px var(--accent-gold); }
+.participant-card.passed { opacity: .5; }
+.participant-card .nm { font-weight: 900; color: var(--text-primary); }
+.participant-card.active .nm::after { content: " · 🎯 دوره الآن"; color: var(--accent-gold); font-size: .75rem; }
+.participant-card .meta { font-size: .72rem; color: var(--text-secondary); }
+
+.history-item, .ledger-item {
+    padding: .3rem 0; border-bottom: 1px solid var(--border-color);
+    font-size: .8rem; color: var(--text-secondary);
+}
+.history-item:last-child, .ledger-item:last-child { border-bottom: none; }
+.history-item b, .ledger-item b { color: var(--text-primary); }
+.empty-note { color: var(--text-muted); font-size: .8rem; }
+
+/* --- Pitch / results --- */
+.pitch {
+    background: linear-gradient(#14532d,#166534); border-radius: var(--radius-lg);
+    padding: 12px; position: relative; min-height: 300px; box-shadow: var(--shadow-inset);
+}
+.pitch-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,.25); }
+.pitch-row { display: flex; justify-content: space-around; align-items: center; margin: 12px 0; position: relative; z-index: 2; flex-wrap: wrap; gap: .35rem; }
+.pitch-player {
+    background: rgba(0,0,0,.4); border: 2px solid rgba(255,255,255,.35); border-radius: var(--radius-sm);
+    padding: 4px 7px; text-align: center; min-width: 74px; color: #fff; font-size: 10px; font-weight: 800;
+}
+.pitch-player .r { font-size: 14px; color: #fde047; }
+
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 1rem; }
+.result-card {
+    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+    padding: 1rem; box-shadow: var(--shadow-sm), var(--shadow-inset);
+}
+.result-head { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-bottom: .6rem; flex-wrap: wrap; }
+.result-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 900; color: var(--text-primary); }
+.result-score { text-align: left; }
+.result-score .v { font-size: 1.9rem; font-weight: 900; color: var(--accent-gold); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.result-score .l { font-size: .68rem; color: var(--text-muted); }
+.result-meta { margin-top: .7rem; font-size: .82rem; color: var(--text-secondary); display: grid; gap: .15rem; }
+.result-meta b { color: var(--text-primary); }
+
+/* --- AI judge / winner --- */
+.ai-judge {
+    display: none; margin-top: 1.25rem; background: var(--bg-card); border: 1px solid var(--accent-gold);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    box-shadow: var(--shadow-glow-gold), var(--shadow-inset);
+}
+.ai-winner { display: flex; align-items: center; gap: .6rem; font-size: var(--font-size-lg); font-weight: 900; color: var(--accent-gold); }
+.ai-winner .trophy { font-size: 2.2rem; filter: drop-shadow(0 8px 22px rgba(246,167,20,.45)); }
+.ai-winner small { font-size: .7em; color: var(--text-secondary); font-weight: 800; }
+.ai-scenario { margin: .8rem 0; line-height: var(--leading-loose); color: var(--text-primary); }
+.ai-reason { color: var(--text-secondary); }
+.ai-reason b { color: var(--accent-gold); }
+
+.fs-btn {
+    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+    color: var(--text-secondary); padding: .5rem .9rem; cursor: pointer; font-family: inherit;
+    font-weight: 800; font-size: .8rem; transition: var(--transition-fast);
+}
+.fs-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+:fullscreen .game-container { max-width: 100%; padding: .5rem; }
+:fullscreen .auc-layout { grid-template-columns: 300px 1fr 290px; }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+
+@media (max-width: 400px) {
+    .fifa-card { width: 100%; max-width: 250px; }
+    .turn-actions .btn { width: 100%; }
+    .result-score .v { font-size: 1.5rem; }
+}
+</style>
+
+<div id="auction-setup" class="setup-screen">
+    <h2><svg class="ico" aria-hidden="true"><use href="#i-wallet"></use></svg> مزاد اللاعبين — إعداد المزاد</h2>
+    <p class="setup-lead">حدّدوا عدد المشاركين والميزانية، ثم ابدأوا المزايدة على اللاعبين.</p>
+
+    <div class="setup-grid">
+        <div class="form-group"><label>عدد المشاركين</label>
+            <select id="participantCount" onchange="renderParticipantInputs()">
+                <option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option>
+            </select></div>
+        <div class="form-group"><label>عدد اللاعبين لكل مشارك</label>
+            <input type="number" id="playersNeeded" value="5" min="1" max="15"></div>
+        <p class="form-hint">عدد اللاعبين الذين يجب على كل مشارك شراؤهم.</p>
+    </div>
+
+    <div id="participantInputs"></div>
+
+    <h3 class="section-title">الميزانية</h3>
+    <div class="setup-grid cols-231">
+        <div class="form-group"><label>المبلغ الكلي لكل مشارك</label><input type="number" id="budget" value="100" min="1"></div>
+        <div class="form-group"><label>الوحدة</label>
+            <select id="budgetUnit"><option value="مليون">مليون</option><option value="مليار">مليار</option><option value="كوينز">كوينز</option></select></div>
+    </div>
+
+    <div class="setup-grid cols-3">
+        <div class="form-group"><label>السعر الافتتاحي</label><input type="number" id="initialPrice" value="5" min="1"></div>
+        <div class="form-group"><label>أدنى زيادة</label><input type="number" id="minBid" value="5" min="1"></div>
+        <div class="form-group"><label>مدة الدور</label>
+            <select id="bidDuration">
+                <option value="0">بدون مؤقت</option><option value="15">15 ثانية</option>
+                <option value="30" selected>30 ثانية</option><option value="60">60 ثانية</option>
+            </select></div>
+    </div>
+
+    <h3 class="section-title">فئات اللاعبين</h3>
+    <div class="form-group"><label>الحقبة</label>
+        <select id="eraFilter" onchange="updatePoolSummary()">
+            <option value="both">حاضرون ومعتزلون</option><option value="current">حاضرون فقط</option><option value="retired">معتزلون فقط</option>
+        </select></div>
+    <p style="color:var(--text-secondary);font-size:.83rem;margin-bottom:.5rem;">
+        اختر فئة أو أكثر (يمكن الدمج). ترتيب العرض: <b>حراسة ← دفاع ← وسط ← هجوم</b>.
+    </p>
+    <div class="setup-grid">
+        <div><div style="font-weight:700;margin-bottom:.35rem;">الدوريات</div><div id="leagueBox" class="pick-box"></div></div>
+        <div><div style="font-weight:700;margin-bottom:.35rem;">الأندية</div><div id="clubBox" class="pick-box"></div></div>
+        <div><div style="font-weight:700;margin-bottom:.35rem;">المنتخبات</div><div id="nationBox" class="pick-box"></div></div>
+        <div><div style="font-weight:700;margin-bottom:.35rem;">ملخص</div>
+            <div id="poolSummary" class="pool-summary">جاري التحميل...</div></div>
+    </div>
+    <div class="pool-empty" id="poolEmpty" role="alert">
+        لا يوجد لاعبون بهذه الفئات — اختر دوريات أو أندية أو منتخبات أخرى، أو أضف لاعبين من لوحة الإدارة.
+    </div>
+
+    <div class="form-group" style="margin-top:1rem;"><label><input type="checkbox" id="soundEnabled" checked> تفعيل الأصوات</label></div>
+
+    <div class="setup-actions">
+        <button class="btn btn-primary btn-lg" onclick="startAuction()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ المزاد</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+</div>
+
+<div id="auction-game" class="game-container" style="display:none;">
+    <div class="auc-layout">
+        <div>
+            <div id="cardSlot"></div>
+            <div id="playerMeta" class="player-meta"></div>
+            <div class="order-bar" style="margin-top:.5rem;" id="orderBar"></div>
+        </div>
+
+        <div>
+            <div class="bid-turn" id="bidTurnBox">
+                <div class="turn-label">الدور على</div>
+                <div class="who" id="turnWho">—</div>
+                <div class="turn-action" id="turnAction">—</div>
+                <div class="turn-actions">
+                    <button class="btn btn-success btn-lg" id="bidBtn" onclick="doBid()">🔨 زايد</button>
+                    <button class="btn btn-secondary btn-lg" id="passBtn" onclick="doPass()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> تمرير</button>
+                </div>
+                <div class="turn-timer" id="turnTimer"></div>
+            </div>
+
+            <div class="panel" style="margin:.8rem 0;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;">
+                    <div class="stat-card"><div class="number" id="currentBid" style="font-size:1.5rem;">0</div><div class="label">المزايدة الحالية</div></div>
+                    <div class="stat-card"><div class="number" id="currentBidder" style="font-size:.95rem;color:var(--accent-gold);">لا يوجد</div><div class="label">أعلى مزايد</div></div>
+                    <div class="stat-card"><div class="number" id="roundInfo" style="font-size:1rem;">0/0</div><div class="label">جولة</div></div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.7rem;align-items:center;">
+                <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+                <button class="btn btn-secondary btn-sm" onclick="finishAuction()">🛑 إنهاء المزاد</button>
+                <span id="playerStatus" class="badge badge-blue">معروض</span>
+            </div>
+
+            <div class="panel">
+                <h4>سجل المزايدات</h4>
+                <div id="bidHistory" style="max-height:150px;overflow-y:auto;"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom:.7rem;">
+                <h4>المشاركون</h4>
+                <div id="participantsList"></div>
+            </div>
+            <div class="panel">
+                <h4>سجل الميزانية</h4>
+                <div id="ledger" style="max-height:200px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="auction-results" class="game-container" style="display:none;">
+    <div class="page-header"><h1>🏆 نتائج المزاد</h1></div>
+    <div class="form-group" style="max-width:320px;margin:0 auto 1rem;">
+        <label>التشكيلة التكتيكية</label>
+        <select id="globalFormation" onchange="applyFormationToAll()">
+            <option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option>
+            <option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option>
+            <option value="2-1-1">1-2-1-1</option>
+        </select>
+    </div>
+    <div id="resultsGrid" class="results-grid"></div>
+    <div style="text-align:center;margin-top:1.5rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-gold btn-lg" onclick="runAiMatch()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> دع الذكاء الاصطناعي يحكّم المباراة</button>
+        <button class="btn btn-secondary" onclick="resetAuction()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> مزاد جديد</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+    </div>
+    <div id="aiMatchBox" class="ai-judge"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var A = null;
+var ALL_PLAYERS = [];
+var GROUP_ORDER = ['GK', 'DEF', 'MID', 'ATT'];
+var GROUP_AR = {GK:'حراسة', DEF:'دفاع', MID:'وسط', ATT:'هجوم'};
+
+function toggleFullscreen() {
+    var el = document.documentElement;
+    if (!document.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+}
+document.addEventListener('fullscreenchange', function () {
+    var b = document.getElementById('fsBtn');
+    if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+});
+
+function loadMeta() {
+    fetch('/api/players/meta').then(function (r) { return r.json(); }).then(function (m) {
+        fillPick('leagueBox', m.leagues, 'league');
+        fillPick('clubBox', m.clubs, 'club');
+        fillPick('nationBox', m.nations, 'nation');
+        updatePoolSummary();
+    });
+    fetch('/api/players').then(function (r) { return r.json(); }).then(function (d) {
+        ALL_PLAYERS = d.players; updatePoolSummary();
+    });
+}
+function fillPick(boxId, items, kind) {
+    document.getElementById(boxId).innerHTML = items.map(function (v) {
+        return '<label class="pick-item"><input type="checkbox" data-kind="' + kind + '" value="' + v +
+               '" onchange="updatePoolSummary()"> ' + v + '</label>';
+    }).join('');
+}
+function picked(kind) {
+    var out = [];
+    document.querySelectorAll('input[data-kind="' + kind + '"]:checked').forEach(function (c) { out.push(c.value); });
+    return out;
+}
+function groupOf(pos) {
+    if (pos === 'GK') return 'GK';
+    if (['CB','LB','RB'].indexOf(pos) >= 0) return 'DEF';
+    if (['CDM','CM','CAM'].indexOf(pos) >= 0) return 'MID';
+    return 'ATT';
+}
+function filteredPool() {
+    var era = document.getElementById('eraFilter').value;
+    var lg = picked('league'), cl = picked('club'), na = picked('nation');
+    return ALL_PLAYERS.filter(function (p) {
+        if (era !== 'both' && p.era !== era) return false;
+        if (lg.length && lg.indexOf(p.league) < 0) return false;
+        if (cl.length && cl.indexOf(p.club) < 0) return false;
+        if (na.length && na.indexOf(p.nationality) < 0) return false;
+        return true;
+    });
+}
+function updatePoolSummary() {
+    var el = document.getElementById('poolSummary');
+    if (!el) return;
+    if (!ALL_PLAYERS.length) { el.textContent = 'جاري التحميل...'; return; }
+    var pool = filteredPool();
+    var g = {GK:0,DEF:0,MID:0,ATT:0};
+    pool.forEach(function (p) { g[groupOf(p.position)]++; });
+    var empty = document.getElementById('poolEmpty');
+    if (empty) empty.style.display = pool.length ? 'none' : 'block';
+    el.innerHTML = '<b>' + pool.length + '</b> لاعب متاح<br>' +
+        'حراسة ' + g.GK + ' · دفاع ' + g.DEF + ' · وسط ' + g.MID + ' · هجوم ' + g.ATT;
+}
+function renderParticipantInputs() {
+    var n = parseInt(document.getElementById('participantCount').value);
+    var html = '';
+    for (var i = 0; i < n; i++) {
+        html += '<div class="form-group"><label>اسم المشارك ' + (i + 1) + '</label>' +
+                '<input type="text" id="pname' + i + '" value="مشارك ' + (i + 1) + '"></div>';
+    }
+    document.getElementById('participantInputs').innerHTML = html;
+    if (n === 5) {
+        document.getElementById('playersNeeded').value = '5';
+    }
+}
+function fmt(n) { return Number(n).toLocaleString('ar-EG'); }
+
+/* ===== pool ordered by position: GK -> DEF -> MID -> ATT (random inside each group) ===== */
+function orderedPool(pool) {
+    var out = [];
+    GROUP_ORDER.forEach(function (g) {
+        var grp = pool.filter(function (p) { return groupOf(p.position) === g; });
+        for (var i = grp.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = grp[i]; grp[i] = grp[j]; grp[j] = t;
+        }
+        out = out.concat(grp);
+    });
+    return out;
+}
+
+function startAuction() {
+    var n = parseInt(document.getElementById('participantCount').value);
+    var budget = parseInt(document.getElementById('budget').value) || 100;
+    var unit = document.getElementById('budgetUnit').value;
+    var need = parseInt(document.getElementById('playersNeeded').value) || 5;
+    var init = parseInt(document.getElementById('initialPrice').value) || 5;
+    var minBid = parseInt(document.getElementById('minBid').value) || 5;
+    var dur = parseInt(document.getElementById('bidDuration').value) || 0;
+    SoundManager.enabled = document.getElementById('soundEnabled').checked;
+
+    var parts = [];
+    for (var i = 0; i < n; i++) {
+        var nm = (document.getElementById('pname' + i).value || '').trim() || ('مشارك ' + (i + 1));
+        parts.push({ name: nm, budget: budget, squad: [], maxPlayers: need });
+    }
+    var pool = filteredPool();
+    if (pool.length < 2) { showToast('لا يوجد لاعبون بهذه الفئات', 'error'); return; }
+
+    A = { unit: unit, initialPrice: init, minBid: minBid, bidDuration: dur,
+          participants: parts, need: need, pool: orderedPool(pool), usedIds: {},
+          round: 0, startIdx: 0, turnIdx: 0, currentBid: 0, lastBidder: null,
+          active: [], withdrawn: {}, over: false, bidHistory: [], ledger: [],
+          currentPlayer: null, timerId: null, endTime: null };
+
+    document.getElementById('auction-setup').style.display = 'none';
+    document.getElementById('auction-results').style.display = 'none';
+    document.getElementById('auction-game').style.display = 'block';
+    nextPlayer();
+}
+
+function availablePlayers() {
+    return A.pool.filter(function (p) { return !A.usedIds[p.id]; });
+}
+
+function randomReplacement(currentPlayer) {
+    var group = groupOf(currentPlayer.position);
+    var candidates = A.pool.filter(function (p) {
+        return !A.usedIds[p.id] && groupOf(p.position) === group && p.id !== currentPlayer.id;
+    });
+    if (!candidates.length) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function nextPlayer() {
+    if (!A || A.over) return;
+    var avail = availablePlayers();
+    var doneAll = A.participants.every(function (p) { return p.squad.length >= A.need; });
+    if (!avail.length || doneAll) { finishAuction(); return; }
+
+    var p = avail[0];                       // pool is already ordered GK→DEF→MID→ATT
+    A.currentPlayer = p;
+    A.currentBid = 0;
+    A.lastBidder = null;
+    A.withdrawn = {};
+    A.active = A.participants.map(function () { return true; });
+    A.turnIdx = A.startIdx % A.participants.length;   // starting bidder rotates every round
+    A.round++;
+
+    renderPlayerCard(p);
+    renderOrderBar();
+    renderBidHistory();
+    renderLedger();
+    promptTurn();
+}
+
+function renderOrderBar() {
+    var g = groupOf(A.currentPlayer.position);
+    document.getElementById('orderBar').innerHTML = GROUP_ORDER.map(function (x) {
+        return '<span class="order-chip ' + (x === g ? 'on' : '') + '">' + GROUP_AR[x] + '</span>';
+    }).join('');
+}
+
+function renderPlayerCard(p) {
+    var legend = p.era === 'retired' ? ' legend' : '';
+    var initials = p.name.split(' ').map(function (w) { return w.charAt(0); }).join('').slice(0, 2);
+    var photo = p.image ? '<img src="' + p.image + '" alt="">' : '<span>' + initials + '</span>';
+    document.getElementById('cardSlot').innerHTML =
+        '<div class="fifa-card' + legend + '">' +
+          '<div class="fifa-top">' +
+            '<div><div class="fifa-rating">' + p.rating + '</div><div class="fifa-pos">' + p.position + '</div></div>' +
+            '<div class="fifa-meta"><span class="fifa-era">' + (p.era === 'retired' ? 'أسطورة' : 'حالي') + '</span><br>' + p.nationality + '<br>' + p.club + '</div>' +
+          '</div>' +
+          '<div class="fifa-photo">' + photo + '</div>' +
+          '<div class="fifa-name">' + p.name + '</div>' +
+          '<div class="fifa-stats">' +
+            '<span>السرعة <b>' + p.pace + '</b></span><span>التسديد <b>' + p.shooting + '</b></span>' +
+            '<span>التمرير <b>' + p.passing + '</b></span><span>المراوغة <b>' + p.dribbling + '</b></span>' +
+            '<span>الدفاع <b>' + p.defending + '</b></span><span>القوة <b>' + p.physical + '</b></span>' +
+          '</div>' +
+        '</div>';
+    document.getElementById('playerMeta').textContent =
+        p.league_name + ' · ' + p.club + ' · ' + GROUP_AR[groupOf(p.position)];
+    document.getElementById('currentBid').textContent = '0';
+    document.getElementById('currentBidder').textContent = 'لا يوجد';
+    document.getElementById('roundInfo').textContent = A.round + '/' + A.participants.length * A.need;
+    document.getElementById('playerStatus').textContent = 'معروض للبيع';
+    document.getElementById('playerStatus').className = 'badge badge-blue';
+}
+
+function promptTurn() {
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var activeCount = A.active.filter(Boolean).length;
+
+    if (activeCount === 0) { endRound(); return; }
+    if (activeCount === 1 && A.lastBidder !== null && A.active[A.lastBidder]) { endRound(); return; }
+
+    // skip participants who already passed
+    var guard = 0;
+    while (!A.active[A.turnIdx] && guard++ < A.participants.length * 2) {
+        A.turnIdx = (A.turnIdx + 1) % A.participants.length;
+    }
+
+    var p = A.participants[A.turnIdx];
+    var nextAmount = A.currentBid === 0 ? A.initialPrice : A.currentBid + A.minBid;
+    var canAfford = p.budget >= nextAmount;
+
+    document.getElementById('turnWho').textContent = p.name;
+    document.getElementById('turnAction').innerHTML =
+        A.currentBid === 0
+            ? 'هل تفتح المزايدة بـ <b>' + fmt(A.initialPrice) + ' ' + A.unit + '</b>؟'
+            : 'المزايدة الحالية <b>' + fmt(A.currentBid) + ' ' + A.unit + '</b> — زايد إلى <b>' +
+              fmt(nextAmount) + ' ' + A.unit + '</b> أو مرّر.';
+    var bb = document.getElementById('bidBtn');
+    bb.textContent = '🔨 زايد' + (A.currentBid === 0 ? ' (' + fmt(A.initialPrice) + ')' : ' (' + fmt(nextAmount) + ')');
+    bb.disabled = !canAfford;
+    if (!canAfford) document.getElementById('turnAction').innerHTML += '<br><span class="turn-warn">ميزانية هذا المشارك لا تكفي — يجب التمرير</span>';
+
+    renderParticipants();
+    startTurnTimer();
+}
+
+function startTurnTimer() {
+    var el = document.getElementById('turnTimer');
+    if (!A.bidDuration) { el.textContent = 'بدون مؤقت'; return; }
+    A.endTime = Date.now() + A.bidDuration * 1000;
+    el.textContent = '⏱️ ' + A.bidDuration;
+    A.timerId = setInterval(function () {
+        var left = Math.max(0, Math.ceil((A.endTime - Date.now()) / 1000));
+        el.textContent = '⏱️ ' + left + ' ثانية';
+        el.classList.toggle('danger', left <= 5);
+        if (left <= 0) { clearInterval(A.timerId); A.timerId = null; doPass(true); }
+    }, 200);
+}
+
+function doBid() {
+    if (!A || A.over) return;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var p = A.participants[A.turnIdx];
+    var amount = A.currentBid === 0 ? A.initialPrice : A.currentBid + A.minBid;
+    if (amount > p.budget) { showToast('الميزانية لا تسمح', 'error'); return; }
+    A.currentBid = amount;
+    A.lastBidder = A.turnIdx;
+    A.bidHistory.unshift({ player: A.currentPlayer.name, bidder: p.name, amount: amount });
+    document.getElementById('currentBid').textContent = fmt(amount) + ' ' + A.unit;
+    document.getElementById('currentBidder').textContent = p.name;
+    renderBidHistory();
+    SoundManager.play('bid');
+    A.turnIdx = (A.turnIdx + 1) % A.participants.length;
+    promptTurn();
+}
+
+function doPass(auto) {
+    if (!A || A.over) return;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var p = A.participants[A.turnIdx];
+    A.active[A.turnIdx] = false;
+    A.withdrawn[A.turnIdx] = true;
+    showToast((auto ? '⏱️ ' : '') + p.name + ' مرّر');
+    A.turnIdx = (A.turnIdx + 1) % A.participants.length;
+    promptTurn();
+}
+
+function renderBidHistory() {
+    document.getElementById('bidHistory').innerHTML = A.bidHistory.slice(0, 40).map(function (b) {
+        return '<div class="history-item"><b>' + b.bidder +
+               '</b> زايد بـ ' + fmt(b.amount) + ' على ' + b.player + '</div>';
+    }).join('') || '<div class="empty-note">لا مزايدات بعد</div>';
+}
+
+function renderParticipants() {
+    document.getElementById('participantsList').innerHTML = A.participants.map(function (p, i) {
+        var isTurn = (i === A.turnIdx && !A.over);
+        var passed = A.withdrawn[i];
+        return '<div class="participant-card' + (isTurn ? ' active' : '') + (passed ? ' passed' : '') + '">' +
+               '<div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">' +
+               '<span class="nm">' + p.name + '</span>' +
+               '<span style="color:var(--accent-gold);font-weight:900;font-variant-numeric:tabular-nums;">' +
+               fmt(p.budget) + ' ' + A.unit + '</span></div>' +
+               '<div class="meta">' + p.squad.length + '/' + p.maxPlayers +
+               (passed ? ' · مرّر' : '') +
+               (i === A.lastBidder ? ' · 🔨 أعلى مزايد' : '') + '</div></div>';
+    }).join('');
+}
+
+function renderLedger() {
+    document.getElementById('ledger').innerHTML = A.ledger.slice(0, 30).map(function (l) {
+        return '<div class="ledger-item"><b>' + l.player +
+               '</b> → ' + l.buyer + '<br><span style="color:var(--text-muted)">' + fmt(l.before) + ' ← ' +
+               fmt(l.after) + ' ' + A.unit + '</span></div>';
+    }).join('') || '<div class="empty-note">لا عمليات بعد</div>';
+}
+
+function endRound() {
+    if (!A || A.over) return;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    var p = A.currentPlayer;
+    A.usedIds[p.id] = true;
+
+    if (A.lastBidder !== null) {
+        var w = A.participants[A.lastBidder];
+        var before = w.budget;
+        w.budget -= A.currentBid;
+        w.squad.push(p);
+        A.ledger.unshift({ player: p.name, buyer: w.name, price: A.currentBid, before: before, after: w.budget });
+        document.getElementById('playerStatus').textContent = 'تم بيعه إلى ' + w.name;
+        document.getElementById('playerStatus').className = 'badge badge-green';
+        showToast('بيع ' + p.name + ' إلى ' + w.name + ' بـ ' + fmt(A.currentBid) + ' ' + A.unit, 'success');
+        SoundManager.play('correct');
+    } else {
+        var replacement = randomReplacement(p);
+        if (replacement) {
+            showToast('لم يُبع ' + p.name + ' — استبدال بـ ' + replacement.name, 'error');
+            A.currentPlayer = replacement;
+            A.currentBid = 0;
+            A.lastBidder = null;
+            A.withdrawn = {};
+            A.active = A.participants.map(function () { return true; });
+            A.turnIdx = A.startIdx % A.participants.length;
+            renderPlayerCard(replacement);
+            renderOrderBar();
+            renderBidHistory();
+            renderLedger();
+            renderParticipants();
+            promptTurn();
+            return;
+        } else {
+            document.getElementById('playerStatus').textContent = 'لم يُبع';
+            document.getElementById('playerStatus').className = 'badge badge-gold';
+            showToast('لم يُبع ' + p.name, 'error');
+        }
+    }
+    A.startIdx = (A.startIdx + 1) % A.participants.length;   // next round starts with the next participant
+    renderParticipants(); renderLedger();
+    setTimeout(nextPlayer, 1100);
+}
+
+function finishAuction() {
+    if (!A || A.over) return;
+    A.over = true;
+    if (A.timerId) { clearInterval(A.timerId); A.timerId = null; }
+    document.getElementById('auction-game').style.display = 'none';
+    document.getElementById('auction-results').style.display = 'block';
+    if (A.participants.length === 5 && A.need === 5) {
+        document.getElementById('globalFormation').value = '2-1-1';
+    }
+    applyFormationToAll();
+}
+
+function evaluateSquad(squad) {
+    if (!squad.length) return { score: 0, notes: ['لا يوجد لاعبون'], quality: 0 };
+    var g = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
+    squad.forEach(function (p) { g[groupOf(p.position)]++; });
+    var quality = Math.round(squad.reduce(function (s, p) { return s + p.rating; }, 0) / squad.length);
+    var balance = 100 - (Math.abs(g.DEF - 4) * 6 + Math.abs(g.MID - 4) * 6 + Math.abs(g.ATT - 3) * 6);
+    var notes = [];
+    if (g.GK === 0) notes.push('لا يوجد حارس مرمى');
+    if (g.DEF < 3) notes.push('الدفاع ضعيف');
+    if (g.MID < 3) notes.push('نقص في خط الوسط');
+    if (g.ATT < 2) notes.push('الهجوم ضعيف');
+    if (!notes.length) notes.push('تشكيلة متوازنة');
+    return { score: Math.max(0, Math.round(quality * 0.7 + Math.max(0, balance) * 0.3)), notes: notes, quality: quality };
+}
+function autoAssign(squad, formation) {
+    var rows = formation.split('-').map(Number);
+    var need = { GK: 1, DEF: rows[0], MID: rows[1], ATT: rows[rows.length - 1] };
+    var by = { GK: [], DEF: [], MID: [], ATT: [] };
+    squad.forEach(function (p) { by[groupOf(p.position)].push(p); });
+    Object.keys(by).forEach(function (k) { by[k].sort(function (a, b) { return b.rating - a.rating; }); });
+    var lines = [by.GK.slice(0, 1), by.DEF.slice(0, need.DEF), by.MID.slice(0, need.MID), by.ATT.slice(0, need.ATT)];
+    var used = {};
+    lines.forEach(function (l) { l.forEach(function (p) { used[p.id] = true; }); });
+    return { lines: lines, bench: squad.filter(function (p) { return !used[p.id]; }) };
+}
+function applyFormationToAll() {
+    var formation = document.getElementById('globalFormation').value;
+    document.getElementById('resultsGrid').innerHTML = A.participants.map(function (p) {
+        var ev = evaluateSquad(p.squad);
+        var layout = autoAssign(p.squad, formation);
+        var rowsHtml = layout.lines.slice().reverse().map(function (line) {
+            return '<div class="pitch-row">' + line.map(function (pl) {
+                return '<div class="pitch-player"><div class="r">' + pl.rating + '</div>' + pl.name +
+                       '<div style="opacity:.8">' + pl.position + '</div></div>';
+            }).join('') + '</div>';
+        }).join('');
+        var bench = layout.bench.map(function (b) { return b.name + ' (' + b.rating + ')'; }).join('، ') || 'لا يوجد';
+        var sold = p.squad.reduce(function (s, pl) { return s + pl.price; }, 0);
+        return '<div class="result-card">' +
+            '<div class="result-head">' +
+              '<h3>' + p.name + '</h3>' +
+              '<div class="result-score"><div class="v">' + ev.score + '</div>' +
+              '<div class="l">تقييم التشكيلة</div></div></div>' +
+            '<div class="pitch"><div class="pitch-line"></div>' + rowsHtml + '</div>' +
+            '<div class="result-meta">' +
+              '<div>الميزانية المتبقية: <b>' + fmt(p.budget) + ' ' + A.unit + '</b></div>' +
+              '<div>قيمة اللاعبين: <b>' + fmt(sold) + ' ' + A.unit + '</b></div>' +
+              '<div>متوسط التقييم: <b>' + ev.quality + '</b></div>' +
+              '<div>الاحتياط: <b>' + bench + '</b></div>' +
+              '<div style="color:var(--accent-gold);font-weight:800;">' + ev.notes.join(' · ') + '</div></div></div>';
+    }).join('');
+}
+function runAiMatch() {
+    var box = document.getElementById('aiMatchBox');
+    box.style.display = 'block';
+    box.innerHTML = '<div style="text-align:center;">⏳ الذكاء الاصطناعي يحلل التشكيلات ويكتب سيناريو المباراة...</div>';
+    var squads = A.participants.map(function (p) {
+        var ev = evaluateSquad(p.squad);
+        return { name: p.name, rating: ev.score, squad: p.squad.map(function (x) { return { name: x.name, rating: x.rating }; }) };
+    });
+    fetch('/api/ai/match', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({squads: squads})})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.error) { box.innerHTML = '<div style="color:var(--accent-red)">' + d.error + '</div>'; return; }
+            box.innerHTML = '<div class="ai-winner"><span class="trophy">🏆</span>' +
+                '<span>الفائز: ' + (d.winner || '—') + ' <small>(' + (d.score || '') + ')</small></span></div>' +
+                '<p class="ai-scenario">' + (d.scenario || '') + '</p>' +
+                '<p class="ai-reason"><b>السبب:</b> ' + (d.reason || '') + '</p>';
+        })
+        .catch(function (e) { box.innerHTML = '<div style="color:var(--accent-red)">تعذّر الاتصال: ' + e + '</div>'; });
+}
+function resetAuction() {
+    document.getElementById('auction-results').style.display = 'none';
+    document.getElementById('auction-game').style.display = 'none';
+    document.getElementById('auction-setup').style.display = 'block';
+    A = null;
+}
+renderParticipantInputs();
+loadMeta();
+</script>
+{% endblock %}

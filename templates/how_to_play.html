@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ── Info pages (about / how-to-play) ── */
+.doc { max-width: 900px; margin-inline: auto; padding: var(--space-4) var(--space-6) var(--space-8); }
+
+.doc-callout {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+    background: var(--accent-gold-tint);
+    border: 1px solid rgba(246, 167, 20, 0.34);
+    border-radius: var(--radius-lg);
+}
+.doc-callout p { font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.doc-section { margin-top: var(--space-7); }
+.doc-section h2 { font-size: var(--font-size-xl); margin-bottom: var(--space-5); }
+.doc-lead {
+    color: var(--text-secondary);
+    margin-top: calc(-1 * var(--space-3));
+    margin-bottom: var(--space-5);
+    line-height: var(--leading-normal);
+}
+
+/* Numbered steps: counter chip + bold lead + supporting line */
+.doc-steps { list-style: none; counter-reset: dstep; display: flex; flex-direction: column; gap: var(--space-3); }
+.doc-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    counter-increment: dstep;
+}
+.doc-steps li::before {
+    content: counter(dstep);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: var(--text-on-accent);
+    font-weight: 900;
+    font-size: var(--font-size-sm);
+    box-shadow: 0 0 0 4px var(--bg-primary);
+}
+.doc-steps b { display: block; }
+.doc-steps span { color: var(--text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-5); }
+.doc-card {
+    padding: var(--space-5);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+    transition: var(--transition);
+}
+.doc-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow); }
+.doc-card h3 { font-size: var(--font-size-md); margin: var(--space-3) 0 var(--space-2); }
+.doc-card p { color: var(--text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.doc-tips { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+.doc-tips li { position: relative; padding-inline-start: var(--space-5); color: var(--text-secondary); line-height: var(--leading-normal); }
+.doc-tips li::before {
+    content: "◆";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.45em;
+    color: var(--accent-gold);
+    font-size: 0.7rem;
+}
+
+.doc-foot {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.icon-chip.red  { background: var(--accent-red-tint);  border-color: rgba(240, 82, 79, 0.32); }
+.icon-chip.pink { background: rgba(236, 72, 153, 0.16); border-color: rgba(236, 72, 153, 0.32); }
+
+@media (max-width: 480px) {
+    .doc { padding-inline: var(--space-4); }
+    .doc-callout { flex-direction: column; text-align: center; }
+    .doc-grid { grid-template-columns: 1fr; }
+    .doc-steps li { padding: var(--space-4); }
+}
+</style>
+
+<section class="doc">
+    <header class="page-header">
+        <h1><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg> طريقة اللعب</h1>
+        <p>كل ما تحتاجه لإدارة جلسة ناجحة قبل أن تبدأ</p>
+    </header>
+
+    <div class="doc-callout">
+        <span class="icon-chip gold" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg></span>
+        <p>القاعدة الذهبية: شخص واحد يتولى إدارة الجلسة من الشاشة، والباقي يتنافس بالنقاط. راجع خطوات لعبتك مرة واحدة قبل أول جلسة، ثم اترك الأمر للحماس.</p>
+    </div>
+
+    <section class="doc-section">
+        <h2>١ · حروف مع أمين</h2>
+        <p class="doc-lead">لعبة لوحة بين فريقين، الهدف فيها بناء مسار متصل قبل الخصم.</p>
+        <ol class="doc-steps">
+            <li><b>يقسّم المضيف اللاعبين إلى فريقين</b><span>ويختار لكل فريق لونه على اللوحة السداسية.</span></li>
+            <li><b>يضغط الفريق صاحب الدور على خلية متاحة</b><span>كل خلية مرتبطة بحرف من الحروف العربية.</span></li>
+            <li><b>يظهر السؤال ويبدأ الجرس</b><span>الفريق الذي يصل إلى الجرس أولاً يحصل على حق الإجابة.</span></li>
+            <li><b>الإجابة الصحيحة تمنح الخلية للفريق</b><span>وتتحول إلى لونه على اللوحة فورًا.</span></li>
+            <li><b>تختلف أهداف الفريقين حسب الجهة</b><span>فريق يكمل مسارًا أفقيًا، وآخر مسارًا عموديًا.</span></li>
+            <li><b>أول فريق يكمل مساره يفوز بالجولة</b><span>ويمكن تكرار الجولات لتحديد الفائز الإجمالي.</span></li>
+        </ol>
+    </section>
+
+    <section class="doc-section">
+        <h2>٢ · س.ج</h2>
+        <p class="doc-lead">مسابقة ثقافية بنك أسئلتها مقسّم إلى فئات متعددة، والنقاط تتصاعد مع صعوبة السؤال.</p>
+        <ol class="doc-steps">
+            <li><b>يختار الفريق صاحب الدور فئة ثم قيمة النقاط</b><span>كلما ارتفعت القيمة زادت صعوبة السؤال.</span></li>
+            <li><b>يظهر السؤال ويبدأ المؤقّت</b><span>يجب الإجابة قبل نفاد الوقت المحدد.</span></li>
+            <li><b>الإجابة الصحيحة تضيف النقاط لرصيد الفريق</b><span>والإجابة الخاطئة تُسقط الفرصة.</span></li>
+            <li><b>عند الخطأ يمكن للفريق الآخر سرقة السؤال</b><span>إذا كانت خاصية السرقة مفعّلة في إعدادات الجلسة.</span></li>
+            <li><b>تنتهي المباراة عند استهلاك أسئلة اللوحة</b><span>ويعلن الفائز صاحب أعلى رصيد.</span></li>
+        </ol>
+    </section>
+
+    <section class="doc-section">
+        <h2>٣ · مزاد اللاعبين</h2>
+        <p class="doc-lead">مزاد سريع يبني لكل مشارك تشكيلته ضمن ميزانية محدودة.</p>
+        <ol class="doc-steps">
+            <li><b>يعرض النظام لاعبًا واحدًا في كل جولة</b><span>مع سعر افتتاحي يبدأ منه التنافس.</span></li>
+            <li><b>يتنافس المشاركون على المزايدة خلال الوقت المحدد</b><span>كل مزايدة يجب أن تتجاوز سابقتها.</span></li>
+            <li><b>عند انتهاء الوقت يفوز صاحب أعلى مزايدة باللاعب</b><span>ويُخصم السعر من ميزانيته.</span></li>
+            <li><b>يتكرر المزاد حتى اكتمال عدد اللاعبين المطلوب</b><span>فتكتمل تشكيلة كل مشارك.</span></li>
+            <li><b>تُقارن التشكيلات ويُعلن الفائز</b><span>بناءً على تقييم اللاعبين المكتسبين.</span></li>
+        </ol>
+    </section>
+
+    <section class="doc-section">
+        <h2>٤ · من سيربح المليون</h2>
+        <p class="doc-lead">مسابقة فردية بمبالغ تصاعدية، والمخاطرة قرار اللاعب وحده.</p>
+        <ol class="doc-steps">
+            <li><b>يجيب اللاعب على خمسة عشر سؤالًا متتاليًا</b><span>لكل سؤال أربعة خيارات وإجابة واحدة صحيحة.</span></li>
+            <li><b>ترتفع قيمة السؤال مع التقدّم</b><span>وتوجد محطات مضمونة تُحافظ على مكسبك.</span></li>
+            <li><b>ثلاث وسائل مساعدة متاحة</b><span>حذف إجابتين، واتصال بصديق، ورأي الجمهور.</span></li>
+            <li><b>يمكن الانسحاب في أي لحظة</b><span>واستلام المبلغ المحقق حتى تلك اللحظة.</span></li>
+            <li><b>الخطأ ينهي الجولة</b><span>ويحتفظ اللاعب بآخر محطة مضمونة وصل إليها.</span></li>
+        </ol>
+    </section>
+
+    <section class="doc-section">
+        <h2>٥ · ألعاب المجموعات السريعة</h2>
+        <p class="doc-lead">مجموعة ألعاب أخفّ إعدادًا، تصلح للفترات القصيرة وللمجموعات الكبيرة.</p>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <span class="icon-chip purple" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg></span>
+                <h3>كود نيمز</h3>
+                <p>فريقان يتناوبان على تخمين كلمات شبكتهم من تلميح قائد الفريق، مع تجنّب الكلمة الخاسرة التي تنهي الجولة.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg></span>
+                <h3>المحقق</h3>
+                <p>اجمع الأدلة من مسرح الحادثة، استجوب الشهود، ثم قدّم استنتاجك النهائي عن هوية المتورط.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip red" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-scale"></use></svg></span>
+                <h3>من الفاعل؟</h3>
+                <p>وقائع وأقوال مشتبه بهم متضاربة؛ مهمتك وزن القرائن وتحديد المسؤول عن الحادثة.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip gold" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg></span>
+                <h3>الجاسوس</h3>
+                <p>الجميع يعرف السؤال إلا شخصًا واحدًا يتلقى إجابة مختلفة. اسأل وأجب واقرأ ردود الأفعال لتكشف الجاسوس.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip green" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-megaphone"></use></svg></span>
+                <h3>أقنعني!</h3>
+                <p>قضية للنقاش يُقسم الحضور حولها إلى مؤيد ومعارض، ويكسب النقاش من يقدّم أقوى حجة أمام تصويت الجمهور.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip cyan" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-football"></use></svg></span>
+                <h3>مين اللاعب؟</h3>
+                <p>تلميحات تتكشف تدريجيًا عن لاعب مجهول؛ خمّن بعد التلميح الأول لتحصد أعلى النقاط.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip pink" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-link"></use></svg></span>
+                <h3>الرابط المشترك</h3>
+                <p>عناصر من مجالات مختلفة تجمعها علاقة واحدة خفية. اكتشفها قبل الفريق المنافس.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="doc-section">
+        <h2>نصائح لمضيف الجلسة</h2>
+        <ul class="doc-tips">
+            <li>جهّز أسماء الفرق والمشاركين قبل بدء الجلسة من شاشة الإعداد.</li>
+            <li>اجعل الشاشة أمام الجميع واستخدم المؤقّت والجرس لضبط الإيقاع.</li>
+            <li>في الأسئلة الخلافية، القرار النهائي للمضيف — وثّق إجابتك قبل اعتمادها.</li>
+            <li>استخدم <a href="/library">مكتبة الأسئلة</a> لمراجعة الأسئلة واستبدال ما لا يناسب جمهورك.</li>
+        </ul>
+    </section>
+
+    <footer class="doc-foot">
+        <p>جاهز تبدأ؟ <a href="/games">تصفّح الألعاب</a> واختر لعبتك القادمة.</p>
+    </footer>
+</section>
+{% endblock %}

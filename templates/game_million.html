@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ==========================================================================
+   من سيربح المليون — game-local styles on top of the shared design system.
+   Presentation only: level order, lifeline rules and the timer are untouched.
+   ========================================================================== */
+
+.mil-wrap{display:grid;grid-template-columns:250px 1fr;gap:1.25rem;align-items:start;
+  max-width:1500px;margin:0 auto;padding:.75rem}
+@media(max-width:1100px){.mil-wrap{grid-template-columns:1fr}}
+
+/* --- Prize ladder --- */
+.ladder{background:linear-gradient(180deg,var(--bg-inset),var(--bg-card));
+  border:1px solid var(--border-color);border-radius:var(--radius-lg);
+  padding:.6rem;display:flex;flex-direction:column-reverse;gap:.18rem;
+  box-shadow:var(--shadow-sm),var(--shadow-inset)}
+.ladder .step{display:flex;justify-content:space-between;align-items:center;gap:.5rem;
+  padding:.36rem .7rem;border-radius:var(--radius-sm);
+  font-weight:800;font-size:.82rem;color:var(--text-muted);
+  border-inline-start:3px solid transparent;transition:all .25s}
+.ladder .step .n{opacity:.55;font-size:.75rem;font-variant-numeric:tabular-nums}
+.ladder .step.safe{color:var(--accent-gold);border-inline-start-color:var(--accent-gold);
+  background:var(--accent-gold-tint)}
+.ladder .step.cur{background:var(--gradient-gold);color:#231600;border-inline-start-color:#fff;
+  transform:scale(1.04);box-shadow:var(--shadow-glow-gold);font-weight:900}
+.ladder .step.cur .n{opacity:.75}
+.ladder .step.done{color:var(--accent-green);border-inline-start-color:var(--accent-green)}
+
+/* --- Stage --- */
+.stage{background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));
+  border:1px solid var(--border-color);border-radius:var(--radius-xl);
+  padding:1rem;display:flex;flex-direction:column;gap:.75rem;
+  box-shadow:var(--shadow),var(--shadow-inset)}
+
+/* --- HUD row --- */
+.mil-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:.4rem;
+  background:var(--bg-inset);border:1px solid var(--border-color);border-radius:var(--radius-pill);
+  padding:.4rem 1rem;font-weight:800;font-size:.85rem;color:var(--text-secondary);
+  font-variant-numeric:tabular-nums}
+.pill.gold{color:var(--accent-gold);border-color:rgba(246,167,20,.45);background:var(--accent-gold-tint)}
+.pill.blue{color:#a9c8ff;border-color:rgba(79,140,255,.4);background:var(--accent-blue-tint)}
+
+/* Per-question badges */
+.mil-badges{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-bottom:.5rem}
+.mil-points{color:var(--accent-gold);font-weight:900;font-size:var(--font-size-sm)}
+.mil-points::before{content:"◈ ";opacity:.8}
+
+/* --- Question card --- */
+.qbox{position:relative;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0)),var(--bg-inset);
+  border:2px solid var(--border-strong);border-radius:var(--radius-lg);
+  padding:1.25rem 1.4rem;min-height:104px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:clamp(1.05rem,2.4vw,var(--font-size-md));font-weight:800;line-height:1.85;
+  box-shadow:var(--shadow-inset)}
+
+/* --- Options --- */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:720px){.opts{grid-template-columns:1fr}}
+.opt{position:relative;display:flex;align-items:center;gap:.7rem;text-align:right;
+  padding:.9rem 1rem;border-radius:var(--radius);
+  border:1px solid var(--border-color);
+  background:linear-gradient(180deg,var(--bg-card-hover),var(--bg-card));
+  color:var(--text-primary);
+  font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer;transition:all .18s}
+.opt .k{width:32px;height:32px;flex:0 0 32px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;background:var(--accent-gold-tint);color:var(--accent-gold);
+  font-weight:900;font-size:.9rem;transition:all .18s}
+.opt:hover:not(:disabled){border-color:var(--accent-gold);transform:translateY(-2px);
+  box-shadow:var(--shadow),var(--shadow-inset)}
+.opt.correct{background:linear-gradient(180deg,rgba(23,195,143,.28),rgba(23,195,143,.10));
+  border-color:var(--accent-green);color:var(--text-primary);box-shadow:0 0 0 1px var(--accent-green)}
+.opt.correct .k{background:var(--accent-green);color:#05231a}
+.opt.correct::after{content:"✓";margin-inline-start:auto;font-weight:900;color:var(--accent-green)}
+.opt.wrong{background:linear-gradient(180deg,rgba(240,82,79,.30),rgba(240,82,79,.10));
+  border-color:var(--accent-red);color:var(--text-primary);box-shadow:0 0 0 1px var(--accent-red)}
+.opt.wrong .k{background:var(--accent-red);color:#fff}
+.opt.wrong::after{content:"✕";margin-inline-start:auto;font-weight:900;color:var(--accent-red)}
+.opt:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.opt.blink{animation:blink .6s ease-in-out 4}
+@keyframes blink{0%,100%{border-color:var(--border-color)}50%{border-color:var(--accent-gold);background:var(--bg-card-hover)}}
+
+/* --- Lifelines --- */
+.lifelines{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.ll{width:108px;height:78px;border-radius:var(--radius);
+  border:1px solid var(--border-color);
+  background:linear-gradient(180deg,var(--bg-card-hover),var(--bg-card));color:var(--text-secondary);
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;
+  font-family:inherit;font-weight:800;font-size:.74rem;transition:all .2s}
+.ll .ic{font-size:1.35rem}
+.ll:hover:not(:disabled){border-color:var(--accent-gold);color:var(--accent-gold);transform:translateY(-2px);
+  box-shadow:var(--shadow)}
+.ll:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.ll.used{border-style:dashed;text-decoration:line-through}
+
+/* --- Timer ring --- */
+.timer-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1.05rem;background:conic-gradient(var(--accent-green) var(--deg,360deg),var(--bg-inset) 0deg)}
+.timer-ring span{width:44px;height:44px;border-radius:50%;background:var(--bg-card);
+  display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+
+/* --- Audience poll --- */
+.aud-wrap{display:flex;align-items:flex-end;gap:.5rem;height:110px;margin-top:.75rem}
+.aud-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.25rem}
+.aud-bar{width:100%;background:linear-gradient(180deg,var(--accent-cyan),var(--accent-blue));
+  border-radius:6px 6px 0 0;transition:height .5s ease;min-height:6px}
+.aud-lbl{font-size:.72rem;font-weight:800;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.info-card{background:var(--bg-inset);border:1px solid var(--border-color);border-radius:var(--radius);
+  padding:.85rem 1.1rem;font-size:.92rem;box-shadow:var(--shadow-inset)}
+
+/* --- Buttons --- */
+.fs-btn{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);
+  color:var(--text-secondary);padding:.5rem .9rem;cursor:pointer;
+  font-family:inherit;font-weight:800;font-size:.8rem;transition:var(--transition-fast)}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+
+/* --- End modal --- */
+.mil-end-icon{font-size:3.4rem;line-height:1;filter:drop-shadow(0 8px 22px rgba(246,167,20,.45))}
+.mil-end-amount{
+  font-size:var(--font-size-2xl);font-weight:900;margin:1rem 0;
+  background:linear-gradient(120deg,var(--accent-gold),#ffd98a);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+:fullscreen .mil-wrap{max-width:100%;padding:1rem}
+
+@media (max-width: 480px) {
+  .mil-top { justify-content: center; }
+  .pill { font-size: .8rem; padding: .35rem .8rem; }
+  .ll { width: 46%; }
+  .qbox { padding: 1rem; }
+}
+</style>
+
+<div id="mil-setup" class="setup-screen">
+    <h2><svg class="ico" aria-hidden="true"><use href="#i-crown"></use></svg> من سيربح المليون</h2>
+    <p class="setup-lead">
+        15 سؤالاً بمبالغ تصاعدية · 3 وسائل مساعدة · بنك أسئلة مخصص بخياراته
+    </p>
+    <div class="form-group"><label>اسم المتسابق</label><input type="text" id="playerName" value="المتسابق"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group"><label>الصعوبة</label>
+            <select id="milDiff">
+                <option value="mixed" selected>متنوعة (تصاعدية)</option>
+                <option value="easy">سهل فقط</option>
+                <option value="medium">متوسط فقط</option>
+                <option value="hard">صعب فقط</option>
+            </select></div>
+        <div class="form-group"><label>مدة السؤال</label>
+            <select id="milTimer">
+                <option value="0">بدون مؤقت</option>
+                <option value="30">30 ثانية</option>
+                <option value="45" selected>45 ثانية</option>
+                <option value="60">60 ثانية</option>
+            </select></div>
+    </div>
+    <div class="form-group"><label><input type="checkbox" id="milSound" checked> تفعيل الأصوات</label></div>
+    <div id="milPool" style="text-align:center;color:var(--text-secondary);font-size:.9rem;"></div>
+    <div class="setup-actions">
+        <button class="btn btn-primary btn-lg" onclick="startMillion()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ اللعبة</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+</div>
+
+<div id="mil-game" style="display:none;">
+<div class="mil-wrap">
+    <div>
+        <div class="ladder" id="ladder"></div>
+        <div class="card" style="margin-top:.75rem;padding:.9rem;text-align:center;">
+            <div style="font-size:.75rem;color:var(--text-muted)">المبلغ المؤكد</div>
+            <div style="font-size:var(--font-size-xl);font-weight:900;color:var(--accent-gold)" id="safeAmount">0</div>
+        </div>
+    </div>
+
+    <div class="stage">
+        <div class="mil-top">
+            <div class="pill gold">🏆 <span id="milValue">100</span></div>
+            <div class="pill blue">سؤال <span id="milQNum">1</span> / 15</div>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+                <div class="timer-ring" id="milRing"><span id="milTimerTxt">—</span></div>
+                <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+                <button class="fs-btn" onclick="withdrawMillion()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> انسحاب</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="mil-badges">
+                <span class="badge badge-blue" id="milDiffBadge">متوسط</span>
+                <span class="mil-points" id="milPointsBadge" style="display:none;"></span>
+            </div>
+            <div class="qbox" id="milQuestion">السؤال</div>
+        </div>
+
+        <div class="lifelines">
+            <button class="ll" id="ll50" onclick="use5050()"><span class="ic">½</span>حذف إجابتين</button>
+            <button class="ll" id="llPhone" onclick="usePhone()"><span class="ic">📞</span>اتصال بصديق</button>
+            <button class="ll" id="llAud" onclick="useAudience()"><span class="ic">👥</span>رأي الجمهور</button>
+            <button class="ll" id="llSwitch" onclick="switchQuestion()"><span class="ic">🔄</span>سؤال بديل</button>
+        </div>
+
+        <div class="opts" id="milOptions"></div>
+        <div id="milInfo"></div>
+
+        <div style="text-align:center;">
+            <button class="btn btn-secondary btn-sm" onclick="resetMillion()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> لعبة جديدة</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<div id="milEnd" class="modal-overlay">
+    <div class="modal" style="text-align:center;max-width:460px;">
+        <div class="mil-end-icon" id="milEndIcon">🎉</div>
+        <h1 id="milEndTitle" style="margin:.5rem 0;">مبروك</h1>
+        <h2 class="mil-end-amount" id="milEndAmount"></h2>
+        <p id="milEndMsg" style="color:var(--text-secondary);margin-bottom:2rem;"></p>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="resetMillion()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> العب مرة أخرى</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var LADDER = [100,200,300,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,1000000];
+var SAFE = [4, 9, 14];
+var KEYS = ['أ','ب','ج','د'];
+var MIL_DIFF_AR = { easy: 'سهل', under: 'تحت المتوسط', medium: 'متوسط', hard: 'صعب' };
+var M = null;
+var milTimerId = null;
+
+function loadPool() {
+    fetch('/api/questions?game=million&status=approved&per_page=5000')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var el = document.getElementById('milPool');
+            if (el) el.textContent = d.total
+                ? 'بنك أسئلة المليون: ' + d.total + ' سؤال جاهز'
+                : 'بنك أسئلة المليون فارغ — أضف أسئلة من لوحة الإدارة.';
+        })
+        .catch(function () {
+            var el = document.getElementById('milPool');
+            if (el) el.textContent = 'تعذّر تحميل بنك الأسئلة.';
+        });
+}
+// Purely presentational: difficulty + points badges for the current question.
+function renderMilBadges(q) {
+    var d = document.getElementById('milDiffBadge');
+    if (d) {
+        d.textContent = MIL_DIFF_AR[q.difficulty] || 'متوسط';
+        d.className = 'badge ' + (q.difficulty === 'easy' ? 'badge-green'
+                              : (q.difficulty === 'hard' ? 'badge-red' : 'badge-blue'));
+    }
+    var p = document.getElementById('milPointsBadge');
+    if (p) {
+        if (q.points) { p.textContent = q.points + ' نقطة'; p.style.display = ''; }
+        else { p.textContent = ''; p.style.display = 'none'; }
+    }
+}
+function toggleFullscreen() {
+    var el = document.documentElement;
+    if (!document.fullscreenElement) {
+        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        document.getElementById('fsBtn').textContent = '⛶ خروج من ملء الشاشة';
+    } else {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        document.getElementById('fsBtn').textContent = '⛶ ملء الشاشة';
+    }
+}
+document.addEventListener('fullscreenchange', function () {
+    var b = document.getElementById('fsBtn');
+    if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+});
+
+function startMillion() {
+    var diff = document.getElementById('milDiff').value;
+    fetch('/api/questions?game=million&status=approved&per_page=5000')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var pool = d.questions.filter(function (q) {
+                return q.options && q.options.length === 4 && q.options.indexOf(q.answer) >= 0;
+            });
+            if (diff !== 'mixed') pool = pool.filter(function (q) { return q.difficulty === diff; });
+            if (pool.length < 15) { showToast('الأسئلة غير كافية — ولّد المزيد من لوحة الإدارة', 'error'); return; }
+
+            for (var i = pool.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+            }
+            if (diff === 'mixed') {
+                var byDiff = {easy: [], under: [], medium: [], hard: []};
+                pool.forEach(function (q) { (byDiff[q.difficulty] || byDiff.medium).push(q); });
+                pool = [];
+                var adaptivePlan = [
+                    'easy','easy','easy',
+                    'easy','medium','easy',
+                    'medium','medium','medium',
+                    'medium','hard','medium',
+                    'hard','hard','hard'
+                ];
+                for (var lvl = 0; lvl < 15; lvl++) {
+                    var want = adaptivePlan[lvl];
+                    var arr = byDiff[want];
+                    if (arr && arr.length) pool.push(arr.shift());
+                    else if (byDiff.easy.length) pool.push(byDiff.easy.shift());
+                    else if (byDiff.medium.length) pool.push(byDiff.medium.shift());
+                    else if (byDiff.hard.length) pool.push(byDiff.hard.shift());
+                }
+            }
+            if (pool.length < 15) { showToast('الأسئلة غير كافية في هذه الصعوبة', 'error'); return; }
+
+            M = { pool: pool, level: 0, safe: 0, used5050: false, usedPhone: false,
+                  usedAud: false, usedSwitch: false, over: false, locked: false,
+                  player: document.getElementById('playerName').value.trim() || 'المتسابق',
+                  timer: parseInt(document.getElementById('milTimer').value) };
+            SoundManager.enabled = document.getElementById('milSound').checked;
+
+            document.getElementById('mil-setup').style.display = 'none';
+            document.getElementById('mil-game').style.display = 'block';
+            renderLadder();
+            nextQuestion();
+        });
+}
+
+function renderLadder() {
+    document.getElementById('ladder').innerHTML = LADDER.map(function (v, i) {
+        var cls = (i === M.level) ? 'cur' : (i < M.level ? 'done' : (SAFE.indexOf(i) >= 0 ? 'safe' : ''));
+        return '<div class="step ' + cls + '"><span class="n">' + (i + 1) + '</span><span>' +
+               v.toLocaleString('ar-EG') + '</span></div>';
+    }).join('');
+    document.getElementById('safeAmount').textContent = M.safe.toLocaleString('ar-EG');
+}
+
+function nextQuestion() {
+    if (M.level >= LADDER.length) { winMillion(); return; }
+    var q = M.pool[M.level];
+    M.current = q;
+    M.used5050 = M.usedPhone = M.usedAud = M.usedSwitch = false;
+    M.locked = false;
+
+    document.getElementById('milQNum').textContent = (M.level + 1);
+    document.getElementById('milValue').textContent = LADDER[M.level].toLocaleString('ar-EG');
+    document.getElementById('milQuestion').textContent = q.question;
+    renderMilBadges(q);
+    document.getElementById('milInfo').innerHTML = '';
+    ['ll50','llPhone','llAud','llSwitch'].forEach(function (id) {
+        var b = document.getElementById(id);
+        b.disabled = false; b.classList.remove('used');
+    });
+    renderLadder();
+    renderOptions();
+    startRing();
+}
+
+function renderOptions() {
+    var opts = M.current.options;
+    document.getElementById('milOptions').innerHTML = opts.map(function (o, i) {
+        return '<button class="opt" data-i="' + i + '" onclick="answerMillion(' + i + ')">' +
+               '<span class="k">' + KEYS[i] + '</span><span>' + o + '</span></button>';
+    }).join('');
+}
+
+function startRing() {
+    if (milTimerId) { clearInterval(milTimerId); milTimerId = null; }
+    var ring = document.getElementById('milRing');
+    var txt = document.getElementById('milTimerTxt');
+    if (!M.timer) { ring.style.setProperty('--deg', '360deg'); txt.textContent = '∞'; return; }
+    var end = Date.now() + M.timer * 1000;
+    milTimerId = setInterval(function () {
+        var left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        txt.textContent = left;
+        ring.style.setProperty('--deg', (left / M.timer * 360) + 'deg');
+        ring.style.background = 'conic-gradient(' +
+            (left <= 5 ? '#ef4444' : (left <= 12 ? '#f59e0b' : '#22c55e')) +
+            ' ' + (left / M.timer * 360) + 'deg, #1e293b 0deg)';
+        if (left <= 0) { clearInterval(milTimerId); milTimerId = null; loseMillion('انتهى الوقت'); }
+    }, 200);
+}
+
+function answerMillion(i) {
+    if (M.locked || M.over) return;
+    M.locked = true;
+    if (milTimerId) { clearInterval(milTimerId); milTimerId = null; }
+    var chosen = M.current.options[i];
+    var correct = M.current.answer;
+    var btns = document.querySelectorAll('#milOptions .opt');
+    btns.forEach(function (b) {
+        b.disabled = true;
+        if (M.current.options[parseInt(b.dataset.i)] === correct) b.classList.add('correct');
+    });
+    if (chosen === correct) {
+        SoundManager.play('correct');
+        if (SAFE.indexOf(M.level) >= 0) M.safe = LADDER[M.level];
+        M.level++;
+        renderLadder();
+        setTimeout(function () {
+            if (M.level >= LADDER.length) winMillion(); else nextQuestion();
+        }, 1200);
+    } else {
+        btns[i].classList.add('wrong');
+        SoundManager.play('wrong');
+        setTimeout(function () { loseMillion('إجابة خاطئة'); }, 1500);
+    }
+}
+
+function use5050() {
+    if (M.used5050 || M.locked) return;
+    M.used5050 = true;
+    markUsed('ll50');
+    var correct = M.current.answer;
+    var wrong = [];
+    M.current.options.forEach(function (o, i) { if (o !== correct) wrong.push(i); });
+    for (var k = wrong.length - 1; k > 0; k--) {
+        var j = Math.floor(Math.random() * (k + 1));
+        var t = wrong[k]; wrong[k] = wrong[j]; wrong[j] = t;
+    }
+    wrong.slice(0, 2).forEach(function (idx) {
+        var b = document.querySelector('#milOptions .opt[data-i="' + idx + '"]');
+        if (b) { b.disabled = true; b.classList.add('blink'); }
+    });
+    showToast('حُذفت إجابتان خاطئتان');
+}
+
+function usePhone() {
+    if (M.usedPhone || M.locked) return;
+    M.usedPhone = true;
+    markUsed('llPhone');
+    var confident = Math.random() < 0.78;
+    var wrongs = M.current.options.filter(function (o) { return o !== M.current.answer; });
+    var guess = confident ? M.current.answer : wrongs[Math.floor(Math.random() * wrongs.length)];
+    document.getElementById('milInfo').innerHTML =
+        '<div class="info-card">📞 <b style="color:var(--accent-gold)">صديقك يقول:</b> ' +
+        '«أعتقد أن الإجابة هي <b>' + guess + '</b>»' +
+        (confident ? ' — وأنا واثق إلى حد كبير.' : ' — لكنني لست متأكداً تماماً.') + '</div>';
+}
+
+function useAudience() {
+    if (M.usedAud || M.locked) return;
+    M.usedAud = true;
+    markUsed('llAud');
+    var correctIdx = M.current.options.indexOf(M.current.answer);
+    var weights = M.current.options.map(function (_, i) {
+        return i === correctIdx ? 52 + Math.random() * 26 : Math.random() * 24;
+    });
+    var sum = weights.reduce(function (a, b) { return a + b; }, 0);
+    var pct = weights.map(function (w) { return Math.round(w / sum * 100); });
+    document.getElementById('milInfo').innerHTML =
+        '<div class="info-card">👥 <b style="color:var(--accent-gold)">رأي الجمهور:</b>' +
+        '<div class="aud-wrap">' + pct.map(function (p, i) {
+            return '<div class="aud-col"><div class="aud-bar" style="height:' + Math.max(6, p) + '%"></div>' +
+                   '<div class="aud-lbl">' + KEYS[i] + ' · ' + p + '%</div></div>';
+        }).join('') + '</div></div>';
+}
+
+function switchQuestion() {
+    if (M.usedSwitch || M.locked) return;
+    var others = M.pool.filter(function (q, i) {
+        return i > M.level && q.difficulty === M.current.difficulty && q !== M.current;
+    });
+    if (!others.length) { showToast('لا يوجد سؤال بديل متاح', 'error'); return; }
+    M.usedSwitch = true;
+    markUsed('llSwitch');
+    var pick = others[Math.floor(Math.random() * others.length)];
+    var at = M.pool.indexOf(pick);
+    M.pool[at] = M.pool[M.level];
+    M.pool[M.level] = pick;
+    M.locked = false;
+    M.current = pick;
+    document.getElementById('milQuestion').textContent = pick.question;
+    renderMilBadges(pick);
+    document.getElementById('milInfo').innerHTML = '';
+    M.used5050 = M.usedPhone = M.usedAud = false;
+    ['ll50','llPhone','llAud'].forEach(function (id) {
+        var b = document.getElementById(id); b.disabled = false; b.classList.remove('used');
+    });
+    renderOptions();
+    startRing();
+    showToast('تم تبديل السؤال');
+}
+
+function markUsed(id) {
+    var b = document.getElementById(id);
+    b.disabled = true; b.classList.add('used');
+}
+
+function withdrawMillion() {
+    if (!M || M.over) return;
+    M.over = true;
+    if (milTimerId) { clearInterval(milTimerId); milTimerId = null; }
+    showMilEnd('🚪', 'انسحبت', M.safe, 'انسحبت بالمبلغ المؤكد.');
+}
+function winMillion() {
+    M.over = true;
+    if (milTimerId) { clearInterval(milTimerId); milTimerId = null; }
+    showMilEnd('🏆', 'مبروك!', 1000000, 'أجبت على الأسئلة الخمسة عشر كاملة!');
+    SoundManager.play('win');
+}
+function loseMillion(reason) {
+    M.over = true;
+    if (milTimerId) { clearInterval(milTimerId); milTimerId = null; }
+    showMilEnd('😔', 'انتهت اللعبة', M.safe, reason + ' — تحصل على المبلغ المؤكد.');
+}
+function showMilEnd(icon, title, amount, msg) {
+    document.getElementById('milEndIcon').textContent = icon;
+    document.getElementById('milEndTitle').textContent = title;
+    document.getElementById('milEndAmount').textContent = amount.toLocaleString('ar-EG') + ' ريال';
+    document.getElementById('milEndMsg').textContent = msg;
+    document.getElementById('milEnd').classList.add('active');
+}
+function resetMillion() {
+    document.getElementById('milEnd').classList.remove('active');
+    document.getElementById('mil-game').style.display = 'none';
+    document.getElementById('mil-setup').style.display = 'block';
+    M = null;
+    if (milTimerId) { clearInterval(milTimerId); milTimerId = null; }
+    loadPool();
+}
+loadPool();
+</script>
+{% endblock %}

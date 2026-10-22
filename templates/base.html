@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0c1a">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="ألعاب أمين — منصة ألعاب جماعية وأسئلة ومزايدات عربية: حروف مع أمين، س.ج، مزاد اللاعبين، ومن سيربح المليون.">
+    <title>{{ title or 'الرئيسية' }} | ألعاب أمين</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234f8cff'/%3E%3Cpath d='M7 7.5h10a4.5 4.5 0 0 1 4.5 4.5v.6a2.9 2.9 0 0 1-5.1 2L15 12.2H9l-1.5 2.4a2.9 2.9 0 0 1-5.1-2V12A4.5 4.5 0 0 1 7 7.5Z' fill='%230a0c1a'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/ui-kit.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Changa:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>document.documentElement.classList.add('js');</script>
+    <noscript><style>.reveal,.reveal-stagger>*{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+    <!-- ================= SVG ICON SPRITE (decorative only) ================= -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <defs>
+            <symbol id="i-gamepad" viewBox="0 0 24 24">
+                <path d="M7 6.5h10a5 5 0 0 1 5 5v1a3 3 0 0 1-5.1 2.1L15.2 12.5H8.8L7.1 14.6A3 3 0 0 1 2 13.5v-1a5 5 0 0 1 5-5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="M7.6 9.8v3.2M6 11.4h3.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <circle cx="15.6" cy="10.2" r="1" fill="currentColor"/>
+                <circle cx="17.9" cy="12.2" r="1" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-trophy" viewBox="0 0 24 24">
+                <path d="M8 4h8v4.6a4 4 0 0 1-8 0V4Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="M8 5.2H5.4a2.6 2.6 0 0 0 2.7 3.1M16 5.2h2.6a2.6 2.6 0 0 1-2.7 3.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M12 12.6v3.2M9.4 20h5.2M10.2 15.8h3.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-dice" viewBox="0 0 24 24">
+                <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <circle cx="8.4" cy="8.4" r="1.35" fill="currentColor"/>
+                <circle cx="15.6" cy="8.4" r="1.35" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.35" fill="currentColor"/>
+                <circle cx="8.4" cy="15.6" r="1.35" fill="currentColor"/>
+                <circle cx="15.6" cy="15.6" r="1.35" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-target" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <circle cx="12" cy="12" r="4.7" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-bolt" viewBox="0 0 24 24">
+                <path d="M13.2 2.5 4.6 13.6h6.2l-1.1 7.9 8.7-11.2h-6.2l1-7.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-users" viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M3.4 19.2a5.6 5.6 0 0 1 11.2 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M16.2 5.3a3.2 3.2 0 0 1 0 5.9M17.6 19.2a5.6 5.6 0 0 0-2.1-4.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-question" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M9.5 9.3A2.7 2.7 0 0 1 12 7.5c1.5 0 2.7 1 2.7 2.2 0 1.7-2.1 2-2.7 3.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <circle cx="12" cy="16.4" r="1.05" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-chart" viewBox="0 0 24 24">
+                <path d="M4 20v-9M10 20V4M16 20v-6M21 20H3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-lock" viewBox="0 0 24 24">
+                <rect x="5" y="10.5" width="14" height="9.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <circle cx="12" cy="15.1" r="1.25" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-arrow-left" viewBox="0 0 24 24">
+                <path d="M19 12H5M11 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-arrow-up" viewBox="0 0 24 24">
+                <path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-chevron-down" viewBox="0 0 24 24">
+                <path d="m6 9.5 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-check" viewBox="0 0 24 24">
+                <path d="m5 13 4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-close" viewBox="0 0 24 24">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-book" viewBox="0 0 24 24">
+                <path d="M4 5.6A2.6 2.6 0 0 1 6.6 3H20v15H6.6A2.6 2.6 0 0 0 4 20.6Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="M4 20.6A2.6 2.6 0 0 1 6.6 18H20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-info" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M12 11v5.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <circle cx="12" cy="7.9" r="1.05" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-wallet" viewBox="0 0 24 24">
+                <rect x="3" y="6.5" width="18" height="11.5" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M3 10.2h18" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <circle cx="16.4" cy="14.1" r="1.15" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-search" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="6.6" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="m15.8 15.8 4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-filter" viewBox="0 0 24 24">
+                <path d="M4 5.5h16l-6.2 7.2v6l-3.6 2v-8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-clock" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M12 7v5.4l3.4 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-star" viewBox="0 0 24 24">
+                <path d="m12 3.2 2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9-5.4 2.9 1.1-6L3.2 9.6l6.1-.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-spark" viewBox="0 0 24 24">
+                <path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M17.7 6.3l-2.5 2.5M8.8 15.2l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-link" viewBox="0 0 24 24">
+                <path d="M10 13.5a4 4 0 0 0 5.7.4l2.8-2.8a4 4 0 0 0-5.7-5.7l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M14 10.5a4 4 0 0 0-5.7-.4l-2.8 2.8a4 4 0 0 0 5.7 5.7l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-gavel" viewBox="0 0 24 24">
+                <path d="m13.4 5.6 5 5" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                <path d="m10.9 8 5 5-3.1 3.1-5-5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="m4.2 20 4.4-4.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-scale" viewBox="0 0 24 24">
+                <path d="M12 4v16M8 20h8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M12 6 5 8l-2.2 5a3 3 0 0 0 6.4 0L7 8M12 6l7 2 2.2 5a3 3 0 0 1-6.4 0L17 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-eye" viewBox="0 0 24 24">
+                <path d="M2.6 12S6 5.6 12 5.6 21.4 12 21.4 12 18 18.4 12 18.4 2.6 12 2.6 12Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.9"/>
+            </symbol>
+            <symbol id="i-bulb" viewBox="0 0 24 24">
+                <path d="M9.4 18.4h5.2M10.2 21h3.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M12 3.2a6 6 0 0 1 3.6 10.7c-.6.5-.6 1.2-.6 2.1H9c0-.9 0-1.6-.6-2.1A6 6 0 0 1 12 3.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-medal" viewBox="0 0 24 24">
+                <circle cx="12" cy="14.6" r="5" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M12 12.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1.1-2 1.1.4-2.2-1.6-1.5 2.2-.3Z" fill="currentColor"/>
+                <path d="M8.6 9.6 6.2 3.4h3.9L12 7.4l1.9-4h3.9l-2.4 6.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-home" viewBox="0 0 24 24">
+                <path d="M4 11 12 4l8 7v9H4Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="M10 20v-5.6h4V20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-grid" viewBox="0 0 24 24">
+                <rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+            </symbol>
+            <symbol id="i-help" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M9.6 9.4A2.6 2.6 0 0 1 12 7.6c1.4 0 2.5.9 2.5 2.1 0 1.6-1.9 1.9-2.5 3.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <circle cx="12" cy="16.1" r="1.05" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-megaphone" viewBox="0 0 24 24">
+                <path d="M4 10.5v3.4l11.4 4.1V6.4L4 10.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="M15.4 8.6a3.9 3.9 0 0 1 0 7.3M7 15.2V18a1.4 1.4 0 0 0 1.4 1.4h1.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-football" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M12 7.6l3.4 2.4-1.3 3.9h-4.2L8.6 10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M12 3.4v4.2M18.4 8.6l-3 1.4M18.4 18.4l-3-2.6M12 20.6V16M5.6 18.4l3-2.6M5.6 8.6l3 1.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-crown" viewBox="0 0 24 24">
+                <path d="M4 8.4 7.4 11 12 5.4 16.6 11 20 8.4 18.4 18H5.6Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-shield" viewBox="0 0 24 24">
+                <path d="M12 3.2 5 6.2v5.8c0 4.4 3 7.4 7 9 4-1.6 7-4.6 7-9V6.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="m9 12 2.1 2.1L15.2 10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-settings" viewBox="0 0 24 24">
+                <path d="M4 8.4h9.5M18.5 8.4H20M4 15.6h3.5M12.5 15.6h7.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                <circle cx="16" cy="8.4" r="2.2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <circle cx="10" cy="15.6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.9"/>
+            </symbol>
+            <symbol id="i-volume" viewBox="0 0 24 24">
+                <path d="M4 10v4.2h3.2L12 18V6L7.2 10Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                <path d="M15.4 9.2a3.9 3.9 0 0 1 0 5.6M18 6.8a7.2 7.2 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-external" viewBox="0 0 24 24">
+                <path d="M14 4.5h5.5V10M19.5 4.5 11 13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 14.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18V7.5A1.5 1.5 0 0 1 6 6h3.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="i-sparkle" viewBox="0 0 24 24">
+                <path d="M12 3.6c.7 3.9 2.6 5.8 6.4 6.4-3.8.6-5.7 2.5-6.4 6.4-.7-3.9-2.6-5.8-6.4-6.4 3.8-.6 5.7-2.5 6.4-6.4Z" fill="currentColor"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <a class="skip-link sr-only" href="#main">تخطَّ إلى المحتوى</a>
+
+    <nav class="navbar" aria-label="التنقل الرئيسي">
+        <div class="nav-brand">
+            <span class="logo-icon" aria-hidden="true"><svg class="ico"><use href="#i-gamepad"></use></svg></span>
+            <span class="logo-text">ألعاب أمين</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
+            <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
+            <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
+            <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
+        </div>
+        <div class="nav-actions">
+            <a href="/games" class="btn btn-primary btn-sm"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
+            <a href="/admin" class="nav-link" title="لوحة الإدارة" aria-label="لوحة الإدارة"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg><span>الإدارة</span></a>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-expanded="false" aria-controls="mobileMenu" aria-label="فتح القائمة">
+            <span class="mm-line" aria-hidden="true"></span>
+            <span class="mm-line" aria-hidden="true"></span>
+            <span class="mm-line" aria-hidden="true"></span>
+        </button>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
+        <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
+        <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
+        <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
+        <a href="/games" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
+        <a href="/admin" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>لوحة الإدارة</a>
+    </div>
+
+    <main class="main-content" id="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon" aria-hidden="true"><svg class="ico"><use href="#i-gamepad"></use></svg></span>
+                <div>
+                    <span>ألعاب أمين</span>
+                    <p class="footer-tagline">ألعاب جماعية وأسئلة ومزايدات — كل ما تحتاجه ليلة لعب في مكان واحد.</p>
+                    <div class="footer-version"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>الإصدار 2.0.0</div>
+                </div>
+            </div>
+            <div class="footer-links">
+                <span class="footer-col-title">الأقسام</span>
+                <a href="/">الرئيسية</a>
+                <a href="/games">الألعاب</a>
+                <a href="/library">مكتبة الأسئلة</a>
+                <a href="/how-to-play">طريقة اللعب</a>
+            </div>
+            <div class="footer-links">
+                <span class="footer-col-title">المزيد</span>
+                <a href="/about">عن الموقع</a>
+                <a href="/admin">لوحة الإدارة</a>
+                <a href="/offline">نسخة بدون إنترنت</a>
+            </div>
+            <div class="footer-rights">
+                <span>© 2024 ألعاب أمين — جميع الحقوق محفوظة</span>
+                <span>صُنع بحب للّعب الجماعي</span>
+            </div>
+        </div>
+    </footer>
+
+    <button class="to-top" id="toTop" type="button" aria-label="العودة إلى الأعلى">
+        <svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+    </button>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/ui-kit.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

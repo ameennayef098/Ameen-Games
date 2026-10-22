@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ── Info pages (about / how-to-play) ── */
+.doc { max-width: 900px; margin-inline: auto; padding: var(--space-4) var(--space-6) var(--space-8); }
+
+.doc-intro {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    padding: var(--space-6);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+}
+.doc-intro h2 { font-size: var(--font-size-xl); margin-bottom: var(--space-2); }
+.doc-intro p { color: var(--text-secondary); line-height: var(--leading-loose); }
+
+.doc-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+}
+.doc-stat {
+    text-align: center;
+    padding: var(--space-5) var(--space-3);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-inset);
+}
+.doc-stat strong { display: block; font-size: var(--font-size-2xl); font-weight: 900; color: var(--accent-gold); }
+.doc-stat span { font-size: var(--font-size-xs); color: var(--text-secondary); }
+
+.doc-section { margin-top: var(--space-7); }
+.doc-section h2 { font-size: var(--font-size-xl); margin-bottom: var(--space-5); }
+.doc-lead {
+    color: var(--text-secondary);
+    margin-top: calc(-1 * var(--space-3));
+    margin-bottom: var(--space-5);
+    line-height: var(--leading-normal);
+}
+
+.doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-5); }
+.doc-card {
+    padding: var(--space-5);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+    transition: var(--transition);
+}
+.doc-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow); }
+.doc-card h3 { font-size: var(--font-size-md); margin: var(--space-3) 0 var(--space-2); }
+.doc-card p { color: var(--text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.doc-callout {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+    background: var(--accent-gold-tint);
+    border: 1px solid rgba(246, 167, 20, 0.34);
+    border-radius: var(--radius-lg);
+}
+.doc-callout p { font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.doc-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4); }
+.doc-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+.doc-link:hover { transform: translateY(-3px); border-color: var(--border-strong); background: var(--bg-card-hover); }
+.doc-link b { display: block; }
+.doc-link small { color: var(--text-muted); font-size: var(--font-size-xs); }
+
+/* Numbered steps: counter chip + bold lead + supporting line */
+.doc-steps { list-style: none; counter-reset: dstep; display: flex; flex-direction: column; gap: var(--space-3); }
+.doc-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    counter-increment: dstep;
+}
+.doc-steps li::before {
+    content: counter(dstep);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: var(--text-on-accent);
+    font-weight: 900;
+    font-size: var(--font-size-sm);
+    box-shadow: 0 0 0 4px var(--bg-primary);
+}
+.doc-steps b { display: block; }
+.doc-steps span { color: var(--text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-normal); }
+
+.doc-tips { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+.doc-tips li { position: relative; padding-inline-start: var(--space-5); color: var(--text-secondary); line-height: var(--leading-normal); }
+.doc-tips li::before {
+    content: "◆";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.45em;
+    color: var(--accent-gold);
+    font-size: 0.7rem;
+}
+
+.doc-foot {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-secondary);
+}
+.doc-foot .muted { color: var(--text-muted); font-size: var(--font-size-sm); }
+
+.icon-chip.red  { background: var(--accent-red-tint);  border-color: rgba(240, 82, 79, 0.32); }
+.icon-chip.pink { background: rgba(236, 72, 153, 0.16); border-color: rgba(236, 72, 153, 0.32); }
+
+@media (max-width: 480px) {
+    .doc { padding-inline: var(--space-4); }
+    .doc-intro { flex-direction: column; text-align: center; }
+    .doc-stats { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .doc-grid, .doc-links { grid-template-columns: 1fr; }
+    .doc-steps li { padding: var(--space-4); }
+}
+</style>
+
+<section class="doc">
+    <header class="page-header">
+        <h1>ℹ️ عن الموقع</h1>
+        <p>منصة ألعاب جماعية عربية للمسابقات والتحدي والمنافسة</p>
+    </header>
+
+    <div class="doc-intro">
+        <span class="icon-chip" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-gamepad"></use></svg></span>
+        <div>
+            <h2>ألعاب أمين</h2>
+            <p>منصة عربية تجمع بين التحدي والمتعة والمنافسة. ألعاب مصممة خصيصًا للتجمعات العائلية والتعليمية، تعمل على شاشة واحدة أمام الجميع دون حاجة إلى أجهزة لكل لاعب.</p>
+        </div>
+    </div>
+
+    <div class="doc-stats">
+        <div class="doc-stat"><strong>11</strong><span>لعبة جاهزة</span></div>
+        <div class="doc-stat"><strong>59</strong><span>فئة في لعبة س.ج</span></div>
+        <div class="doc-stat"><strong>28</strong><span>خلية في لوحة حروف</span></div>
+        <div class="doc-stat"><strong>15</strong><span>سؤالاً في المليون</span></div>
+    </div>
+
+    <section class="doc-section">
+        <h2>ما الذي يميّزنا</h2>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <span class="icon-chip green" aria-hidden="true"><svg class="ico"><use href="#i-sparkle"></use></svg></span>
+                <h3>للّعب الجماعي</h3>
+                <p>كل الألعاب مبنية لتقسيم الحضور إلى فريقين أو أكثر حول شاشة واحدة، فيبقى التركيز على النقاش والمنافسة بدل التحديق في الهواتف.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip purple" aria-hidden="true"><svg class="ico"><use href="#i-book"></use></svg></span>
+                <h3>بنك أسئلة ينمو باستمرار</h3>
+                <p>الأسئلة تُدار من مكتبة مركزية يمكن تصفحها ومراجعتها، وتُغذّى باستمرار لضمان تجربة مختلفة في كل جلسة.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip gold" aria-hidden="true"><svg class="ico"><use href="#i-spark"></use></svg></span>
+                <h3>توليد بالذكاء الاصطناعي</h3>
+                <p>يمكن توليد أسئلة جديدة لأي فئة أو حرف، وتمر دائمًا عبر قائمة مراجعة بشرية قبل اعتمادها.</p>
+            </div>
+            <div class="doc-card">
+                <span class="icon-chip cyan">📶</span>
+                <h3>يعمل بدون إنترنت</h3>
+                <p>نسخة محمولة من المنصة تتيح مواصلة اللعب في الأماكن التي لا يتوفر فيها اتصال بالشبكة.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="doc-section">
+        <h2>أقسام المنصة</h2>
+        <div class="doc-links">
+            <a class="doc-link" href="/games"><span class="icon-chip green" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-gamepad"></use></svg></span><span><b>الألعاب</b><small>كتالوج الألعاب المتاحة وأزرار البدء المباشر</small></span></a>
+            <a class="doc-link" href="/library"><span class="icon-chip purple" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg></span><span><b>مكتبة الأسئلة</b><small>استعراض وإدارة الأسئلة والفئات وقائمة المراجعة</small></span></a>
+            <a class="doc-link" href="/how-to-play"><span class="icon-chip gold" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg></span><span><b>طريقة اللعب</b><small>شرح خطوات كل لعبة قبل أن تبدأ الجلسة</small></span></a>
+            <a class="doc-link" href="/offline"><span class="icon-chip cyan" aria-hidden="true"><svg class="ico"><use href="#i-chart"></use></svg></span><span><b>نسخة بدون إنترنت</b><small>تحميل نسخة محمولة تعمل دون اتصال</small></span></a>
+        </div>
+    </section>
+
+    <section class="doc-section">
+        <h2>كيف تبدأ</h2>
+        <ol class="doc-steps">
+            <li><b>اختر اللعبة</b><span>من كتالوج الألعاب، وراجع طريقة لعبها أولاً إن كانت جديدة عليك.</span></li>
+            <li><b>جهّز الفرق</b><span>أدخل أسماء الفرق والمشاركين والمضيف من شاشة الإعداد.</span></li>
+            <li><b>العب واستمتع</b><span>يدير المضيف الجلسة على الشاشة الكبرى بينما يتنافس الجميع على النقاط.</span></li>
+        </ol>
+    </section>
+
+    <footer class="doc-foot">
+        <p>الإصدار 1.0.0 — © 2024 ألعاب أمين. جميع الحقوق محفوظة.</p>
+        <p class="muted">صُنع بحب للّعب الجماعي</p>
+    </footer>
+</section>
+{% endblock %}

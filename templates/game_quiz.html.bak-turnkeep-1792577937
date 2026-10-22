@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.jboard{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem;background:var(--bg-card);
+  padding:.6rem;border-radius:14px;border:1px solid var(--border-color)}
+.jcol{display:flex;flex-direction:column;gap:.32rem}
+.jhead{background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));border-radius:9px;
+  padding:.35rem;text-align:center;font-weight:800;font-size:.72rem;color:#fff;min-height:66px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;overflow:hidden}
+.jhead img{width:100%;height:36px;object-fit:cover;border-radius:5px}
+.jhead .ico{font-size:1.15rem}
+.jcell{position:relative;background:var(--bg-secondary);border:1px solid var(--border-color);
+  border-radius:9px;padding:.3rem;cursor:pointer;transition:all .18s;color:var(--text-primary);
+  font-weight:900;font-size:.95rem;min-height:46px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.1rem}
+.jcell:hover:not(:disabled){background:var(--bg-card-hover);transform:translateY(-2px);border-color:var(--accent-gold)}
+.jcell img{width:100%;height:22px;object-fit:cover;border-radius:3px;opacity:.9}
+.jcell.p200{border-right:3px solid var(--accent-green)}
+.jcell.p400{border-right:3px solid var(--accent-gold)}
+.jcell.p600{border-right:3px solid var(--accent-red)}
+.jcell:disabled{opacity:.26;cursor:not-allowed;text-decoration:line-through}
+.cat-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:.45rem;
+  max-height:290px;overflow-y:auto;background:var(--bg-secondary);padding:.55rem;border-radius:12px}
+.cat-item{display:flex;align-items:center;gap:.45rem;padding:.35rem;border-radius:8px;cursor:pointer;background:var(--bg-card)}
+.cat-item img{width:30px;height:30px;object-fit:cover;border-radius:5px}
+.cat-item.sel{outline:2px solid var(--accent-blue)}
+.game-header{padding:.5rem 1rem;margin-bottom:.5rem}
+.turn-badge{padding:.35rem 1rem;border-radius:50px;font-weight:900;font-size:.9rem;transition:all .3s}
+.fs-btn{background:rgba(255,255,255,.07);border:1px solid var(--border-color);border-radius:10px;
+  color:var(--text-primary);padding:.3rem .65rem;cursor:pointer;font-family:inherit;font-weight:800;font-size:.78rem}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+:fullscreen .game-container{max-width:100%;padding:.5rem}
+:fullscreen .jcell{min-height:56px;font-size:1.05rem}
+:fullscreen .jhead{min-height:74px}
+</style>
+
+<div id="quiz-setup" class="setup-screen">
+    <h2>❓ س.ج — إعداد المباراة</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group"><label>اسم الفريق الأول</label><input type="text" id="team1Name" value="الفريق الأول"></div>
+        <div class="form-group"><label>اسم الفريق الثاني</label><input type="text" id="team2Name" value="الفريق الثاني"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group"><label>لون الفريق الأول</label><input type="color" id="team1Color" value="#2563eb" style="width:100%;height:42px"></div>
+        <div class="form-group"><label>لون الفريق الثاني</label><input type="color" id="team2Color" value="#16a34a" style="width:100%;height:42px"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+        <label style="font-weight:700;">اختر 6 فئات <span id="catCount" style="color:var(--accent-gold)">(0/6)</span></label>
+        <div>
+            <button class="btn btn-secondary btn-sm" onclick="randomCategories()">🎲 فئات عشوائية</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearCategories()">مسح</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetQuizRotation(true)" title="يمسح سجل التكرار للفئات المختارة فقط">🗑️ تصفير التكرار</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetQuizRotation(false)" title="يمسح سجل التكرار لكل الفئات">🗑️ تصفير الكل</button>
+        </div>
+    </div>
+    <div id="categorySelection" class="cat-pick"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+        <div class="form-group"><label>مدة الإجابة</label>
+            <select id="timerDuration">
+                <option value="0">بدون مؤقت</option><option value="15">15 ثانية</option>
+                <option value="30" selected>30 ثانية</option><option value="45">45 ثانية</option>
+                <option value="60">60 ثانية</option>
+            </select></div>
+        <div class="form-group"><label>نقاط السؤال</label>
+            <select id="pointsMode">
+                <option value="200,400,600" selected>200 / 400 / 600 (الكل)</option>
+                <option value="200">200 فقط (سهل)</option>
+                <option value="400">400 فقط (متوسط)</option>
+                <option value="600">600 فقط (صعب)</option>
+            </select></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="form-group"><label><input type="checkbox" id="allowSteal" checked> السماح بالسرقة</label></div>
+        <div class="form-group"><label><input type="checkbox" id="allowPenalty" checked> خصم عند الخطأ</label></div>
+        <div class="form-group"><label><input type="checkbox" id="soundEnabled" checked> الأصوات</label></div>
+    </div>
+
+    <div class="setup-actions">
+        <button class="btn btn-primary btn-lg" onclick="startQuizGame()">🎮 ابدأ اللعبة</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+</div>
+
+<div id="quiz-game" class="game-container" style="display:none;">
+    <div class="game-header">
+        <div class="team-score"><div class="team-name" id="displayTeam1" style="font-size:1rem">الفريق 1</div><div class="score" id="score1Value" style="font-size:1.5rem">0</div></div>
+        <div style="text-align:center;">
+            <div id="turnIndicator" class="turn-badge">دور الفريق الأول</div>
+            <div id="remaining" style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem;"></div>
+        </div>
+        <div class="team-score"><div class="team-name" id="displayTeam2" style="font-size:1rem">الفريق 2</div><div class="score" id="score2Value" style="font-size:1.5rem">0</div></div>
+    </div>
+
+    <div id="quizBoard" class="jboard"></div>
+
+    <div style="text-align:center;margin-top:.5rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;">
+        <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetQuizGame()">🔄 إعادة</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='/'">🏠 الرئيسية</button>
+    </div>
+</div>
+
+<div id="questionModal" class="modal-overlay">
+    <div class="modal" style="max-width:720px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;">
+            <span id="questionCategory" class="badge badge-purple"></span>
+            <span id="questionPoints" class="badge badge-gold"></span>
+        </div>
+        <div id="turnBanner" style="text-align:center;font-weight:900;margin-bottom:.6rem;font-size:1.05rem;"></div>
+        <h2 id="questionText" style="line-height:1.7;font-size:1.2rem;">السؤال</h2>
+        <div id="questionImageBox" style="display:none;margin-top:.8rem;text-align:center;">
+            <img id="questionImage" style="max-width:100%;max-height:240px;border-radius:12px;">
+        </div>
+
+        <div style="margin:.9rem 0;">
+            <div style="height:7px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;">
+                <div id="timerProgressFill" style="height:100%;background:var(--accent-green);width:100%;transition:width .1s linear"></div>
+            </div>
+            <div id="timerText" style="text-align:center;font-weight:900;margin-top:.2rem;font-size:.9rem;"></div>
+        </div>
+
+        <div id="showAnswerRow" style="margin:.8rem 0;text-align:center;">
+            <button class="btn btn-gold btn-lg" style="width:100%;" onclick="revealQuizAnswer()">👁️ إظهار الإجابة</button>
+        </div>
+
+        <div id="answerSection" style="display:none;margin:.8rem 0;">
+            <div style="padding:.9rem;background:var(--bg-secondary);border-radius:12px;margin-bottom:.8rem;">
+                <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.2rem;">الإجابة الصحيحة</div>
+                <div id="correctAnswer" style="font-size:1.25rem;font-weight:900;color:var(--accent-gold);"></div>
+                <div id="answerExplanation" style="font-size:.85rem;color:var(--text-secondary);margin-top:.3rem;"></div>
+            </div>
+            <div style="display:flex;gap:.8rem;justify-content:center;">
+                <button class="btn btn-success" onclick="markAnswer(true)">✅ صحيحة</button>
+                <button class="btn btn-danger" onclick="markAnswer(false)">❌ خاطئة</button>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin-top:.8rem;">
+            <button class="btn btn-secondary btn-sm" onclick="extendTime()">⏱️ تمديد</button>
+            <button class="btn btn-secondary btn-sm" onclick="skipQuestion()">⏭️ تجاوز</button>
+            <button class="btn btn-secondary btn-sm" onclick="closeQuestionModal()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<div id="winnerModal" class="modal-overlay">
+    <div class="modal" style="max-width:700px;">
+        <h1 style="text-align:center;">🎉 النتيجة النهائية</h1>
+        <h2 id="winnerName" style="text-align:center;color:var(--accent-gold);font-size:1.9rem;margin:.8rem 0;"></h2>
+        <div id="finalStats"></div>
+        <div id="tieBreakBox" style="display:none;text-align:center;margin:.8rem 0;">
+            <button class="btn btn-gold" onclick="suddenDeath()">⚔️ جولة فاصلة (سؤال 600)</button>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="resetQuizGame()">🔄 العب مرة أخرى</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var QS = null;
+var CATS = [];
+var currentQuestion = null;
+var timerId = null;
+
+/* ===== تدوير الأسئلة حسب الفئة (عدم تكرار الأسئلة في كل مباراة) ===== */
+var QUIZ_USED_KEY = 'ameen_quiz_used';
+var QUIZ_USED_LIMIT = 400; // أقصى عدد من معرفات الأسئلة المحفوظة لكل فئة
+
+// يحصل على قائمة المعرفات المستخدمة لكل الفئات (سجل دائم في localStorage)
+function getQuizUsed() {
+    try {
+        var raw = localStorage.getItem(QUIZ_USED_KEY);
+        var d = raw ? JSON.parse(raw) : {};
+        return (d && typeof d === 'object') ? d : {};
+    } catch (e) { return {}; }
+}
+
+// يخزّن القائمة ويبقي آخر QUIZ_USED_LIMIT معرف لكل فئة
+function setQuizUsed(data) {
+    Object.keys(data).forEach(function (k) {
+        var arr = data[k] || [];
+        if (arr.length > QUIZ_USED_LIMIT) data[k] = arr.slice(arr.length - QUIZ_USED_LIMIT);
+    });
+    localStorage.setItem(QUIZ_USED_KEY, JSON.stringify(data));
+}
+
+// خلط مصفوفة في مكانها (Fisher-Yates)
+function shuffleArr(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+// يبني لوحة فئة معيّنة: يفضّل الأسئلة غير المستخدمة، ويكمّل من المستخدمة عند الحاجة
+function buildQuizBoard(questions, cid) {
+    var used = getQuizUsed();
+    var seen = used[cid] ? used[cid].slice() : [];
+    var usedSet = {}; seen.forEach(function (id) { usedSet[id] = true; });
+
+    var by = { 200: [], 400: [], 600: [] };
+    questions.forEach(function (q) { if (by[q.points]) by[q.points].push(q); });
+
+    var placed = [];
+    QS.points.forEach(function (pts) {
+        var all = by[pts] || [];
+        var fresh = all.filter(function (q) { return !usedSet[q.id]; });
+        var recycled = all.filter(function (q) { return usedSet[q.id]; });
+        var need = QS.points.length === 1 ? 6 : 2;
+        var pool = shuffleArr(fresh.slice()).concat(shuffleArr(recycled.slice()));
+        var take = pool.slice(0, Math.min(need, pool.length));
+        take.forEach(function (q) { usedSet[q.id] = true; });
+        placed = placed.concat(take);
+    });
+
+    placed.sort(function (a, b) { return a.points - b.points; });
+    return placed;
+}
+
+// يسجّل الأسئلة الموضع على اللوحة في سجل الاستخدام حتى لا تتكرر في المباراة التالية
+function recordQuizBoard(cid, board) {
+    var used = getQuizUsed();
+    var arr = used[cid] ? used[cid].slice() : [];
+    var have = {}; arr.forEach(function (id) { have[id] = true; });
+    board.forEach(function (q) { if (!have[q.id]) { arr.push(q.id); have[q.id] = true; } });
+    used[cid] = arr;
+    setQuizUsed(used);
+}
+
+// يمسح سجل التكرار: لكل الفئات أو للفئات المختارة فقط
+function resetQuizRotation(onlySelected) {
+    var ids = onlySelected ? selectedCats() : null;
+    var used = getQuizUsed();
+    if (!ids) {
+        localStorage.removeItem(QUIZ_USED_KEY);
+        used = {};
+    } else {
+        ids.forEach(function (cid) { delete used[cid]; });
+        setQuizUsed(used);
+    }
+    if (typeof loadQuizUnusedCounts === 'function') loadQuizUnusedCounts();
+    showToast('🗑️ تم تصفير سجل التكرار');
+}
+
+function toggleFullscreen() {
+    var el = document.documentElement;
+    if (!document.fullscreenElement) {
+        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    } else {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    }
+}
+document.addEventListener('fullscreenchange', function () {
+    var b = document.getElementById('fsBtn');
+    if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+});
+
+function loadCategories() {
+    fetch('/api/categories').then(function (r) { return r.json(); }).then(function (d) {
+        CATS = d.categories;
+        renderCatList({});
+        loadQuizUnusedCounts();
+    });
+}
+function renderCatList(unused) {
+    var used = getQuizUsed();
+    // نحفظ الاختيار الحالي لأن إعادة بناء القائمة تمسح حالة الصناديق
+    var kept = selectedCats();
+    document.getElementById('categorySelection').innerHTML = CATS.map(function (c) {
+        var img = c.image ? '<img src="' + c.image + '">' : '<span style="font-size:1.2rem">' + (c.icon || '📚') + '</span>';
+        var total = unused[c.id] !== undefined ? unused[c.id] : c.approved_count;
+        var usedIds = used[c.id] ? used[c.id].length : 0;
+        var remaining = Math.max(0, total - usedIds);
+        return '<label class="cat-item" id="cati_' + c.id + '"><input type="checkbox" value="' + c.id +
+               '" onchange="toggleCat(this)"> ' + img + '<span style="font-size:.8rem;font-weight:700">' + c.name +
+               '<br><span style="font-size:.66rem;color:var(--text-muted)">' + (unused[c.id] !== undefined ? remaining : c.question_count) + ' سؤال</span>' +
+               '<br><span style="font-size:.66rem;color:var(--accent-gold)">لم يُستخدم بعد: ' + remaining + '</span></span></label>';
+    }).join('');
+    kept.forEach(function (id) {
+        var cb = document.querySelector('#categorySelection input[value="' + id + '"]');
+        if (cb) { cb.checked = true; var box = document.getElementById('cati_' + id); if (box) box.classList.add('sel'); }
+    });
+    var cc = document.getElementById('catCount');
+    if (cc) cc.textContent = '(' + kept.length + '/6)';
+}
+// يجلب عدد الأسئلة المعتمدة لكل فئة (per_page=5000) ويعرض كم لم يُستخدم بعد
+function loadQuizUnusedCounts() {
+    Promise.all(CATS.map(function (c) {
+        return fetch('/api/questions?game=quiz&category=' + c.id + '&status=approved&per_page=5000')
+            .then(function (r) { return r.json(); })
+            .then(function (d) { return { id: c.id, total: (d.questions || []).length }; });
+    })).then(function (res) {
+        var unused = {};
+        res.forEach(function (r) { unused[r.id] = r.total; });
+        renderCatList(unused);
+    });
+}
+function toggleCat(cb) {
+    var box = document.getElementById('cati_' + cb.value);
+    if (box) box.classList.toggle('sel', cb.checked);
+    document.getElementById('catCount').textContent =
+        '(' + document.querySelectorAll('#categorySelection input:checked').length + '/6)';
+}
+function selectedCats() {
+    var out = [];
+    document.querySelectorAll('#categorySelection input:checked').forEach(function (c) { out.push(c.value); });
+    return out;
+}
+function randomCategories() {
+    document.querySelectorAll('#categorySelection input').forEach(function (c) { c.checked = false; toggleCat(c); });
+    CATS.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 6).forEach(function (c) {
+        var cb = document.querySelector('#categorySelection input[value="' + c.id + '"]');
+        if (cb) { cb.checked = true; toggleCat(cb); }
+    });
+}
+function clearCategories() {
+    document.querySelectorAll('#categorySelection input').forEach(function (c) { c.checked = false; toggleCat(c); });
+}
+
+function startQuizGame() {
+    var cats = selectedCats();
+    if (cats.length !== 6) { showToast('يجب اختيار 6 فئات بالضبط', 'error'); return; }
+
+    QS = {
+        team1: document.getElementById('team1Name').value.trim() || 'الفريق الأول',
+        team2: document.getElementById('team2Name').value.trim() || 'الفريق الثاني',
+        c1: document.getElementById('team1Color').value, c2: document.getElementById('team2Color').value,
+        cats: cats, timerDuration: parseInt(document.getElementById('timerDuration').value),
+        points: document.getElementById('pointsMode').value.split(',').map(Number),
+        allowSteal: document.getElementById('allowSteal').checked,
+        allowPenalty: document.getElementById('allowPenalty').checked,
+        turn: 1, s1: 0, s2: 0, used: {}, boards: {}, stats: {},
+        correct: 0, wrong: 0, skipped: 0, over: false, stealPending: false
+    };
+    SoundManager.enabled = document.getElementById('soundEnabled').checked;
+
+    Promise.all(cats.map(function (cid) {
+        return fetch('/api/questions?game=quiz&category=' + cid + '&status=approved&per_page=5000')
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                var board = buildQuizBoard(d.questions || [], cid);
+                QS.boards[cid] = board;
+                recordQuizBoard(cid, board);
+            });
+    })).then(function () {
+        document.getElementById('displayTeam1').textContent = QS.team1;
+        document.getElementById('displayTeam2').textContent = QS.team2;
+        document.getElementById('quiz-setup').style.display = 'none';
+        document.getElementById('quiz-game').style.display = 'block';
+        renderBoard(); updateHUD();
+    });
+}
+
+function renderBoard() {
+    document.getElementById('quizBoard').innerHTML = QS.cats.map(function (cid) {
+        var cat = CATS.filter(function (c) { return c.id === cid; })[0] || {name: cid, icon: '📚'};
+        var head = cat.image ? '<img src="' + cat.image + '">' : '<span class="ico">' + (cat.icon || '📚') + '</span>';
+        var cells = (QS.boards[cid] || []).map(function (q, i) {
+            var thumb = q.image ? '<img src="' + q.image + '">' : '';
+            var done = QS.used[cid + '-' + i];
+            return '<button class="jcell p' + q.points + '" ' + (done ? 'disabled' : '') +
+                   ' onclick="openQuestion(\'' + cid + '\',' + i + ')">' + thumb + '<span>' + q.points + '</span></button>';
+        }).join('');
+        return '<div class="jcol"><div class="jhead">' + head + '<div>' + cat.name + '</div></div>' + cells + '</div>';
+    }).join('');
+}
+
+function turnName() { return QS.turn === 1 ? QS.team1 : QS.team2; }
+function turnColor() { return QS.turn === 1 ? QS.c1 : QS.c2; }
+
+function openQuestion(cid, idx) {
+    var q = QS.boards[cid][idx];
+    if (!q || QS.used[cid + '-' + idx]) return;
+    currentQuestion = q;
+    currentQuestion._cid = cid;
+    currentQuestion._idx = idx;
+    QS.stealPending = false;
+
+    document.getElementById('questionCategory').textContent = q.category_name || '';
+    document.getElementById('questionPoints').textContent = q.points + ' نقطة';
+    document.getElementById('questionText').textContent = q.question;
+    document.getElementById('correctAnswer').textContent = q.answer;
+    document.getElementById('answerExplanation').textContent = q.explanation || '';
+    var tb = document.getElementById('turnBanner');
+    tb.textContent = '🎯 الدور الآن على: ' + turnName();
+    tb.style.color = turnColor();
+    if (q.image) {
+        document.getElementById('questionImage').src = q.image;
+        document.getElementById('questionImageBox').style.display = 'block';
+    } else document.getElementById('questionImageBox').style.display = 'none';
+    document.getElementById('answerSection').style.display = 'none';
+    document.getElementById('showAnswerRow').style.display = 'block';
+    document.getElementById('questionModal').classList.add('active');
+    startTimer(QS.timerDuration);
+}
+
+function startTimer(sec) {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    var fill = document.getElementById('timerProgressFill');
+    var txt = document.getElementById('timerText');
+    if (!sec) { fill.style.width = '100%'; txt.textContent = 'بدون مؤقت'; return; }
+    var end = Date.now() + sec * 1000;
+    timerId = setInterval(function () {
+        var left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        txt.textContent = left + ' ثانية';
+        fill.style.width = (left / sec * 100) + '%';
+        fill.style.background = left <= 5 ? 'var(--accent-red)' : (left <= 10 ? 'var(--accent-gold)' : 'var(--accent-green)');
+        if (left <= 0) { clearInterval(timerId); timerId = null; timeUp(); }
+    }, 100);
+}
+function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+function extendTime() {
+    if (!QS.timerDuration) { showToast('المؤقت غير مفعّل', 'error'); return; }
+    startTimer(15); showToast('تم تمديد الوقت 15 ثانية');
+}
+function revealQuizAnswer() {
+    document.getElementById('showAnswerRow').style.display = 'none';
+    document.getElementById('answerSection').style.display = 'block';
+}
+function timeUp() {
+    showToast('انتهى الوقت!', 'error');
+    document.getElementById('showAnswerRow').style.display = 'none';
+    document.getElementById('answerSection').style.display = 'block';
+}
+
+function markAnswer(isCorrect) {
+    if (!currentQuestion) return;
+    var cid = currentQuestion._cid, idx = currentQuestion._idx;
+    var key = cid + '-' + idx;
+    if (QS.used[key]) { showToast('سُجّلت نتيجة هذا السؤال مسبقًا', 'error'); return; }
+    stopTimer();
+    var pts = currentQuestion.points;
+
+    if (isCorrect) {
+        QS.used[key] = true;
+        if (QS.turn === 1) QS.s1 += pts; else QS.s2 += pts;
+        QS.correct++;
+        bumpStat(cid, 'correct', pts);
+        SoundManager.play('correct');
+        QS.stealPending = false;
+    } else {
+        QS.wrong++;
+        bumpStat(cid, 'wrong', pts);
+        if (QS.allowPenalty) {
+            if (QS.turn === 1) QS.s1 = Math.max(0, QS.s1 - pts);
+            else QS.s2 = Math.max(0, QS.s2 - pts);
+        }
+        if (QS.allowSteal && !QS.stealPending) {
+            // the other team gets one steal attempt; the question stays open
+            QS.stealPending = true;
+            QS.turn = QS.turn === 1 ? 2 : 1;
+            showToast('السؤال انتقل إلى ' + turnName() + ' — فرصة سرقة', 'error');
+            document.getElementById('answerSection').style.display = 'none';
+            document.getElementById('showAnswerRow').style.display = 'block';
+            var tb = document.getElementById('turnBanner');
+            tb.textContent = '🥷 فرصة سرقة لـ: ' + turnName();
+            tb.style.color = turnColor();
+            startTimer(QS.timerDuration || 20);
+            updateHUD();
+            return;
+        }
+        QS.used[key] = true;
+        QS.stealPending = false;
+    }
+
+    // every resolved question hands the turn to the other team
+    QS.turn = QS.turn === 1 ? 2 : 1;
+    updateHUD();
+    closeQuestionModal();
+    renderBoard();
+    if (isBoardDone()) endQuizGame();
+}
+
+function bumpStat(cid, kind, pts) {
+    QS.stats[cid] = QS.stats[cid] || { correct: 0, wrong: 0, points: 0 };
+    QS.stats[cid][kind]++;
+    if (kind === 'correct') QS.stats[cid].points += pts;
+}
+
+function skipQuestion() {
+    if (!currentQuestion) return;
+    QS.used[currentQuestion._cid + '-' + currentQuestion._idx] = true;
+    QS.skipped++;
+    QS.stealPending = false;
+    QS.turn = QS.turn === 1 ? 2 : 1;
+    stopTimer(); closeQuestionModal(); renderBoard(); updateHUD();
+    if (isBoardDone()) endQuizGame();
+}
+function closeQuestionModal() {
+    stopTimer();
+    document.getElementById('questionModal').classList.remove('active');
+    currentQuestion = null;
+}
+function isBoardDone() {
+    var total = 0;
+    QS.cats.forEach(function (cid) { total += (QS.boards[cid] || []).length; });
+    return Object.keys(QS.used).length >= total;
+}
+function updateHUD() {
+    document.getElementById('score1Value').textContent = QS.s1;
+    document.getElementById('score2Value').textContent = QS.s2;
+    var ind = document.getElementById('turnIndicator');
+    ind.textContent = 'دور ' + turnName();
+    ind.style.background = turnColor();
+    ind.style.color = '#fff';
+    var total = 0;
+    QS.cats.forEach(function (cid) { total += (QS.boards[cid] || []).length; });
+    document.getElementById('remaining').textContent = 'متبقٍ ' + (total - Object.keys(QS.used).length) + ' سؤال';
+}
+
+function endQuizGame() {
+    QS.over = true;
+    var win = QS.s1 > QS.s2 ? QS.team1 : (QS.s2 > QS.s1 ? QS.team2 : null);
+    document.getElementById('winnerName').textContent = win || 'تعادل!';
+    var rows = QS.cats.map(function (cid) {
+        var cat = CATS.filter(function (c) { return c.id === cid; })[0] || {name: cid};
+        var st = QS.stats[cid] || {correct: 0, wrong: 0, points: 0};
+        return '<tr><td>' + cat.name + '</td><td>' + st.correct + '</td><td>' + st.wrong + '</td><td>' + st.points + '</td></tr>';
+    }).join('');
+    document.getElementById('finalStats').innerHTML =
+        '<div style="display:flex;justify-content:space-around;margin:.8rem 0;text-align:center;">' +
+        '<div><div style="font-size:1.8rem;font-weight:900;color:' + QS.c1 + '">' + QS.s1 + '</div><div>' + QS.team1 + '</div></div>' +
+        '<div><div style="font-size:1.8rem;font-weight:900;color:' + QS.c2 + '">' + QS.s2 + '</div><div>' + QS.team2 + '</div></div></div>' +
+        '<p style="text-align:center;color:var(--text-secondary)">صحيحة: ' + QS.correct + ' · خاطئة: ' + QS.wrong +
+        ' · متجاوزة: ' + QS.skipped + '</p>' +
+        '<table class="questions-table"><thead><tr><th>الفئة</th><th>صحيحة</th><th>خاطئة</th><th>نقاط</th></tr></thead><tbody>' +
+        rows + '</tbody></table>';
+    document.getElementById('tieBreakBox').style.display = win ? 'none' : 'block';
+    document.getElementById('winnerModal').classList.add('active');
+    SoundManager.play('win');
+}
+
+function suddenDeath() {
+    document.getElementById('winnerModal').classList.remove('active');
+    var cid = QS.cats[Math.floor(Math.random() * QS.cats.length)];
+    fetch('/api/questions?game=quiz&category=' + cid + '&difficulty=hard&status=approved&per_page=5000')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (!d.questions.length) { showToast('لا توجد أسئلة كافية', 'error'); return; }
+            var q = d.questions[Math.floor(Math.random() * d.questions.length)];
+            currentQuestion = q; currentQuestion._cid = cid; currentQuestion._idx = 'tie';
+            QS.stealPending = false;
+            document.getElementById('questionCategory').textContent = '⚔️ جولة فاصلة';
+            document.getElementById('questionPoints').textContent = q.points + ' نقطة';
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('correctAnswer').textContent = q.answer;
+            document.getElementById('answerExplanation').textContent = q.explanation || '';
+            document.getElementById('questionImageBox').style.display = 'none';
+            document.getElementById('answerSection').style.display = 'none';
+            document.getElementById('showAnswerRow').style.display = 'block';
+            document.getElementById('turnBanner').textContent = '⚔️ الجولة الفاصلة';
+            document.getElementById('questionModal').classList.add('active');
+            startTimer(30);
+        });
+}
+
+function resetQuizGame() {
+    document.getElementById('winnerModal').classList.remove('active');
+    document.getElementById('quiz-game').style.display = 'none';
+    document.getElementById('quiz-setup').style.display = 'block';
+    QS = null; currentQuestion = null; stopTimer();
+    loadQuizUnusedCounts();
+}
+loadCategories();
+</script>
+{% endblock %}

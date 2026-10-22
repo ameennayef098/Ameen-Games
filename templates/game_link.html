@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.link-header{display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;background:var(--bg-card);border-radius:var(--radius);margin-bottom:1rem}
+.link-header h1{font-size:1.8rem;margin:0}
+.link-layout{max-width:700px;margin:1.5rem auto}
+.link-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1.5rem 0}
+.link-item{background:var(--bg-card);border:2px solid var(--accent);border-radius:var(--radius);padding:1rem;text-align:center;font-weight:800;font-size:1.1rem}
+.link-answer{width:100%;padding:.8rem;border-radius:10px;border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1.2rem;text-align:center;margin:.5rem 0;font-family:inherit}
+.link-answer:focus{outline:none;border-color:var(--accent-gold)}
+.link-result{margin-top:1.5rem;padding:1.5rem;border-radius:var(--radius-lg);text-align:center;display:none}
+.link-result.win{background:rgba(16,185,129,.15);border:2px solid var(--accent-green)}
+.link-result.lose{background:rgba(239,68,68,.15);border:2px solid var(--accent-red)}
+.link-result.close{background:rgba(245,158,11,.15);border:2px solid var(--accent-gold)}
+.link-hint{background:var(--bg-secondary);border-radius:8px;padding:.6rem;margin:.4rem 0;font-size:.95rem}
+.ai-feedback{margin-top:1rem;padding:1rem;border-radius:var(--radius);text-align:center;display:none}
+.ai-feedback.correct{background:rgba(16,185,129,.1);border:1px solid var(--accent-green)}
+.ai-feedback.close{background:rgba(245,158,11,.1);border:1px solid var(--accent-gold)}
+.ai-feedback.far{background:rgba(239,68,68,.1);border:1px solid var(--accent-red)}
+.ai-feedback .ai-icon{font-size:2rem;margin-bottom:.3rem}
+.ai-feedback .ai-text{font-weight:700;font-size:1.1rem}
+.ai-feedback .ai-explain{font-size:.85rem;color:var(--text-secondary);margin-top:.3rem}
+.btn-fullscreen{background:var(--bg-card);border:1px solid var(--border-color);color:var(--text-primary);border-radius:8px;padding:.5rem 1rem;cursor:pointer;font-size:1.2rem;transition:var(--transition)}
+.btn-fullscreen:hover{background:var(--bg-card-hover)}
+@media(max-width:768px){.link-header{flex-direction:column;gap:.5rem}}
+</style>
+
+<div class="link-header">
+  <button class="btn-fullscreen" onclick="toggleFullscreen()" title="ملء الشاشة">⛶</button>
+  <h1>🔗 الرابط المشترك</h1>
+  <button class="btn btn-secondary" onclick="location.href='/games'">→ العودة</button>
+</div>
+
+<div id="setup" style="max-width:500px;margin:2rem auto;background:var(--bg-card);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border-color)">
+  <h3>⚙️ الإعدادات</h3>
+  <div style="display:grid;gap:.8rem;margin-top:1rem">
+    <select id="lkDifficulty" style="padding:.6rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-family:inherit">
+      <option value="easy">سهل</option>
+      <option value="medium" selected>متوسط</option>
+      <option value="hard">صعب</option>
+    </select>
+    <select id="lkRounds" style="padding:.6rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-family:inherit">
+      <option value="5">5 جولات</option>
+      <option value="10" selected>10 جولات</option>
+    </select>
+    <button class="btn btn-primary" style="font-size:1.1rem" onclick="startGame()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ</button>
+  </div>
+</div>
+
+<div id="playArea" style="display:none">
+  <div style="display:flex;gap:1rem;justify-content:center;margin:1rem;flex-wrap:wrap">
+    <div id="lkRound" style="padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800">1/10</div>
+    <div id="lkScore" style="padding:.5rem 1rem;background:rgba(245,158,11,.15);border-radius:8px;font-weight:800;color:var(--accent-gold)">0</div>
+    <button class="btn btn-secondary" onclick="endGame()"><svg class="ico" aria-hidden="true"><use href="#i-close"></use></svg> إنهاء</button>
+  </div>
+
+  <div class="link-layout">
+    <div class="link-items" id="linkItems"></div>
+
+    <input class="link-answer" id="lkAnswer" placeholder="ما الرابط المشترك؟" onkeydown="if(event.key==='Enter')submitAnswer()">
+    <button class="btn btn-gold" style="width:100%;font-size:1.1rem" onclick="submitAnswer()">✅ إرسال الإجابة</button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="showHint()">💡 تلميح</button>
+
+    <div id="lkHints"></div>
+    <div id="aiFeedback" class="ai-feedback"></div>
+    <div id="linkResult" class="link-result"></div>
+  </div>
+</div>
+
+<div id="finalResult" style="display:none;text-align:center;padding:2rem">
+  <h2 style="font-size:2rem"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> انتهت اللعبة!</h2>
+  <p style="font-size:1.5rem;margin:1rem">النقاط: <b id="finalScore" style="color:var(--accent-gold);font-size:2.5rem"></b></p>
+  <div style="display:flex;gap:1rem;justify-content:center">
+    <button class="btn btn-primary" onclick="resetGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة</button>
+    <button class="btn btn-secondary" onclick="location.href='/games'">العودة</button>
+  </div>
+</div>
+
+<script>
+let allPuzzles=[],currentPuzzle=null,round=0,totalRounds=10,score=0,attempts=0,hintsUsed=0,gameOver=false;
+
+async function loadPuzzles(){
+  const diff=document.getElementById('lkDifficulty').value;
+  const r=await fetch('/api/content/link?status=approved&difficulty='+diff+'&per_page=100');
+  const d=await r.json();
+  return d.items||[];
+}
+
+async function startGame(){
+  allPuzzles=await loadPuzzles();
+  if(!allPuzzles.length){alert('لا توجد ألغاز في المكتبة');return}
+  round=0;score=0;
+  totalRounds=parseInt(document.getElementById('lkRounds').value)||10;
+  document.getElementById('setup').style.display='none';
+  document.getElementById('playArea').style.display='block';
+  document.getElementById('finalResult').style.display='none';
+  nextRound();
+}
+
+function nextRound(){
+  if(round>=totalRounds){endGame();return}
+  currentPuzzle=allPuzzles[Math.floor(Math.random()*allPuzzles.length)];
+  attempts=0;hintsUsed=0;gameOver=false;
+  document.getElementById('lkRound').textContent=(round+1)+'/'+totalRounds;
+  document.getElementById('lkScore').textContent=score;
+  document.getElementById('lkAnswer').value='';
+  document.getElementById('linkResult').style.display='none';
+  document.getElementById('aiFeedback').style.display='none';
+  document.getElementById('lkHints').innerHTML='';
+
+  const items=document.getElementById('linkItems');
+  items.innerHTML=(currentPuzzle.items||[]).map(i=>'<div class="link-item">'+i+'</div>').join('');
+}
+
+function showHint(){
+  if(hintsUsed>=2)return;
+  hintsUsed++;
+  const hints=['الرابط هو: '+(currentPuzzle.link||''),currentPuzzle.explanation||''];
+  const hint=hints[hintsUsed-1]||'';
+  if(hint){
+    document.getElementById('lkHints').innerHTML='<div class="link-hint">💡 '+hint+'</div>'+document.getElementById('lkHints').innerHTML;
+  }
+}
+
+async function submitAnswer(){
+  if(gameOver)return;
+  attempts++;
+  const guess=document.getElementById('lkAnswer').value.trim();
+  if(!guess)return;
+
+  const correct=currentPuzzle.answer||'';
+  const alts=currentPuzzle.alternatives||[];
+  const isCorrect=guess===correct||alts.includes(guess)||
+    norm(guess).includes(norm(correct))||norm(correct).includes(norm(guess));
+
+  // AI proximity check
+  let aiResult=null;
+  try{
+    const r=await fetch('/api/ai/check-answer',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({items:currentPuzzle.items||[],answer:guess})
+    });
+    const d=await r.json();
+    if(!d.error){aiResult=d}
+  }catch(e){console.error('AI check failed:',e)}
+
+  gameOver=true;
+  const points=isCorrect?Math.max(10,50-(attempts-1)*15-hintsUsed*5):0;
+  score+=points;
+  document.getElementById('lkScore').textContent=score;
+
+  // Show AI feedback
+  const aiDiv=document.getElementById('aiFeedback');
+  if(aiResult){
+    aiDiv.style.display='block';
+    if(aiResult.result==='صحيح'){
+      aiDiv.className='ai-feedback correct';
+      aiDiv.innerHTML='<div class="ai-icon">✅</div><div class="ai-text">صحيح!</div>'+(aiResult.explanation?'<div class="ai-explain">'+aiResult.explanation+'</div>':'');
+    }else if(aiResult.result==='قريب'){
+      aiDiv.className='ai-feedback close';
+      aiDiv.innerHTML='<div class="ai-icon">💡</div><div class="ai-text">قريب — حاول مرة أخرى</div>'+(aiResult.explanation?'<div class="ai-explain">'+aiResult.explanation+'</div>':'');
+    }else{
+      aiDiv.className='ai-feedback far';
+      aiDiv.innerHTML='<div class="ai-icon">❌</div><div class="ai-text">بعيد عن الإجابة</div>'+(aiResult.explanation?'<div class="ai-explain">'+aiResult.explanation+'</div>':'');
+    }
+  }
+
+  // Show exact match result
+  const result=document.getElementById('linkResult');
+  result.style.display='block';
+  result.className='link-result '+(isCorrect?'win':'lose');
+  result.innerHTML='<h3>'+(isCorrect?'🎉 صحيح! +'+points:'❌ خطأ!')+'</h3>'
+    +'<p style="margin:.5rem">الرابط: <b style="color:var(--accent-gold)">'+(currentPuzzle.link||correct)+'</b></p>'
+    +'<p style="font-size:.9rem;color:var(--text-secondary)">'+(currentPuzzle.explanation||'')+'</p>'
+    +'<button class="btn btn-primary" style="margin-top:1rem" onclick="nextRound()">'+(round+1>=totalRounds?'🏆 النتائج':'⏭️ التالي')+'</button>';
+}
+
+function endGame(){
+  document.getElementById('playArea').style.display='none';
+  document.getElementById('finalResult').style.display='block';
+  document.getElementById('finalScore').textContent=score;
+}
+
+function resetGame(){
+  document.getElementById('setup').style.display='block';
+  document.getElementById('playArea').style.display='none';
+  document.getElementById('finalResult').style.display='none';
+}
+
+function norm(s){return(s||'').toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')}
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement){document.documentElement.requestFullscreen()}
+  else{document.exitFullscreen()}
+}
+</script>
+{% endblock %}

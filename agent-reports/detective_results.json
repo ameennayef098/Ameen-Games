@@ -1,0 +1,137 @@
+{
+  "game": "detective",
+  "tests": [
+    {
+      "test": "page_load",
+      "status": "pass",
+      "detail": "Title: | ألعاب أمين, H1: 🔍 المحقق"
+    },
+    {
+      "test": "case_cards",
+      "status": "pass",
+      "detail": "Found 6 cases"
+    },
+    {
+      "test": "select_case",
+      "status": "pass",
+      "detail": "Case loaded, intro: عُثر على جهاز حاسوب محمول يعمل في معمل مهجور، بينم..."
+    },
+    {
+      "test": "characters",
+      "status": "pass",
+      "detail": "Found 4 characters"
+    },
+    {
+      "test": "evidence",
+      "status": "pass",
+      "detail": "Total: 6, Unlocked: 3, Locked: 3"
+    },
+    {
+      "test": "unlock_evidence",
+      "status": "pass",
+      "detail": "Points: 10 -> 9"
+    },
+    {
+      "test": "timeline",
+      "status": "pass",
+      "detail": "Found 4 timeline items"
+    },
+    {
+      "test": "submit_incomplete",
+      "status": "pass",
+      "detail": "Result shown: False"
+    },
+    {
+      "test": "submit_correct",
+      "status": "pass",
+      "detail": "Correct: True, Score: 99"
+    },
+    {
+      "test": "solution_reveal",
+      "status": "pass",
+      "detail": "Solution revealed"
+    },
+    {
+      "test": "reasoning_shown",
+      "status": "pass",
+      "detail": "Reasoning shown"
+    },
+    {
+      "test": "wrong_answer",
+      "status": "pass",
+      "detail": "Correctly incorrect: True"
+    },
+    {
+      "test": "reset_case",
+      "status": "pass",
+      "detail": "Points after reset: 10"
+    },
+    {
+      "test": "full_playthrough",
+      "status": "pass",
+      "detail": "Correct: True, Score: 97"
+    },
+    {
+      "test": "second_case",
+      "status": "pass",
+      "detail": "Correct: True, Score: 88"
+    },
+    {
+      "test": "difficulty_selection",
+      "status": "fail",
+      "detail": "No difficulty selection in served page"
+    },
+    {
+      "test": "timer_mode",
+      "status": "fail",
+      "detail": "No timer mode in served page"
+    },
+    {
+      "test": "hint_system",
+      "status": "fail",
+      "detail": "No hint system in served page"
+    },
+    {
+      "test": "progress_tracking",
+      "status": "fail",
+      "detail": "No progress tracking in served page"
+    }
+  ],
+  "bugs": [
+    {
+      "severity": "minor",
+      "description": "No difficulty selection in served detective page.",
+      "reproduction_steps": "1. Go to detective game 2. No difficulty buttons"
+    },
+    {
+      "severity": "minor",
+      "description": "No timer mode in served detective page.",
+      "reproduction_steps": "1. Go to detective game 2. No timer checkbox"
+    },
+    {
+      "severity": "minor",
+      "description": "No hint system in served detective page.",
+      "reproduction_steps": "1. Go to detective game 2. No hint button"
+    },
+    {
+      "severity": "minor",
+      "description": "No progress tracking bar in served detective page.",
+      "reproduction_steps": "1. Go to detective game 2. No progress bar"
+    }
+  ],
+  "console_errors": [],
+  "screenshots": [
+    "detective_01_loaded.png",
+    "detective_02_cases.png",
+    "detective_03_case_loaded.png",
+    "detective_04_evidence.png",
+    "detective_05_unlocked.png",
+    "detective_06_theory_filled.png",
+    "detective_07_theory_result.png",
+    "detective_08_wrong_answer.png",
+    "detective_09_reset.png",
+    "detective_10_full_solved.png",
+    "detective_11_case2_solved.png",
+    "detective_12_final.png"
+  ]
+}

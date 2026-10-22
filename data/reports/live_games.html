@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> | ألعاب أمين</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">🎮</span>
+            <span class="logo-text">ألعاب أمين</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">الرئيسية</a>
+            <a href="/games" class="nav-link">الألعاب</a>
+            <a href="/how-to-play" class="nav-link">طريقة اللعب</a>
+            <a href="/about" class="nav-link">عن الموقع</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-primary" onclick="window.location.href='/games'">🎮 ابدأ اللعب</button>
+            <a href="/admin" class="nav-link" style="opacity:.4;font-size:1.1rem;" title="لوحة الإدارة">🔒</a>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/">الرئيسية</a>
+        <a href="/games">الألعاب</a>
+        <a href="/how-to-play">طريقة اللعب</a>
+        <a href="/about">عن الموقع</a>
+        <a href="/admin" style="opacity:.5">🔒 لوحة الإدارة</a>
+    </div>
+    
+    <main class="main-content">
+        
+<section class="page-header">
+    <h1>🎮 الألعاب</h1>
+    <p>اختر لعبتك المفضلة وابدأ المنافسة</p>
+</section>
+
+<div class="games-grid-large">
+    <div class="game-card-large" onclick="window.location.href='/game/letters'">
+        <div class="game-card-header">
+            <span class="game-icon">🔤</span>
+            <h2>حروف مع أمين</h2>
+        </div>
+        <p>مسابقة سباق الحروف بين فريقين. كل إجابة صحيحة تسمح للفريق بالاستحواذ على خلية تحمل حرفًا، بهدف تكوين مسار متصل بين طرفي اللوحة.</p>
+        <div class="game-features">
+            <span>⏱️ مؤقت</span>
+            <span>🔔 جرس تنافسي</span>
+            <span>📐 لوحة سداسية</span>
+            <span>🎯 28 حرفًا</span>
+        </div>
+        <button class="btn btn-primary">العب الآن</button>
+    </div>
+    
+    <div class="game-card-large" onclick="window.location.href='/game/quiz'">
+        <div class="game-card-header">
+            <span class="game-icon">❓</span>
+            <h2>س.ج</h2>
+        </div>
+        <p>مسابقة ثقافية بين فريقين. اختر الفئة والسؤال، واجمع النقاط. 36 سؤالًا في 6 فئات مختلفة.</p>
+        <div class="game-features">
+            <span>📚 6 فئات</span>
+            <span>💯 200-400-600 نقطة</span>
+            <span>⏱️ مؤقت</span>
+            <span>🔄 سرقة السؤال</span>
+        </div>
+        <button class="btn btn-primary">العب الآن</button>
+    </div>
+    
+    <div class="game-card-large" onclick="window.location.href='/game/auction'">
+        <div class="game-card-header">
+            <span class="game-icon">💰</span>
+            <h2>مزاد اللاعبين</h2>
+        </div>
+        <p>نافس أصدقاءك في مزاد اللاعبين. اشترِ أفضل اللاعبين ضمن ميزانيتك وابنِ أقوى تشكيلة.</p>
+        <div class="game-features">
+            <span>⚽ 126 لاعب</span>
+            <span>💰 ميزانية قابلة للتخصيص</span>
+            <span>📋 تشكيلة وملعب</span>
+            <span>🤖 تحكيم بالذكاء الاصطناعي</span>
+        </div>
+        <button class="btn btn-primary">العب الآن</button>
+    </div>
+
+    <div class="game-card-large" onclick="window.location.href='/game/million'">
+        <div class="game-card-header">
+            <span class="game-icon">💵</span>
+            <h2>من سيربح المليون</h2>
+        </div>
+        <p>خمسة عشر سؤالاً بمبالغ تصاعدية، أربعة خيارات، وثلاث وسائل مساعدة: 50:50 واتصال بصديق ورأي الجمهور.</p>
+        <div class="game-features">
+            <span>🎯 15 سؤالاً</span>
+            <span>🛟 3 وسائل مساعدة</span>
+            <span>🏦 مبالغ مضمونة</span>
+            <span>🚪 الانسحاب بالمكسب</span>
+        </div>
+        <button class="btn btn-primary">العب الآن</button>
+    </div>
+</div>
+
+<h2 style="margin:2.5rem 0 1rem;font-size:1.4rem;">🎮 الألعاب الجديدة</h2>
+<div class="game-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));">
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(168,85,247,.18);font-size:2.8rem;">🕵️</div>
+    <h3>كود نيمز</h3>
+    <p>لعبة كلمات واستنتاج جماعية بين فريقين.</p>
+    <button class="btn btn-primary" onclick="location.href='/game/codenames'">ابدأ اللعب</button>
+  </div>
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(59,130,246,.18);font-size:2.8rem;">🔍</div>
+    <h3>المحقق</h3>
+    <p>تحقيق وجمع أدلة واستنتاج الحل.</p>
+    <button class="btn btn-primary" onclick="location.href='/game/detective'">ابدأ اللعب</button>
+  </div>
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(239,68,68,.18);font-size:2.8rem;">⚖️</div>
+    <h3>من الفاعل؟</h3>
+    <p>حدد المسؤول عن حادثة من بين المشتبه بهم.</p>
+    <button class="btn btn-primary" onclick="location.href='/game/culprit'">ابدأ اللعب</button>
+  </div>
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(245,158,11,.18);font-size:2.8rem;">🕵️‍♂️</div>
+    <h3>الجاسوس</h3>
+    <p>خداع واستنتاج اجتماعي — من الجاسوس؟</p>
+    <button class="btn btn-primary" onclick="location.href='/game/spy'">ابدأ اللعب</button>
+  </div>
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(16,185,129,.18);font-size:2.8rem;">💬</div>
+    <h3>أقنعني!</h3>
+    <p>نقاش وإقناع وتفكير نقدي.</p>
+    <button class="btn btn-primary" onclick="location.href='/game/debate'">ابدأ اللعب</button>
+  </div>
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(34,211,238,.18);font-size:2.8rem;">⚽</div>
+    <h3>مين اللاعب؟</h3>
+    <p>خمّن اللاعب من التلميحات المتدرجة.</p>
+    <button class="btn btn-primary" onclick="location.href='/game/whoplayer'">ابدأ اللعب</button>
+  </div>
+
+  <div class="game-card">
+    <div class="game-icon" style="background:rgba(236,72,153,.18);font-size:2.8rem;">🔗</div>
+    <h3>الرابط المشترك</h3>
+    <p>اكتشف العلاقة التي تجمع العناصر.</p>
+    <button class="btn btn-primary" onclick="location.href='/game/link'">ابدأ اللعب</button>
+  </div>
+
+</div>
+
+    </main>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon">🎮</span>
+                <span>ألعاب أمين</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">الرئيسية</a>
+                <a href="/games">الألعاب</a>
+                <a href="/library">مكتبة الأسئلة</a>
+                <a href="/about">عن الموقع</a>
+            </div>
+            <div class="footer-version">الإصدار 1.0.0</div>
+            <div class="footer-rights">© 2024 ألعاب أمين — جميع الحقوق محفوظة</div>
+        </div>
+    </footer>
+    
+    <script src="/static/js/main.js"></script>
+    
+</body>
+</html>

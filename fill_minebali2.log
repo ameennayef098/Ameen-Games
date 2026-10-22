@@ -1,0 +1,28 @@
+bank before: 206
+attribute fixes: 0
+near-duplicates dropped: 0
+  أنمي — have 53, generating 0
+  مسلسلات — have 36, generating 0
+  مشاهير — have 34, generating 0
+  الصحابة — have 21, generating 0
+  أبطال الأفلام — have 24, generating 0
+  أبطال الألعاب — have 23, generating 0
+  شخصيات كرتونية — have 13, generating 7
+    round 1: +6 (total 6/7) rejected=14 err=
+    round 2: +4 (total 7/7) rejected=2 err=
+    -> added 7
+  العلماء والمخترعون — have 2, generating 18
+    round 1: +10 (total 10/18) rejected=7 err=
+    round 2: +4 (total 14/18) rejected=16 err=
+    round 3: +4 (total 18/18) rejected=10 err=
+    -> added 18
+bank after: 231
+  أنمي                     53
+  مسلسلات                  36
+  مشاهير                   34
+  أبطال الأفلام            24
+  أبطال الألعاب            23
+  الصحابة                  21
+  شخصيات كرتونية           20
+  العلماء والمخترعون       20
+TOTAL NEW: 25

@@ -1,0 +1,33 @@
+{
+  "results": [
+    "=== Starting Codenames test ===",
+    "TEST 1 - Setup screen visible: True",
+    "Team 1 default: الفريق الأحمر, Team 2 default: الفريق الأزرق",
+    "TEST 2 - Play area visible after start: True",
+    "TEST 3 - Card count: 25 (expected 25)",
+    "Words on board: ['رياضة', 'مشكلة', 'مدرسة', 'صوت', 'حجم', 'لغة', 'مربع', 'دب', 'غابة', 'سيارة', 'نهر', 'دجاجة', 'أخطبوط', 'قطة', 'دائرة', 'غزال', 'نار', 'ملعب', 'فأر', 'عسل', 'طعم', 'نملة', 'رسم', 'بذرة', 'فيل']",
+    "Grid layout (5 cols): True",
+    "TEST 4 - Turn indicator: الدور: الفريق الأحمر",
+    "TEST 5 - Hint area visible at game start: False",
+    "TEST 6 - Hint display after submit: 💡 حيوان — 2",
+    "TEST 7 - End turn button visible: True",
+    "Board types (with reveal on): ['red', 'blue', 'red', 'unknown', 'red', 'blue', 'red', 'blue', 'blue', 'unknown', 'unknown', 'red', 'unknown', 'red', 'blue', 'blue', 'red', 'blue', 'blue', 'unknown', 'unknown', 'red', 'red', 'unknown', 'killer']",
+    "Type counts: {'red': 9, 'blue': 8, 'unknown': 7, 'killer': 1}",
+    "TEST 8 - Neutral card index: 3",
+    "Turn after neutral guess: الدور: الفريق الأزرق",
+    "Turn switched (hint area reappeared): True",
+    "TEST 9 - Current team card index: 1",
+    "Score after correct guess - Red: 0, Blue: 7",
+    "Game log excerpt: ✅ الفريق الأزرق أصاب! «مشكلة» — كلمة صحيحة💡 التلميح: «كلمة» لعدد 1 كلمات⬜ الفريق الأحمر اختار كلمة محايدة «صوت» — ينتهي الدور💡 التلميح: «حيوان» لعدد 2 كلمات🎮 بدأت اللعبة! الفريق الأحمر يبدأ",
+    "TEST 10 - Turn after manual end: الدور: الفريق الأحمر",
+    "TEST 11 - Killer card index: 24",
+    "TEST 11 - Assassin: Result area visible: True",
+    "Winner: 🏆 الفريق الأزرق يفوز!, Reason: اختار الفريق الأحمر بطاقة القاتل",
+    "TEST 12 - Back to setup after reset: True",
+    "TEST 13 - Hidden cards (no reveal): 25/25",
+    "Console errors: []",
+    "Console messages (errors only): []",
+    "=== Codenames test complete ==="
+  ],
+  "console_errors": []
+}

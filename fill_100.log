@@ -1,0 +1,171 @@
+model: nvidia/nemotron-3-ultra-550b-a55b   workers: 3
+targets (51):
+   health         الصحة والطب              easy     28
+   health         الصحة والطب              medium   28
+   health         الصحة والطب              hard     28
+   food           الطعام والشراب           easy     26
+   food           الطعام والشراب           medium   28
+   food           الطعام والشراب           hard     30
+   arts           الفنون                   easy     29
+   arts           الفنون                   medium   31
+   arts           الفنون                   hard     24
+   music          الموسيقى                 easy     23
+   music          الموسيقى                 medium   31
+   music          الموسيقى                 hard     30
+   economy        الاقتصاد                 easy     27
+   economy        الاقتصاد                 medium   29
+   economy        الاقتصاد                 hard     28
+   politics       السياسة                  easy     28
+   politics       السياسة                  medium   28
+   politics       السياسة                  hard     28
+   e6e3c106       الاردن                   easy     29
+   e6e3c106       الاردن                   medium   24
+   e6e3c106       الاردن                   hard     28
+   transport      النقل والمواصلات         easy     33
+   transport      النقل والمواصلات         medium   33
+   transport      النقل والمواصلات         hard     33
+   agriculture    الزراعة والبيئة          easy     33
+   agriculture    الزراعة والبيئة          medium   33
+   agriculture    الزراعة والبيئة          hard     33
+   inventions     الاختراعات والمخترعون    easy     33
+   inventions     الاختراعات والمخترعون    medium   33
+   inventions     الاختراعات والمخترعون    hard     33
+   currencies     العملات والبنوك          easy     33
+   currencies     العملات والبنوك          medium   33
+   currencies     العملات والبنوك          hard     33
+   internet       الإنترنت والشبكات        easy     33
+   internet       الإنترنت والشبكات        medium   33
+   internet       الإنترنت والشبكات        hard     33
+   energy         الطاقة والكهرباء         easy     33
+   energy         الطاقة والكهرباء         medium   33
+   energy         الطاقة والكهرباء         hard     33
+   tourism        السياحة والآثار          easy     33
+   tourism        السياحة والآثار          medium   33
+   tourism        السياحة والآثار          hard     33
+   basketball     كرة السلة والرياضات      easy     33
+   basketball     كرة السلة والرياضات      medium   33
+   basketball     كرة السلة والرياضات      hard     33
+   history_figures الشخصيات التاريخية       easy     33
+   history_figures الشخصيات التاريخية       medium   33
+   history_figures الشخصيات التاريخية       hard     33
+   human_body     جسم الإنسان              easy     33
+   human_body     جسم الإنسان              medium   33
+   human_body     جسم الإنسان              hard     33
+total need: 1575
+    + 16  الصحة والطب              easy     (cat total so far saved)
+    + 17  الصحة والطب              medium   (cat total so far saved)
+    + 13  الصحة والطب              hard     (cat total so far saved)
+    + 11  الطعام والشراب           easy     (cat total so far saved)
+    + 17  الطعام والشراب           medium   (cat total so far saved)
+    + 19  الطعام والشراب           hard     (cat total so far saved)
+    + 19  الفنون                   easy     (cat total so far saved)
+    + 20  الفنون                   medium   (cat total so far saved)
+    + 18  الفنون                   hard     (cat total so far saved)
+    + 17  الموسيقى                 easy     (cat total so far saved)
+    + 20  الموسيقى                 medium   (cat total so far saved)
+    + 18  الموسيقى                 hard     (cat total so far saved)
+    + 18  الاقتصاد                 easy     (cat total so far saved)
+    + 20  الاقتصاد                 medium   (cat total so far saved)
+    +  1  الاقتصاد                 hard     (cat total so far saved)
+    + 14  السياسة                  easy     (cat total so far saved)
+    + 19  السياسة                  medium   (cat total so far saved)
+    + 17  السياسة                  hard     (cat total so far saved)
+    + 18  الاردن                   easy     (cat total so far saved)
+    + 18  الاردن                   medium   (cat total so far saved)
+    + 33  الاردن                   hard     (cat total so far saved)
+    + 19  النقل والمواصلات         easy     (cat total so far saved)
+    + 17  النقل والمواصلات         medium   (cat total so far saved)
+    + 17  النقل والمواصلات         hard     (cat total so far saved)
+    + 17  الزراعة والبيئة          easy     (cat total so far saved)
+    + 19  الزراعة والبيئة          medium   (cat total so far saved)
+    + 16  الزراعة والبيئة          hard     (cat total so far saved)
+    + 19  الاختراعات والمخترعون    easy     (cat total so far saved)
+    + 16  الاختراعات والمخترعون    medium   (cat total so far saved)
+    + 16  الاختراعات والمخترعون    hard     (cat total so far saved)
+    + 20  العملات والبنوك          easy     (cat total so far saved)
+    + 17  العملات والبنوك          medium   (cat total so far saved)
+    + 17  العملات والبنوك          hard     (cat total so far saved)
+    + 15  الإنترنت والشبكات        easy     (cat total so far saved)
+    + 17  الإنترنت والشبكات        medium   (cat total so far saved)
+    + 18  الطاقة والكهرباء         easy     (cat total so far saved)
+    + 20  الطاقة والكهرباء         medium   (cat total so far saved)
+    + 19  الطاقة والكهرباء         hard     (cat total so far saved)
+    + 20  السياحة والآثار          easy     (cat total so far saved)
+    + 18  السياحة والآثار          medium   (cat total so far saved)
+    + 17  السياحة والآثار          hard     (cat total so far saved)
+    + 16  كرة السلة والرياضات      easy     (cat total so far saved)
+    + 15  كرة السلة والرياضات      medium   (cat total so far saved)
+    +  8  كرة السلة والرياضات      hard     (cat total so far saved)
+    + 18  الشخصيات التاريخية       easy     (cat total so far saved)
+    + 19  الشخصيات التاريخية       medium   (cat total so far saved)
+    + 19  الشخصيات التاريخية       hard     (cat total so far saved)
+    + 19  جسم الإنسان              easy     (cat total so far saved)
+    + 17  جسم الإنسان              medium   (cat total so far saved)
+    + 14  جسم الإنسان              hard     (cat total so far saved)
+  round  1: +862
+    + 11  الصحة والطب              easy     (cat total so far saved)
+    + 11  الصحة والطب              medium   (cat total so far saved)
+    + 11  الصحة والطب              hard     (cat total so far saved)
+    + 14  الطعام والشراب           easy     (cat total so far saved)
+    + 11  الطعام والشراب           medium   (cat total so far saved)
+    +  8  الطعام والشراب           hard     (cat total so far saved)
+    +  9  الفنون                   easy     (cat total so far saved)
+    + 11  الفنون                   medium   (cat total so far saved)
+    +  4  الفنون                   hard     (cat total so far saved)
+    +  6  الموسيقى                 easy     (cat total so far saved)
+    +  5  الموسيقى                 medium   (cat total so far saved)
+    +  9  الاقتصاد                 easy     (cat total so far saved)
+    +  7  الاقتصاد                 medium   (cat total so far saved)
+    + 20  الاقتصاد                 hard     (cat total so far saved)
+    + 13  السياسة                  easy     (cat total so far saved)
+    + 10  الاردن                   easy     (cat total so far saved)
+    +  5  الاردن                   medium   (cat total so far saved)
+    + 12  النقل والمواصلات         medium   (cat total so far saved)
+    + 15  النقل والمواصلات         hard     (cat total so far saved)
+    + 12  الزراعة والبيئة          medium   (cat total so far saved)
+    + 15  الزراعة والبيئة          hard     (cat total so far saved)
+    + 14  الاختراعات والمخترعون    easy     (cat total so far saved)
+    + 12  الاختراعات والمخترعون    hard     (cat total so far saved)
+    + 12  العملات والبنوك          easy     (cat total so far saved)
+    + 13  الإنترنت والشبكات        easy     (cat total so far saved)
+    + 11  الإنترنت والشبكات        medium   (cat total so far saved)
+    + 13  الطاقة والكهرباء         easy     (cat total so far saved)
+    +  9  الطاقة والكهرباء         hard     (cat total so far saved)
+    +  9  السياحة والآثار          easy     (cat total so far saved)
+    + 10  السياحة والآثار          medium   (cat total so far saved)
+    + 15  السياحة والآثار          hard     (cat total so far saved)
+    + 10  كرة السلة والرياضات      easy     (cat total so far saved)
+    + 15  كرة السلة والرياضات      medium   (cat total so far saved)
+    +  6  كرة السلة والرياضات      hard     (cat total so far saved)
+    + 37  الشخصيات التاريخية       easy     (cat total so far saved)
+    + 14  الشخصيات التاريخية       medium   (cat total so far saved)
+    + 12  الشخصيات التاريخية       hard     (cat total so far saved)
+    + 10  جسم الإنسان              easy     (cat total so far saved)
+    + 13  جسم الإنسان              medium   (cat total so far saved)
+    + 17  جسم الإنسان              hard     (cat total so far saved)
+  round  2: +471
+    +  1  الصحة والطب              easy     (cat total so far saved)
+    +  1  الصحة والطب              hard     (cat total so far saved)
+    +  1  الطعام والشراب           easy     (cat total so far saved)
+    +  1  الطعام والشراب           hard     (cat total so far saved)
+    +  1  الفنون                   easy     (cat total so far saved)
+    +  6  الموسيقى                 medium   (cat total so far saved)
+    + 11  الموسيقى                 hard     (cat total so far saved)
+    +  2  الاقتصاد                 medium   (cat total so far saved)
+    +  6  الاقتصاد                 hard     (cat total so far saved)
+    +  1  السياسة                  easy     (cat total so far saved)
+    +  1  الاردن                   easy     (cat total so far saved)
+    +  1  الاردن                   medium   (cat total so far saved)
+    + 13  النقل والمواصلات         easy     (cat total so far saved)
+    +  2  الزراعة والبيئة          hard     (cat total so far saved)
+    +  6  الاختراعات والمخترعون    medium   (cat total so far saved)
+    +  5  الاختراعات والمخترعون    hard     (cat total so far saved)
+    + 13  العملات والبنوك          medium   (cat total so far saved)
+    + 15  العملات والبنوك          hard     (cat total so far saved)
+    +  4  الطاقة والكهرباء         hard     (cat total so far saved)
+    +  4  السياحة والآثار          medium   (cat total so far saved)
+    + 12  كرة السلة والرياضات      hard     (cat total so far saved)
+    +  3  جسم الإنسان              easy     (cat total so far saved)
+    +  2  جسم الإنسان              medium   (cat total so far saved)
+  round  3: +112
+    +  1  الصحة والطب              hard     (cat total so far saved)

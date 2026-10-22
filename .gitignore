@@ -1,0 +1,7 @@
+.env
+data/uploads/
+data/questions/pending.json
+__pycache__/
+*.pyc
+backup-*
+backup-templates/
