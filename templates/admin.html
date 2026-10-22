@@ -113,7 +113,7 @@
         <div style="overflow-x:auto;">
             <table class="tbl">
                 <thead><tr>
-                    <th><input type="checkbox" class="chk" onchange="toggleAll(this)"></th>
+                    <th><input type="checkbox" class="chk" onchange="toggleAll(this)" aria-label="تحديد الكل"></th>
                     <th>السؤال</th><th>الإجابة</th><th>اللعبة</th><th>الفئة/الحرف</th>
                     <th>النقاط</th><th>الصعوبة</th><th>الحالة</th><th>المصدر</th><th>إجراءات</th>
                 </tr></thead>
@@ -163,11 +163,9 @@
                 واللوحة أدناه تعرض كم سؤالاً يُولَّد الآن والوقت التقريبي وكل سؤال لحظة خروجه.
             </div>
             <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:.8rem;">
-                <div class="form-group"><label>اللعبة</label><select id="aiGameSel" onchange="aiGameChanged()"></select></div>
-                <div class="form-group"><label id="aiCountLabel">العدد المطلوب</label>
-                    <input type="number" id="aiTarget" value="40" min="1" max="200"></div>
-                <div class="form-group"><label>حجم الدفعة</label>
-                    <input type="number" id="aiBatch" value="8" min="1" max="12"></div>
+                <div class="form-group"><label for="aiGameSel">اللعبة</label><select id="aiGameSel" onchange="aiGameChanged()"></select></div>
+                <div class="form-group"><label id="aiCountLabel" for="aiTarget">العدد المطلوب</label><input type="number" id="aiTarget" value="40" min="1" max="200"></div>
+                <div class="form-group"><label for="aiBatch">حجم الدفعة</label><input type="number" id="aiBatch" value="8" min="1" max="12"></div>
                 <div class="form-group" style="display:flex;align-items:flex-end;gap:.5rem;">
                     <button class="btn btn-primary btn-lg" id="aiRunBtn" style="flex:1" onclick="toggleAiJob()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ</button>
                     <button class="btn btn-secondary" onclick="stopAiJob()"><svg class="ico" aria-hidden="true"><use href="#i-close"></use></svg></button>
@@ -184,8 +182,7 @@
             <div id="aiStatus" style="margin:.8rem 0;">جاري الفحص...</div>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;">
                 <div class="form-group" style="margin:0;min-width:320px;">
-                    <label>النموذج</label>
-                    <select id="aiModelSelect"></select>
+                    <label for="aiModelSelect">النموذج</label><select id="aiModelSelect"></select>
                 </div>
                 <button class="btn btn-primary" onclick="testAI()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> اختبار الاتصال</button>
                 <button class="btn btn-success" onclick="saveModel()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ النموذج</button>
@@ -229,13 +226,11 @@
                 الأسئلة تُحفظ في قائمة المراجعة مع توزيع تلقائي للنقاط.
             </div>
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:.8rem;">
-                <div class="form-group"><label>الفئة</label><select id="qGenCat"></select></div>
-                <div class="form-group"><label>العدد</label><input type="number" id="qGenCount" value="20" min="1" max="200"></div>
-                <div class="form-group"><label>الصعوبة</label>
-                    <select id="qGenDiff"><option value="under">تحت المتوسط (200)</option><option value="easy">سهل (200)</option>
+                <div class="form-group"><label for="qGenCat">الفئة</label><select id="qGenCat"></select></div>
+                <div class="form-group"><label for="qGenCount">العدد</label><input type="number" id="qGenCount" value="20" min="1" max="200"></div>
+                <div class="form-group"><label for="qGenDiff">الصعوبة</label><select id="qGenDiff"><option value="under">تحت المتوسط (200)</option><option value="easy">سهل (200)</option>
                         <option value="medium" selected>متوسط (400)</option><option value="hard">صعب (600)</option></select></div>
-                <div class="form-group"><label>النقاط</label>
-                    <select id="qGenPoints"><option value="200">200</option><option value="400" selected>400</option><option value="600">600</option></select></div>
+                <div class="form-group"><label for="qGenPoints">النقاط</label><select id="qGenPoints"><option value="200">200</option><option value="400" selected>400</option><option value="600">600</option></select></div>
             </div>
             <button class="btn btn-primary btn-lg" id="qGenBtn" onclick="genQuizQuestions()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> توليد أسئلة س.ج</button>
             <div class="progress"><div id="qGenProgress"></div></div>
@@ -251,16 +246,13 @@
                 مثال: 10 ← 2 سهل + 6 متوسط + 2 صعب لكل حرف.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;">
-                <div class="form-group"><label>عدد الأسئلة لكل حرف</label>
-                    <input type="number" id="bulkPerLetter" value="10" min="1" max="100"></div>
-                <div class="form-group"><label>الحروف</label>
-                    <select id="bulkScope">
+                <div class="form-group"><label for="bulkPerLetter">عدد الأسئلة لكل حرف</label><input type="number" id="bulkPerLetter" value="10" min="1" max="100"></div>
+                <div class="form-group"><label for="bulkScope">الحروف</label><select id="bulkScope">
                         <option value="all">كل الحروف (28)</option>
                         <option value="missing">الناقصة فقط (أقل من 50)</option>
                         <option value="one">حرف واحد</option>
                     </select></div>
-                <div class="form-group" id="oneLetterWrap" style="display:none;"><label>الحرف</label>
-                    <select id="bulkOneLetter"></select></div>
+                <div class="form-group" id="oneLetterWrap" style="display:none;"><label for="bulkOneLetter">الحرف</label><select id="bulkOneLetter"></select></div>
             </div>
             <div style="display:flex;gap:.5rem;align-items:center;">
                 <button class="btn btn-gold btn-lg" id="bulkStart" onclick="startBulkLetters()"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> ابدأ التوليد</button>
@@ -280,10 +272,8 @@
                 المكتبة الحالية: <b id="milCount">—</b> سؤال.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;">
-                <div class="form-group"><label>العدد المطلوب</label>
-                    <input type="number" id="milGenCount" value="50" min="1" max="200"></div>
-                <div class="form-group"><label>الصعوبة</label>
-                    <select id="milGenDiff">
+                <div class="form-group"><label for="milGenCount">العدد المطلوب</label><input type="number" id="milGenCount" value="50" min="1" max="200"></div>
+                <div class="form-group"><label for="milGenDiff">الصعوبة</label><select id="milGenDiff">
                         <option value="under">تحت المتوسط</option><option value="easy">سهل</option><option value="medium">متوسط</option>
                         <option value="hard">صعب</option><option value="mixed" selected>متنوعة (موزّعة)</option>
                     </select></div>
@@ -377,21 +367,20 @@
             <div class="gsp-head" id="settingsHead"></div>
             <div class="gsp-body">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
-                <div class="form-group"><label>اسم الموقع</label><input type="text" id="stSiteTitle"></div>
-                <div class="form-group"><label>مدة سؤال س.ج (ثانية)</label><input type="number" id="stQuizTimer"></div>
-                <div class="form-group"><label>ميزانية المزاد الافتراضية</label><input type="number" id="stBudget"></div>
-                <div class="form-group"><label>وحدة الميزانية</label>
-                    <select id="stUnit"><option value="مليون">مليون</option><option value="مليار">مليار</option><option value="كوينز">كوينز</option></select></div>
-                <div class="form-group"><label>مدة المزايدة (ثانية، 0=بدون)</label><input type="number" id="stBidDuration"></div>
-                <div class="form-group"><label>عدد اللاعبين المطلوب</label><input type="number" id="stPlayersNeeded"></div>
-                <div class="form-group"><label>حجم دفعة التوليد</label><input type="number" id="stAiBatch" min="1" max="20"></div>
+                <div class="form-group"><label for="stSiteTitle">اسم الموقع</label><input type="text" id="stSiteTitle"></div>
+                <div class="form-group"><label for="stQuizTimer">مدة سؤال س.ج (ثانية)</label><input type="number" id="stQuizTimer"></div>
+                <div class="form-group"><label for="stBudget">ميزانية المزاد الافتراضية</label><input type="number" id="stBudget"></div>
+                <div class="form-group"><label for="stUnit">وحدة الميزانية</label><select id="stUnit"><option value="مليون">مليون</option><option value="مليار">مليار</option><option value="كوينز">كوينز</option></select></div>
+                <div class="form-group"><label for="stBidDuration">مدة المزايدة (ثانية، 0=بدون)</label><input type="number" id="stBidDuration"></div>
+                <div class="form-group"><label for="stPlayersNeeded">عدد اللاعبين المطلوب</label><input type="number" id="stPlayersNeeded"></div>
+                <div class="form-group"><label for="stAiBatch">حجم دفعة التوليد</label><input type="number" id="stAiBatch" min="1" max="20"></div>
                 <div class="form-group"><label><input type="checkbox" id="stSound"> تشغيل الأصوات افتراضياً</label></div>
             </div>
             <h4 style="margin-top:1rem;">نسب توزيع الصعوبة في التوليد</h4>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
-                <div class="form-group"><label>تحت المتوسط %</label><input type="number" id="stEasy" min="0" max="100"></div>
-                <div class="form-group"><label>متوسط %</label><input type="number" id="stMedium" min="0" max="100"></div>
-                <div class="form-group"><label>صعب %</label><input type="number" id="stHard" min="0" max="100"></div>
+                <div class="form-group"><label for="stEasy">تحت المتوسط %</label><input type="number" id="stEasy" min="0" max="100"></div>
+                <div class="form-group"><label for="stMedium">متوسط %</label><input type="number" id="stMedium" min="0" max="100"></div>
+                <div class="form-group"><label for="stHard">صعب %</label><input type="number" id="stHard" min="0" max="100"></div>
             </div>
             </div>
             <div class="gsp-actions">
@@ -407,14 +396,13 @@
     <div class="modal" style="max-width:640px;">
         <h2 id="qFormTitle">سؤال جديد</h2>
         <input type="hidden" id="qfId">
-        <div class="form-group"><label>اللعبة</label>
-            <select id="qfGame" onchange="qfGameChanged()"><option value="letters">حروف مع أمين</option><option value="quiz">س.ج</option><option value="million">من سيربح المليون</option></select></div>
-        <div class="form-group" id="qfLetterWrap"><label>الحرف</label><select id="qfLetter"></select></div>
-        <div class="form-group" id="qfCatWrap"><label>الفئة</label><select id="qfCat"></select></div>
-        <div class="form-group"><label>نص السؤال</label><textarea id="qfQuestion" rows="3"></textarea></div>
-        <div class="form-group"><label>الإجابة الصحيحة</label><input type="text" id="qfAnswer"></div>
+        <div class="form-group"><label for="qfGame">اللعبة</label><select id="qfGame" onchange="qfGameChanged()"><option value="letters">حروف مع أمين</option><option value="quiz">س.ج</option><option value="million">من سيربح المليون</option></select></div>
+        <div class="form-group" id="qfLetterWrap"><label for="qfLetter">الحرف</label><select id="qfLetter"></select></div>
+        <div class="form-group" id="qfCatWrap"><label for="qfCat">الفئة</label><select id="qfCat"></select></div>
+        <div class="form-group"><label for="qfQuestion">نص السؤال</label><textarea id="qfQuestion" rows="3"></textarea></div>
+        <div class="form-group"><label for="qfAnswer">الإجابة الصحيحة</label><input type="text" id="qfAnswer"></div>
         <div class="form-group" id="qfOptionsWrap" style="display:none;">
-            <label>الخيارات الأربعة — الإجابة الصحيحة يجب أن تكون مطابقة لأحدها</label>
+            <label for="qfAlternatives">الخيارات الأربعة — الإجابة الصحيحة يجب أن تكون مطابقة لأحدها</label>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
                 <input type="text" id="qfOpt0" placeholder="خيار أ">
                 <input type="text" id="qfOpt1" placeholder="خيار ب">
@@ -422,16 +410,16 @@
                 <input type="text" id="qfOpt3" placeholder="خيار د">
             </div>
         </div>
-        <div class="form-group"><label>إجابات بديلة (افصل بفاصلة)</label><input type="text" id="qfAlternatives"></div>
-        <div class="form-group"><label>تلميح</label><input type="text" id="qfHint"></div>
-        <div class="form-group"><label>شرح</label><textarea id="qfExplanation" rows="2"></textarea></div>
+        <div class="form-group"><label for="qfAlternatives">إجابات بديلة (افصل بفاصلة)</label><input type="text" id="qfAlternatives"></div>
+        <div class="form-group"><label for="qfHint">تلميح</label><input type="text" id="qfHint"></div>
+        <div class="form-group"><label for="qfExplanation">شرح</label><textarea id="qfExplanation" rows="2"></textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div class="form-group"><label>الصعوبة</label><select id="qfDiff">
+            <div class="form-group"><label for="qfDiff">الصعوبة</label><select id="qfDiff">
                 <option value="under">تحت المتوسط</option><option value="easy">سهل</option><option value="medium">متوسط</option><option value="hard">صعب</option></select></div>
-            <div class="form-group"><label>النقاط</label><select id="qfPoints">
+            <div class="form-group"><label for="qfPoints">النقاط</label><select id="qfPoints">
                 <option value="200">200</option><option value="400">400</option><option value="600">600</option></select></div>
         </div>
-        <div class="form-group"><label>صورة السؤال (اختياري)</label><input type="file" id="qfImage" accept="image/*"></div>
+        <div class="form-group"><label for="qfImage">صورة السؤال (اختياري)</label><input type="file" id="qfImage" accept="image/*"></div>
         <div class="modal-actions">
             <button class="btn btn-primary" onclick="saveQuestion()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ</button>
             <button class="btn btn-secondary" onclick="closeModal('qFormModal')">إلغاء</button>
@@ -444,16 +432,14 @@
     <div class="modal">
         <h2 id="catFormTitle">فئة جديدة</h2>
         <input type="hidden" id="cfId">
-        <div class="form-group"><label>اسم الفئة</label><input type="text" id="cfName"></div>
-        <div class="form-group"><label>وصف</label><input type="text" id="cfDesc"></div>
-        <div class="form-group"><label>التصنيف (مجموعة الفئة)</label>
-            <input type="text" id="cfGroup" list="catGroupList" placeholder="مثال: علوم">
+        <div class="form-group"><label for="cfName">اسم الفئة</label><input type="text" id="cfName"></div>
+        <div class="form-group"><label for="cfDesc">وصف</label><input type="text" id="cfDesc"></div>
+        <div class="form-group"><label for="cfGroup">التصنيف (مجموعة الفئة)</label><input type="text" id="cfGroup" list="catGroupList" placeholder="مثال: علوم">
             <datalist id="catGroupList"></datalist>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="form-group">
-            <label>الأيقونة</label>
-            <input type="hidden" id="cfIcon" value="📚">
+            <label for="cfIcon">الأيقونة</label><input type="hidden" id="cfIcon" value="📚">
             <div id="iconPicker" class="icon-picker"></div>
             <div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem;">
                 <input type="text" id="cfIconCustom" placeholder="أو الصق أي إيموجي" maxlength="4" style="flex:1">
@@ -461,9 +447,9 @@
                 <span style="font-size:1.6rem" id="iconPreview">📚</span>
             </div>
         </div>
-            <div class="form-group"><label>اللون</label><input type="color" id="cfColor" value="#8b5cf6" style="width:100%;height:44px"></div>
+            <div class="form-group"><label for="cfColor">اللون</label><input type="color" id="cfColor" value="#8b5cf6" style="width:100%;height:44px"></div>
         </div>
-        <div class="form-group"><label>صورة الفئة</label><input type="file" id="cfImage" accept="image/*"></div>
+        <div class="form-group"><label for="cfImage">صورة الفئة</label><input type="file" id="cfImage" accept="image/*"></div>
         <div class="modal-actions">
             <button class="btn btn-primary" onclick="saveCategory()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ</button>
             <button class="btn btn-secondary" onclick="closeModal('catFormModal')">إلغاء</button>
@@ -477,26 +463,24 @@
         <h2 id="pFormTitle">لاعب جديد</h2>
         <input type="hidden" id="pfId">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div class="form-group"><label>الاسم</label><input type="text" id="pfName"></div>
-            <div class="form-group"><label>المركز</label>
-                <select id="pfPos"><option>GK</option><option>CB</option><option>LB</option><option>RB</option>
+            <div class="form-group"><label for="pfName">الاسم</label><input type="text" id="pfName"></div>
+            <div class="form-group"><label for="pfPos">المركز</label><select id="pfPos"><option>GK</option><option>CB</option><option>LB</option><option>RB</option>
                 <option>CDM</option><option>CM</option><option>CAM</option><option>LW</option><option>RW</option>
                 <option>ST</option><option>CF</option></select></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;">
-            <div class="form-group"><label>التقييم</label><input type="number" id="pfRating" value="80" min="40" max="99"></div>
-            <div class="form-group"><label>السرعة</label><input type="number" id="pfPace" value="70" min="1" max="99"></div>
-            <div class="form-group"><label>التسديد</label><input type="number" id="pfShooting" value="70" min="1" max="99"></div>
-            <div class="form-group"><label>التمرير</label><input type="number" id="pfPassing" value="70" min="1" max="99"></div>
-            <div class="form-group"><label>المراوغة</label><input type="number" id="pfDribbling" value="70" min="1" max="99"></div>
-            <div class="form-group"><label>الدفاع</label><input type="number" id="pfDefending" value="70" min="1" max="99"></div>
-            <div class="form-group"><label>القوة</label><input type="number" id="pfPhysical" value="70" min="1" max="99"></div>
-            <div class="form-group"><label>السعر</label><input type="number" id="pfPrice" value="20" min="1"></div>
+            <div class="form-group"><label for="pfRating">التقييم</label><input type="number" id="pfRating" value="80" min="40" max="99"></div>
+            <div class="form-group"><label for="pfPace">السرعة</label><input type="number" id="pfPace" value="70" min="1" max="99"></div>
+            <div class="form-group"><label for="pfShooting">التسديد</label><input type="number" id="pfShooting" value="70" min="1" max="99"></div>
+            <div class="form-group"><label for="pfPassing">التمرير</label><input type="number" id="pfPassing" value="70" min="1" max="99"></div>
+            <div class="form-group"><label for="pfDribbling">المراوغة</label><input type="number" id="pfDribbling" value="70" min="1" max="99"></div>
+            <div class="form-group"><label for="pfDefending">الدفاع</label><input type="number" id="pfDefending" value="70" min="1" max="99"></div>
+            <div class="form-group"><label for="pfPhysical">القوة</label><input type="number" id="pfPhysical" value="70" min="1" max="99"></div>
+            <div class="form-group"><label for="pfPrice">السعر</label><input type="number" id="pfPrice" value="20" min="1"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div class="form-group"><label>النادي</label><input type="text" id="pfClub"></div>
-            <div class="form-group"><label>الدوري</label>
-                <select id="pfLeague">
+            <div class="form-group"><label for="pfClub">النادي</label><input type="text" id="pfClub"></div>
+            <div class="form-group"><label for="pfLeague">الدوري</label><select id="pfLeague">
                     <option value="laliga">الدوري الإسباني</option>
                     <option value="epl">الدوري الإنجليزي</option>
                     <option value="bundesliga">الدوري الألماني</option>
@@ -504,11 +488,10 @@
                     <option value="ligue1">الدوري الفرنسي</option>
                     <option value="saudi">دوري روشن السعودي</option>
                 </select></div>
-            <div class="form-group"><label>المنتخب</label><input type="text" id="pfNation"></div>
-            <div class="form-group"><label>الحقبة</label>
-                <select id="pfEra"><option value="current">حالي</option><option value="retired">معتزل</option></select></div>
+            <div class="form-group"><label for="pfNation">المنتخب</label><input type="text" id="pfNation"></div>
+            <div class="form-group"><label for="pfEra">الحقبة</label><select id="pfEra"><option value="current">حالي</option><option value="retired">معتزل</option></select></div>
         </div>
-        <div class="form-group"><label>صورة اللاعب</label><input type="file" id="pfImage" accept="image/*"></div>
+        <div class="form-group"><label for="pfImage">صورة اللاعب</label><input type="file" id="pfImage" accept="image/*"></div>
         <div class="form-group"><label><input type="checkbox" id="pfVerified"> بيانات موثّقة</label></div>
         <div class="modal-actions">
             <button class="btn btn-primary" onclick="savePlayer()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ</button>
@@ -652,7 +635,7 @@ function loadQ(p) {
             var stAr = {approved:'معتمد',pending_review:'مراجعة',archived:'مؤرشف'}[q.status] || q.status;
             var srcAr = {manual:'يدوي',ai:'ذكاء',import:'استيراد'}[q.source] || q.source || 'يدوي';
             var stCls = q.status === 'approved' ? 'badge-green' : (q.status === 'archived' ? 'badge-blue' : 'badge-gold');
-            return '<tr><td><input type="checkbox" class="chk" data-id="' + q.id + '" onchange="toggleSel(this)"></td>' +
+            return '<tr><td><input type="checkbox" class="chk" data-id="' + q.id + '" onchange="toggleSel(this)" aria-label="تحديد السؤال"></td>' +
                 '<td style="max-width:280px">' + esc(q.question) + '</td><td>' + esc(q.answer) + '</td>' +
                 '<td>' + (q.game === 'letters' ? 'حروف' : (q.game === 'million' ? 'المليون' : 'س.ج')) + '</td>' +
                 '<td>' + esc(q.letter || q.category_name || '-') + '</td><td>' + (q.points || '-') + '</td>' +
@@ -1162,7 +1145,7 @@ function editContent(id) {
     var html = '<h3>✏️ تعديل ' + (CT_LABELS[g] || 'عنصر') + '</h3><div style="display:grid;gap:.6rem">';
     flds.forEach(function (f) {
         var val = Array.isArray(it[f]) ? it[f].join('، ') : (it[f] || '');
-        html += '<label style="font-size:.85rem;color:var(--text-muted)">' + f + '</label>' +
+        html += '<label for="ecf_' + f + '" style="font-size:.85rem;color:var(--text-muted)">' + f + '</label>' +
                 '<input id="ecf_' + f + '" value="' + esc(val) + '" style="padding:.5rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text)">';
     });
     html += '<div style="display:flex;gap:.5rem"><button class="btn btn-success" onclick="saveContentEdit(\'' + id + '\')">💾 حفظ</button>' +
@@ -1194,7 +1177,7 @@ function openContentForm() {
     var flds = fields[g] || ['title'];
     var html = '<h3>➕ إضافة ' + (CT_LABELS[g] || 'عنصر') + '</h3><div style="display:grid;gap:.6rem">';
     flds.forEach(function (f) {
-        html += '<label style="font-size:.85rem;color:var(--text-muted)">' + f + '</label>' +
+        html += '<label for="ncf_' + f + '" style="font-size:.85rem;color:var(--text-muted)">' + f + '</label>' +
                 '<input id="ncf_' + f + '" placeholder="' + f + '" style="padding:.5rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text)">';
     });
     html += '<div style="display:flex;gap:.5rem"><button class="btn btn-success" onclick="saveNewContent()">💾 حفظ</button>' +
@@ -1615,7 +1598,7 @@ function optsHtml(id, label, items, allLabel) {
     opts += (items || []).map(function (o) {
         return '<option value="' + esc(o.id) + '">' + esc(o.name) + '</option>';
     }).join('');
-    return '<div class="form-group"><label>' + esc(label) + '</label><select id="' + id + '">' + opts + '</select></div>';
+    return '<div class="form-group"><label for="' + id + '">' + esc(label) + '</label><select id="' + id + '">' + opts + '</select></div>';
 }
 
 function aiGameChanged() {
