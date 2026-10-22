@@ -39,11 +39,41 @@
 }
 .gsp-head .gsp-sub { margin-inline-start: auto; font-size: 0.78rem; color: var(--text-muted); }
 .gsp-body { padding: 1.25rem; display: grid; gap: 1rem; }
+/* Field runs only ever hold single fields (.gsp-field / bare controls), so the
+   auto-fit grid never has to squeeze a whole section into a narrow cell.
+   align-items: start — bottom-aligning unequal label+input stacks looks broken. */
 .gsp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 0.9rem;
-    align-items: end;
+    align-items: start;
+}
+/* Field rows: the one responsive grid every setup screen uses instead of
+   per-page inline styles. auto-fit makes the column count follow the real
+   available width, and min(230px, 100%) caps the minimum so a narrow cell can
+   never force horizontal overflow. */
+.setup-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+    gap: var(--space-4);
+    align-items: start;
+}
+/* Category toolbar: the "choose N categories" label plus its action buttons.
+   It must wrap — as a nowrap row the label collapsed into a ~55px wide
+   vertical strip on phones while the buttons were crushed beside it. */
+.setup-catbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-4);
+}
+.setup-catbar .catbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
 }
 .gsp-field { display: grid; gap: 0.35rem; align-content: start; }
 .gsp-field > label,
@@ -180,7 +210,7 @@
 }
 .cp-card .cp-ico { font-size: 1.55rem; line-height: 1; }
 .cp-card .cp-name { font-size: 0.76rem; font-weight: 700; color: var(--text-primary); line-height: 1.45; }
-.cp-card .cp-n { font-size: 0.66rem; color: var(--text-muted); }
+.cp-card .cp-n { font-size: 0.66rem; color: var(--text-secondary); }
 .cp-card .cp-info {
     position: absolute;
     top: 0.35rem;

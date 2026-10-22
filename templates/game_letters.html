@@ -513,6 +513,18 @@ function firstLetterOf(answer) {
     return s.charAt(0) || '';
 }
 
+// Pick ink that clears WCAG AA on the team colour the host chose. White text
+// on a light fill (the default green #17c38f) is only 2.27:1, so the ink is
+// chosen from the colour's luminance instead of being hard-coded.
+function inkFor(hex) {
+  var m = String(hex || '').replace('#', '').match(/^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})/);
+  if (!m) return '#ffffff';
+  var c = [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255]
+    .map(function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+  var L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  // L(#041022) ~= 0.0051, so dark ink wins once the fill is lighter than ~0.19
+  return L >= 0.1906 ? '#041022' : '#ffffff';
+}
 function startLettersGame() {
     var t1 = document.getElementById('team1Name').value.trim() || 'الفريق الأول';
     var t2 = document.getElementById('team2Name').value.trim() || 'الفريق الثاني';
@@ -539,8 +551,8 @@ function startLettersGame() {
     var b1 = document.getElementById('claimBtn1');
     var b2 = document.getElementById('claimBtn2');
     b1.textContent = t1; b2.textContent = t2;
-    b1.style.background = c1; b1.style.color = '#fff';
-    b2.style.background = c2; b2.style.color = '#fff';
+    b1.style.background = c1; b1.style.color = inkFor(c1);
+    b2.style.background = c2; b2.style.color = inkFor(c2);
     var sw1 = document.getElementById('swatchTeam1');
     var sw2 = document.getElementById('swatchTeam2');
     if (sw1) sw1.style.background = c1;
@@ -686,8 +698,8 @@ function selectCell(i) {
   document.getElementById('bellName2').textContent = LS.t2;
   var b1 = document.getElementById('bellBtn1'), b2 = document.getElementById('bellBtn2');
   b1.classList.remove('btn-gold'); b2.classList.remove('btn-gold');
-  b1.style.background = LS.c1; b1.style.color = '#fff';
-  b2.style.background = LS.c2; b2.style.color = '#fff';
+  b1.style.background = LS.c1; b1.style.color = inkFor(LS.c1);
+  b2.style.background = LS.c2; b2.style.color = inkFor(LS.c2);
   b1.disabled = false; b2.disabled = false;
 
   document.getElementById('questionModal').classList.add('active');

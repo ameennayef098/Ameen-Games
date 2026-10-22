@@ -52,7 +52,38 @@
             root.insertBefore(head, root.firstChild);
         }
 
-        var gridKids = [], actionKids = [];
+        /* Two kinds of child live in a setup screen:
+             - fields:   a lone .gsp-field, label, input, select or textarea —
+                         these belong in a compact responsive field grid;
+             - sections: everything else (the lead paragraph, a field row, the
+                         category catalogue, the options grid) — these must keep
+                         their own width instead of being squeezed into a cell.
+           Consecutive fields are collected into one .gsp-grid; runs of sections
+           stack at full width inside .gsp-body. */
+        var FIELD_TAGS = { LABEL: 1, INPUT: 1, SELECT: 1, TEXTAREA: 1 };
+        function isField(n) {
+            if (n.classList.contains('gsp-field')) return true;
+            return !!FIELD_TAGS[n.tagName];
+        }
+
+        var body = null, fieldGrid = null, actionKids = [];
+        function place(n, asField) {
+            if (!body) {
+                body = UI.el('div', 'gsp-body');
+                root.insertBefore(body, actionKids[0] || null);
+            }
+            if (asField) {
+                if (!fieldGrid) {
+                    fieldGrid = UI.el('div', 'gsp-grid');
+                    body.appendChild(fieldGrid);
+                }
+                fieldGrid.appendChild(n);
+            } else {
+                fieldGrid = null;
+                body.appendChild(n);
+            }
+        }
+
         Array.prototype.slice.call(root.children).forEach(function (n) {
             if (n.classList.contains('gsp-head') || n.classList.contains('gsp-body')
                 || n.classList.contains('gsp-actions')) return;
@@ -64,22 +95,17 @@
                 && Array.prototype.every.call(n.children, function (c) { return c.tagName === 'BUTTON'; })) {
                 isActions = true;
             }
-            (isActions ? actionKids : gridKids).push(n);
+            if (isActions) { actionKids.push(n); return; }
+            place(n, isField(n));
         });
-
-        if (gridKids.length) {
-            var body = UI.el('div', 'gsp-body');
-            var grid = UI.el('div', 'gsp-grid');
-            gridKids.forEach(function (n) { grid.appendChild(n); });
-            body.appendChild(grid);
-            root.insertBefore(body, actionKids[0] || null);
-        }
 
         if (actionKids.length) {
             var acts = UI.el('div', 'gsp-actions');
             actionKids.forEach(function (n) {
                 if (n.classList.contains('setup-actions')) {
                     Array.prototype.slice.call(n.children).forEach(function (c) { acts.appendChild(c); });
+                    // drop the now-empty wrapper instead of leaving dead markup
+                    if (n.parentNode) n.parentNode.removeChild(n);
                 } else {
                     acts.appendChild(n);
                 }

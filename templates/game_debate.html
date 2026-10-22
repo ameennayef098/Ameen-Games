@@ -76,7 +76,7 @@
     <div id="aiTopicPreview" class="ai-topic-preview">
       <h3>🤖 موضوع مقترح</h3>
       <p id="aiTopicText" style="font-size:1.1rem;font-weight:700"></p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+      <div class="setup-row">
         <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-green)">المؤيد:</b> <span id="aiSideA"></span></div>
         <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-red)">المعارض:</b> <span id="aiSideB"></span></div>
       </div>
@@ -351,7 +351,7 @@ function showResults(data){
     +'<tbody>'+tableRows
     +'<tr><td class="criterion-name"><b>المجموع</b></td><td><b style="color:var(--accent-green)">'+aTotal+'</b></td><td><b style="color:var(--accent-red)">'+bTotal+'</b></td></tr>'
     +'</tbody></table>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">'
+    +'<div class="setup-row">'
     +'<div class="feedback-box"><h5>💬 تقييم المؤيد</h5><p>'+(data.side_a&&data.side_a.feedback?data.side_a.feedback:'')+'</p></div>'
     +'<div class="feedback-box"><h5>💬 تقييم المعارض</h5><p>'+(data.side_b&&data.side_b.feedback?data.side_b.feedback:'')+'</p></div>'
     +'</div>'

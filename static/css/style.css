@@ -25,6 +25,14 @@
     --text-secondary:  #c3c8e6;
     --text-muted:      #9aa0c4;
     --text-on-accent:  #ffffff;
+    /* Dark ink for text sitting on the light accent fills (brand gradient,
+       blue/green/red accents). White on #4f8cff is only 3.22:1 — under the
+       4.5:1 WCAG AA bar — while #041022 on it clears ~5.4:1. Same convention
+       the skip-link, category pills and gold/green buttons already use. */
+    --text-on-brand:   #041022;
+    --text-on-blue:    #041022;
+    --text-on-green:   #05231a;
+    --text-on-red:     #2a0a09;
 
     /* --- Accents (names preserved from the original system) --- */
     --accent-blue:     #4f8cff;
@@ -257,7 +265,7 @@ summary:focus-visible,
 
 .btn-primary {
     background: var(--gradient-brand);
-    color: var(--text-on-accent);
+    color: var(--text-on-brand);
     box-shadow: var(--shadow-glow-blue);
 }
 
@@ -291,7 +299,7 @@ summary:focus-visible,
 
 .btn-danger {
     background: var(--accent-red);
-    color: var(--text-on-accent);
+    color: var(--text-on-red);
 }
 
 .btn-danger:hover {
@@ -987,7 +995,7 @@ summary:focus-visible,
     width: 100%;
     margin-top: auto;
     background: var(--gradient-brand);
-    color: var(--text-on-accent);
+    color: var(--text-on-brand);
     box-shadow: 0 8px 22px rgba(79, 140, 255, 0.28);
 }
 
@@ -2984,12 +2992,12 @@ html.js .reveal-stagger.in > *:nth-child(n+11) { transition-delay: 600ms; }
 .answer-good { color: var(--accent-green); border-color: var(--accent-green) !important; }
 .answer-bad { color: var(--accent-red); border-color: var(--accent-red) !important; }
 
-/* Normalise the inline one/two-column grids some setup screens declare inline,
-   so every game's setup screen lays out identically. */
+/* Field rows use the shared .setup-row class (ui-kit.css). Only a safety net is
+   left for any setup screen that still carries an inline grid: keep its own
+   columns, but never let the row bottom-align or clip its fields. No !important
+   here — it used to force minmax(230px, 1fr) onto every inline row, which
+   overflowed any cell narrower than 230px. */
 .setup-screen [style*="grid-template-columns"] {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
-    gap: var(--space-4) !important;
     align-items: start;
 }
 .setup-screen .form-group > label { margin-bottom: .4rem; }
@@ -3057,8 +3065,13 @@ select { min-height: 2.75rem; }
 }
 .doc p a:hover, .doc li a:hover, .doc-foot a:hover { text-decoration-color: var(--accent-blue); }
 
-/* Footer: version pill now lives under the brand, so 3 balanced columns */
-.footer-content { grid-template-columns: 1.5fr 1fr 1fr; }
+/* Footer: version pill now lives under the brand, so 3 balanced columns.
+   Scoped to desktop only — as a bare rule it came last and silently beat every
+   mobile media query, so the footer never collapsed and each page gained a
+   ~79px sideways scroll. */
+@media (min-width: 900px) {
+    .footer-content { grid-template-columns: 1.5fr 1fr 1fr; }
+}
 .footer-version { margin-top: var(--space-4); }
 
 /* Colour swatches read as interactive wells, not flat squares */

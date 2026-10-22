@@ -12,7 +12,7 @@
 .jcol{display:flex;flex-direction:column;gap:var(--space-2)}
 .jhead{background:var(--gradient-brand);border-radius:var(--radius-sm);
   padding:var(--space-2);text-align:center;font-weight:800;font-size:var(--font-size-xs);
-  color:var(--text-on-accent);min-height:66px;
+  color:var(--text-on-brand);min-height:66px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-1);overflow:hidden}
 .jhead img{width:100%;height:36px;object-fit:cover;border-radius:6px}
 .jhead .ico{font-size:1.15rem}
@@ -26,7 +26,11 @@
 .jcell.p400{border-right:3px solid var(--accent-gold)}
 .jcell.p600{border-right:3px solid var(--accent-red)}
 .jcell:disabled{opacity:.26;cursor:not-allowed;text-decoration:line-through}
-.cat-pick{display:grid;gap:1.1rem;background:transparent;padding:0;max-height:none;overflow:visible}
+/* Grouped catalogue: the classification groups stack full width and each group
+   lays its own categories out in .cp-grid. Without an explicit track this was a
+   single implicit auto column — every category piled into one narrow strip with
+   the rest of the panel empty. */
+.cat-pick{display:grid;grid-template-columns:minmax(0,1fr);gap:1.4rem;background:transparent;padding:0;max-height:none;overflow:visible}
 /* Catalogue look: one coloured pill per classification, one card per category. */
 .cp-cat{position:relative;display:grid;justify-items:center;align-content:center;gap:.2rem;
   min-height:96px;padding:.9rem .5rem .6rem;cursor:pointer;text-align:center;
@@ -40,7 +44,7 @@
 .cp-cat input{position:absolute;opacity:0;pointer-events:none}
 .cp-cat .cp-ico{font-size:1.5rem;line-height:1}
 .cp-cat .cp-name{font-size:.78rem;font-weight:700;line-height:1.45}
-.cp-cat .cp-n{font-size:.64rem;color:var(--text-muted);line-height:1.5}
+.cp-cat .cp-n{font-size:.64rem;color:var(--text-secondary);line-height:1.5}
 .cp-cat .cp-n b{color:var(--accent-gold);font-weight:800}
 .fs-btn{background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);
   color:var(--text-primary);padding:0.45rem 0.95rem;cursor:pointer;font-family:inherit;
@@ -167,19 +171,19 @@
     <h2><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg> س.ج — إعداد المباراة</h2>
     <p class="setup-lead">سمّوا الفريقين وحددوا الفئات ووقت السؤال — ويمكن للخصم سرقة السؤال.</p>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div class="setup-row">
         <div class="form-group"><label>اسم الفريق الأول</label><input type="text" id="team1Name" value="الفريق الأول"></div>
         <div class="form-group"><label>اسم الفريق الثاني</label><input type="text" id="team2Name" value="الفريق الثاني"></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div class="setup-row">
         <div class="form-group"><label>لون الفريق الأول</label><input type="color" id="team1Color" value="#2563eb" style="width:100%;height:42px"></div>
         <div class="form-group"><label>لون الفريق الثاني</label><input type="color" id="team2Color" value="#16a34a" style="width:100%;height:42px"></div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+    <div class="setup-catbar">
         <label style="font-weight:700;">اختر 6 فئات <span id="catCount" style="color:var(--accent-gold)">(0/6)</span></label>
-        <div>
+        <div class="catbar-actions">
             <button class="btn btn-secondary btn-sm" onclick="randomCategories()"><svg class="ico" aria-hidden="true"><use href="#i-dice"></use></svg> فئات عشوائية</button>
             <button class="btn btn-secondary btn-sm" onclick="clearCategories()">مسح</button>
             <button class="btn btn-secondary btn-sm" onclick="resetQuizRotation(true)" title="يمسح سجل التكرار للفئات المختارة فقط">🗑️ تصفير التكرار</button>
@@ -189,7 +193,7 @@
     <input type="text" id="catSearch" placeholder="ابحث عن فئة..." oninput="renderCatList({})"
            style="width:100%;padding:.65rem .9rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-inset);color:var(--text-primary);font-family:inherit;margin-bottom:.8rem">
     <div id="categorySelection" class="cat-pick"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+    <div class="setup-row">
         <div class="form-group"><label>مدة الإجابة</label>
             <select id="timerDuration">
                 <option value="0">بدون مؤقت</option><option value="15">15 ثانية</option>
@@ -261,7 +265,7 @@
         <div id="turnBannerSub" class="turn-banner-sub"></div>
         <h2 id="questionText" class="qtext">السؤال</h2>
         <div id="questionImageBox" style="display:none;margin-top:var(--space-3);text-align:center;">
-            <span class="qimage"><img id="questionImage"></span>
+            <span class="qimage"><img id="questionImage" alt=""></span>
         </div>
 
         <div class="qtimer">
@@ -452,7 +456,7 @@ function renderCatList(unused) {
                 '<span class="cp-group-pill" style="background:' + g.color + '">' + (g.icon || '') + ' ' + g.name + '</span>' +
                 '<span class="cp-group-count">' + items.length + ' فئة</span></div><div class="cp-grid">';
         items.forEach(function (c) {
-            var img = c.image ? '<img src="' + c.image + '" style="width:1.5rem;height:1.5rem;object-fit:cover;border-radius:6px">' : (c.icon || '📚');
+            var img = c.image ? '<img src="' + c.image + '" alt="" style="width:1.5rem;height:1.5rem;object-fit:cover;border-radius:6px">' : (c.icon || '📚');
             var total = unused[c.id] !== undefined ? unused[c.id] : c.approved_count;
             var usedIds = used[c.id] ? used[c.id].length : 0;
             var remaining = Math.max(0, total - usedIds);
@@ -544,9 +548,9 @@ function startQuizGame() {
 function renderBoard() {
     document.getElementById('quizBoard').innerHTML = QS.cats.map(function (cid) {
         var cat = CATS.filter(function (c) { return c.id === cid; })[0] || {name: cid, icon: '📚'};
-        var head = cat.image ? '<img src="' + cat.image + '">' : '<span class="ico">' + (cat.icon || '📚') + '</span>';
+        var head = cat.image ? '<img src="' + cat.image + '" alt="">' : '<span class="ico">' + (cat.icon || '📚') + '</span>';
         var cells = (QS.boards[cid] || []).map(function (q, i) {
-            var thumb = q.image ? '<img src="' + q.image + '">' : '';
+            var thumb = q.image ? '<img src="' + q.image + '" alt="">' : '';
             var done = QS.used[cid + '-' + i];
             return '<button class="jcell p' + q.points + '" ' + (done ? 'disabled' : '') +
                    ' onclick="openQuestion(\'' + cid + '\',' + i + ')">' + thumb + '<span>' + q.points + '</span></button>';
@@ -556,6 +560,31 @@ function renderBoard() {
 }
 
 function turnName() { return QS.turn === 1 ? QS.team1 : QS.team2; }
+// The team colour is used three ways: as a FILL (badge / swatch / scoreboard),
+// as TEXT on the dark banner, and as TEXT on that fill. Each needs different
+// ink to clear WCAG AA - a dark team colour is unreadable as text on
+// --bg-inset (3.64:1) and white text on a light fill is unreadable (3.98:1).
+function inkFor(hex) {
+  var m = String(hex || '').replace('#', '').match(/^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})/);
+  if (!m) return '#ffffff';
+  var c = [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255]
+    .map(function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+  var L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  return L >= 0.1906 ? '#041022' : '#ffffff';
+}
+function bannerInk(hex) {
+  var m = String(hex || '').replace('#', '').match(/^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})/);
+  if (!m) return '';
+  var c = [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  var L = function (rgb) { return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]); };
+  var bgL = L([13, 16, 36]);                       // --bg-inset
+  for (var k = 0; k <= 0.9; k += 0.05) {
+    var t = c.map(function (v) { return Math.round(v + (255 - v) * k); });
+    if ((L(t) + 0.05) / (bgL + 0.05) >= 4.5) return 'rgb(' + t[0] + ',' + t[1] + ',' + t[2] + ')';
+  }
+  return '#ffffff';
+}
 function turnColor() { return QS.turn === 1 ? QS.c1 : QS.c2; }
 
 /* ===== عرض حالة الدور (احتفاظ / سرقة / عادي) — عرض فقط، لا يمسّ منطق اللعبة ===== */
@@ -604,7 +633,7 @@ function openQuestion(cid, idx) {
     document.getElementById('questionText').textContent = q.question;
     document.getElementById('correctAnswer').textContent = q.answer;
     document.getElementById('answerExplanation').textContent = q.explanation || '';
-    applyBanner('', '🎯 الدور الآن على: ' + turnName(), turnColor());
+    applyBanner('', '🎯 الدور الآن على: ' + turnName(), bannerInk(turnColor()));
     applyBannerSub(false, '');
     if (q.image) {
         document.getElementById('questionImage').src = q.image;
@@ -697,7 +726,7 @@ function markAnswer(isCorrect) {
             // الزر يبقى مفعّلاً: الفريق الثاني يحتاجه ليقول «لم يجب» أيضاً
             var nab = document.getElementById('noAnswerBtn');
             if (nab) nab.disabled = false;
-            applyBanner('steal', '🥷 فرصة سرقة لـ: ' + turnName(), turnColor());
+            applyBanner('steal', '🥷 فرصة سرقة لـ: ' + turnName(), bannerInk(turnColor()));
             applyBannerSub(true, 'إن لم يجب هذا الفريق أيضاً يُغلق السؤال');
             applyTurnState('steal', '🥷 فرصة سرقة لـ ' + turnName());
             startTimer(QS.timerDuration || 20);
@@ -749,7 +778,7 @@ function markNoAnswer() {
         // الوصول لحالة «لم يجب الفريقان».
         var nab = document.getElementById('noAnswerBtn');
         if (nab) nab.disabled = false;
-        applyBanner('steal', '🤐 لم يجب ' + failedName + ' — فرصة لـ ' + turnName(), turnColor());
+        applyBanner('steal', '🤐 لم يجب ' + failedName + ' — فرصة لـ ' + turnName(), bannerInk(turnColor()));
         applyBannerSub(true, 'إن لم يجب هذا الفريق أيضاً يُغلق السؤال ويبقى الدور مع ' + failedName);
         applyTurnState('steal', '🤐 لم يجب ' + failedName + ' — السؤال الآن لـ ' + turnName());
         startTimer(QS.timerDuration || 20);
@@ -792,7 +821,7 @@ function switchTurn() {
     QS.stealPending = false;
     QS.turnKept = false;
     applyTurnState('', '');
-    applyBanner('', '🔁 تم تبديل الدور — الدور الآن على: ' + turnName(), turnColor());
+    applyBanner('', '🔁 تم تبديل الدور — الدور الآن على: ' + turnName(), bannerInk(turnColor()));
     applyBannerSub(false, '');
     updateHUD();
     showToast('🔁 الدور الآن مع ' + turnName());
@@ -816,7 +845,7 @@ function updateHUD() {
     var ind = document.getElementById('turnIndicator');
     ind.textContent = 'دور ' + turnName();
     ind.style.background = turnColor();
-    ind.style.color = '#fff';
+    ind.style.color = inkFor(turnColor());
 
     // بطاقة الفريق صاحب الدور تتوهج + شارة «الدور» فوقها
     var c1 = document.getElementById('teamCard1');
@@ -893,7 +922,7 @@ function suddenDeath() {
             document.getElementById('questionImageBox').style.display = 'none';
             document.getElementById('answerSection').style.display = 'none';
             document.getElementById('showAnswerRow').style.display = 'block';
-            applyBanner('keep', '⚔️ الجولة الفاصلة — الدور على: ' + turnName(), turnColor());
+            applyBanner('keep', '⚔️ الجولة الفاصلة — الدور على: ' + turnName(), bannerInk(turnColor()));
             applyBannerSub(false, '');
             var nab2 = document.getElementById('noAnswerBtn');
             if (nab2) { nab2.disabled = false; nab2.style.display = QS.allowNoAnswer ? '' : 'none'; }
