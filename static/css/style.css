@@ -2480,7 +2480,7 @@ html.js .reveal-stagger.in > *:nth-child(n+11) { transition-delay: 600ms; }
 .mobile-menu-btn:focus-visible, .to-top:focus-visible, .check-field:focus-within,
 .nav-link:focus-visible, .nav-actions .nav-link:focus-visible, .footer-links a:focus-visible,
 .tab:focus-visible, .cat-chip:focus-visible, .filters button:focus-visible, .pager button:focus-visible,
-.cp-card:focus-visible, .icon-picker button:focus-visible {
+.cp-card:focus-visible, .cp-cat:focus-visible, .icon-picker button:focus-visible {
     box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 6px var(--accent-blue);
     border-radius: var(--radius);
 }
@@ -2498,6 +2498,8 @@ html.js .reveal-stagger.in > *:nth-child(n+11) { transition-delay: 600ms; }
     font-weight: 800;
     transition: top var(--transition-fast);
 }
+/* 24px is the WCAG 2.5.8 minimum target; the old padding left it at 19px. */
+.skip-link { min-height: 1.75rem; display: inline-flex; align-items: center; }
 .skip-link:focus-visible { top: var(--space-3); }
 
 /* ==========================================================================

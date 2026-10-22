@@ -75,6 +75,8 @@
     align-items: center;
     gap: var(--space-2);
 }
+/* 44px, matching the app's touch-target target (.btn-sm alone lands at 41px) */
+.setup-catbar .catbar-actions .btn { min-height: 2.75rem; }
 .gsp-field { display: grid; gap: 0.35rem; align-content: start; }
 .gsp-field > label,
 .gsp-grid > label {

@@ -6,7 +6,7 @@
    All colours/spacing come from the shared design system in style.css;
    no CSS variables are redefined here.
    ===================================================================== */
-.jboard{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--space-2);background:var(--bg-card);
+.jboard{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--space-2);background:var(--bg-card);
   padding:var(--space-3);border-radius:var(--radius-lg);border:1px solid var(--border-color);
   box-shadow:var(--shadow-sm),var(--shadow-inset)}
 .jcol{display:flex;flex-direction:column;gap:var(--space-2)}
@@ -14,6 +14,7 @@
   padding:var(--space-2);text-align:center;font-weight:800;font-size:var(--font-size-xs);
   color:var(--text-on-brand);min-height:66px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-1);overflow:hidden}
+.jhead>*{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jhead img{width:100%;height:36px;object-fit:cover;border-radius:6px}
 .jhead .ico{font-size:1.15rem}
 .jcell{position:relative;background:var(--bg-secondary);border:1px solid var(--border-color);
@@ -37,6 +38,10 @@
   background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0)),var(--bg-card);
   border:1px solid var(--border-color);border-radius:var(--radius);transition:var(--transition-fast)}
 .cp-cat:hover{transform:translateY(-3px);border-color:var(--border-strong);background:var(--bg-card-hover)}
+/* Keyboard focus: the real checkbox is opacity:0 yet still owns the focus ring,
+   so :focus-within paints an equivalent visible ring on the card itself. */
+.cp-cat:focus-within{outline:2px solid var(--accent-blue);outline-offset:2px;
+  box-shadow:0 0 0 3px var(--accent-blue-tint)}
 .cp-cat.sel{outline:2px solid var(--accent-blue);border-color:var(--accent-blue);background:var(--accent-blue-tint)}
 .cp-cat.sel::after{content:'✓';position:absolute;top:.3rem;inset-inline-end:.3rem;width:1.1rem;height:1.1rem;
   border-radius:50%;background:var(--accent-blue);color:#fff;font-size:.65rem;font-weight:900;
@@ -172,17 +177,17 @@
     <p class="setup-lead">سمّوا الفريقين وحددوا الفئات ووقت السؤال — ويمكن للخصم سرقة السؤال.</p>
 
     <div class="setup-row">
-        <div class="form-group"><label>اسم الفريق الأول</label><input type="text" id="team1Name" value="الفريق الأول"></div>
-        <div class="form-group"><label>اسم الفريق الثاني</label><input type="text" id="team2Name" value="الفريق الثاني"></div>
+        <div class="form-group"><label for="team1Name">اسم الفريق الأول</label><input type="text" id="team1Name" value="الفريق الأول"></div>
+        <div class="form-group"><label for="team2Name">اسم الفريق الثاني</label><input type="text" id="team2Name" value="الفريق الثاني"></div>
     </div>
 
     <div class="setup-row">
-        <div class="form-group"><label>لون الفريق الأول</label><input type="color" id="team1Color" value="#2563eb" style="width:100%;height:42px"></div>
-        <div class="form-group"><label>لون الفريق الثاني</label><input type="color" id="team2Color" value="#16a34a" style="width:100%;height:42px"></div>
+        <div class="form-group"><label for="team1Color">لون الفريق الأول</label><input type="color" id="team1Color" value="#2563eb" style="width:100%;height:42px"></div>
+        <div class="form-group"><label for="team2Color">لون الفريق الثاني</label><input type="color" id="team2Color" value="#16a34a" style="width:100%;height:42px"></div>
     </div>
 
     <div class="setup-catbar">
-        <label style="font-weight:700;">اختر 6 فئات <span id="catCount" style="color:var(--accent-gold)">(0/6)</span></label>
+        <span style="font-weight:700;">اختر 6 فئات <span id="catCount" style="color:var(--accent-gold)">(0/6)</span>
         <div class="catbar-actions">
             <button class="btn btn-secondary btn-sm" onclick="randomCategories()"><svg class="ico" aria-hidden="true"><use href="#i-dice"></use></svg> فئات عشوائية</button>
             <button class="btn btn-secondary btn-sm" onclick="clearCategories()">مسح</button>
@@ -194,13 +199,13 @@
            style="width:100%;padding:.65rem .9rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-inset);color:var(--text-primary);font-family:inherit;margin-bottom:.8rem">
     <div id="categorySelection" class="cat-pick"></div>
     <div class="setup-row">
-        <div class="form-group"><label>مدة الإجابة</label>
+        <div class="form-group"><label for="timerDuration">مدة الإجابة</label>
             <select id="timerDuration">
                 <option value="0">بدون مؤقت</option><option value="15">15 ثانية</option>
                 <option value="30" selected>30 ثانية</option><option value="45">45 ثانية</option>
                 <option value="60">60 ثانية</option>
             </select></div>
-        <div class="form-group"><label>نقاط السؤال</label>
+        <div class="form-group"><label for="pointsMode">نقاط السؤال</label>
             <select id="pointsMode">
                 <option value="200,400,600" selected>200 / 400 / 600 (الكل)</option>
                 <option value="200">200 فقط (سهل)</option>
