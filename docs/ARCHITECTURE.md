@@ -26,6 +26,7 @@ python server.py          # http://localhost:5555
 ```
 ألعاب-أمين/
 ├── server.py              التطبيق كله: المسارات + واجهات API + التوليد
+├── qimport.py            محلل دفعات الأسئلة اليدوي (مستقل عن Flask)
 ├── templates/             قوالب Jinja2
 │   ├── base.html          الهيكل المشترك (navbar, footer, mobile menu)
 │   ├── index.html         الرئيسية (hero + بطاقات الألعاب)
@@ -61,6 +62,7 @@ python server.py          # http://localhost:5555
 | المحتوى | `/api/content/games`, `/api/content/<game>` (GET/POST/PUT/DELETE), `/status`, `/bulk-status`, `/purge-bad`, `/export`, `/import` |
 | الذكاء الاصطناعي | `/api/ai/models`, `/api/ai/test`, `/api/ai/progress`, `/api/ai/generate`, `/api/ai/match`, `/api/ai/evaluate-debate`, `/api/ai/check-answer` |
 | الإدارة | `/api/admin/login`, `/api/admin/check`, `/api/settings` |
+| استيراد الدفعات | `/api/import/games`, `/api/import/parse`, `/api/import/check`, `/api/import/summary`, `/api/import/save`, `/api/import/history`, `/api/import/draft`, `/api/import/template`, `/api/import/export` — انظر `docs/IMPORT.md` |
 
 ## بوابة الإدارة
 
@@ -68,7 +70,8 @@ python server.py          # http://localhost:5555
 
 ```python
 GUARDED_PREFIXES = ('/api/questions', '/api/categories', '/api/players',
-                    '/api/pending', '/api/settings', '/api/ai/generate')
+                    '/api/import', '/api/pending', '/api/settings',
+                    '/api/ai/generate')
 
 @app.before_request
 def guard_admin_writes():

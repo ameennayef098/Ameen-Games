@@ -1,0 +1,1204 @@
+# -*- coding: utf-8 -*-
+"""
+qimport.py — محلل دفعات الأسئلة اليدوي لموقع «ألعاب أمين».
+
+الوحدة مستقلة تماماً عن Flask وعن server.py: كل دالة هنا تعمل على نصوص
+وقواميس فقط، لذا يمكن اختبارها منفردة (tools/test_qimport.py).
+
+لا يستخدم هذا المحلل أي نموذج ذكاء اصطناعي ولا أي اتصال شبكة: فصل الأسئلة عن
+الإجابات يتم بمنطق برمجي محض على علامات الترقيم (س1: / ج1: / السؤال 1 /
+Question 1) وعلى أسماء الحقول (خيارات: / عناصر: / الصعوبة:).
+
+ثلاثة أنماط استيراد:
+   qa      — ألعاب السؤال والجواب: letters / quiz / million
+   fields  — ألعاب المحتوى ذات المخطط الخاص: codenames / spy / link / debate /
+             whoplayer / culprit / detective / minebali / auction
+   lines   — «آخر واحد!»: كل سطر إجابة تُضاف إلى قائمة التصنيف
+"""
+
+import json
+import re
+
+MAX_RECORDS = 500
+MAX_TEXT_CHARS = 400000
+# ملف JSON ملصوق (مصفوفة أسئلة جاهزة) أكبر حجماً بكثير من نص «س/ج»، فلها حدّان خاصان
+MAX_JSON_CHARS = 4000000
+MAX_JSON_RECORDS = 5000
+
+AR_LETTERS = ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض',
+              'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي']
+
+# Arabic-Indic (٠-٩) and Extended Arabic-Indic (۰-۹) → ASCII digits.
+_DIGITS = str.maketrans('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹', '0123456789' * 2)
+
+LIST_SEP = re.compile(r'[|؛;]')
+# list separator for user-facing values: also accepts the Arabic comma
+OPT_SEP = re.compile(r'[|؛;,،]')
+# separator between key: value pairs *inside* one list item
+PAIR_SEP = re.compile(r'\s*[,،]\s*')
+BULLETS = ('-', '•', '*', '·', 'ـ')
+
+Q_WORDS = ('السؤال', 'سؤال', 'Question', 'Q', 'س')
+A_WORDS = ('الإجابة الصحيحة', 'الجواب الصحيح', 'الإجابة', 'الجواب', 'Answer', 'A', 'ج')
+# Marker words may only open a record at the very start of a line; otherwise
+# «نص السؤال 1» would be read as a second question marker.
+WORD_FORMS = {'السؤال', 'سؤال', 'Question', 'Q',
+              'الإجابة الصحيحة', 'الجواب الصحيح', 'الإجابة', 'الجواب', 'Answer', 'A'}
+BARE_SINGLE = {'س', 'ج', 'A', 'Q'}
+
+
+# --------------------------------------------------------------------------
+# text helpers (mirrors of the same helpers in server.py — kept in sync on
+# purpose so a preview verdict matches the verdict the save endpoint gives)
+# --------------------------------------------------------------------------
+def _to_int(s):
+    if s is None:
+        return None
+    try:
+        return int(str(s).translate(_DIGITS).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def norm_ar(t):
+    if not t:
+        return ''
+    t = str(t)
+    t = re.sub(r'[ً-ْٰـ]', '', t)
+    t = re.sub(r'[أإآٱ]', 'ا', t)
+    t = t.replace('ة', 'ه').replace('ى', 'ي').replace('ؤ', 'و').replace('ئ', 'ي')
+    t = re.sub(r'[^\w\s؀-ۿ]', ' ', t)
+    return re.sub(r'\s+', ' ', t).strip()
+
+
+FOREIGN_CHARS = re.compile(r'[Ѐ-ӿ぀-ヿ一-鿿가-힯฀-๿֐-׿]')
+
+ALLOWED_LATIN = set(x.upper() for x in """
+H HE LI BE B C N O F NE NA MG AL SI P S CL AR K CA SC TI V CR MN FE CO NI CU ZN
+GA GE AS SE BR KR RB SR Y ZR NB MO TC RU RH PD AG CD IN SN SB TE I XE CS BA LA
+CE PR ND PM SM EU GD TB DY HO ER TM YB LU HF TA W RE OS IR PT AU HG TL PB BI PO
+AT RN FR RA AC TH PA U NP PU AM CM BK CF ES FM MD NO LR RF DB SG BH HS MT DS RG
+CN NH FL MC LV TS OG
+HCL NACL H2O CO2 NO2 SO2 O2 N2 H2 NH3 CH4 NAOH H2SO4 KOH CAO MGO SIO2 AL2O3
+FE2O3 FE3O4 HNO3 H2CO3 KMNO4 K2CR2O7 CACO3 NANO3 CUSO4 ZNSO4 MGCL2 HBR HI HF
+ATP ADP AMP DNA RNA PCR HIV AIDS HPV TB BCG MRI CT ECG EEG EMG ICU ER OR BP BMI GMO
+JS TS HTML CSS HTTP HTTPS API CPU GPU RAM ROM USB AI ML IT TV PC GPS URL URI SQL
+PHP XML JSON YAML VPN DNS IP TCP UDP FTP SSH SSL TLS WIFI LAN WAN OS UI UX IDE SDK
+CEO CFO NASA ESA ISRO FBI CIA USA UK EU UN WHO IMF GDP GNP ATM PIN SMS
+CD DVD MP3 MP4 PDF JPG PNG GIF SVG CSV XLS DOC PPT IoT VR AR
+X Y Z T M J W Q V
+HZ KHZ MHZ GHZ PH DB DBM
+""".split())
+
+
+def has_foreign(text):
+    t = str(text or '')
+    if FOREIGN_CHARS.search(t):
+        return True
+    for tok in re.findall(r'[A-Za-z]+', t):
+        if tok.upper() not in ALLOWED_LATIN:
+            return True
+    return False
+
+
+def is_arabic_answer(text):
+    t = str(text or '').strip()
+    return bool(t) and not has_foreign(t)
+
+
+def canon_letter(v):
+    """توحيد شكل الحرف: الألف بكل أشكالها «أ»، و«هـ» تُكتب «ه».
+
+    الملفات المجلوبة تكتب الحرف أحياناً بالتطويل وأحياناً بدونه، واللعبة
+    تعرض «ه» — لذلك يُقبل كلا الشكلين ويُخزَّن أحدهما.
+    """
+    a = re.sub('[ً-ْٰـ]', '', str(v or '').strip())
+    if not a:
+        return ''
+    return 'أ' if a[0] in ('أ', 'إ', 'آ', 'ٱ', 'ا') else a[:1]
+
+
+def first_letter_of(answer):
+    """أول حرف من الإجابة بعد تجاهل «ال» التعريف وتوحيد الألف.
+
+    أمثلة: «الفواكه» ← «ف»، «أبو بكر» ← «أ»، «ألكسندر» ← «ك»، «الهرم» ← «ه».
+    """
+    a = re.sub('[ً-ْٰـ]', '', str(answer or '').strip())
+    if not a:
+        return ''
+    a = re.sub('[أإآٱ]', 'ا', a)
+    if a.startswith('ال') and len(a) > 2:
+        a = a[2:]
+    if not a:
+        return ''
+    return 'أ' if a[0] == 'ا' else a[:1]
+
+
+def collect_text(obj, skip_keys=None):
+    """Join every *string value* of a nested content item (mirrors server.py)."""
+    skip_keys = skip_keys or set()
+    parts = []
+
+    def walk(node, key=None):
+        if key in skip_keys:
+            return
+        if isinstance(node, str):
+            parts.append(node)
+        elif isinstance(node, dict):
+            for k, v in node.items():
+                walk(v, k)
+        elif isinstance(node, (list, tuple)):
+            for v in node:
+                walk(v, key)
+
+    walk(obj)
+    return ' '.join(parts)
+
+
+def _canon_difficulty(v):
+    t = norm_ar(v).lower()
+    if not t:
+        return ''
+    table = {
+        'سهل': 'easy', 'سهلة': 'easy', 'سهل جدا': 'easy', 'easy': 'easy',
+        'متوسط': 'medium', 'متوسطة': 'medium', 'medium': 'medium',
+        'صعب': 'hard', 'صعبة': 'hard', 'صعب جدا': 'hard', 'hard': 'hard',
+        'تحت المتوسط': 'under', 'اقل من المتوسط': 'under', 'under': 'under',
+    }
+    return table.get(t, '')
+
+
+def _as_bool(v):
+    t = norm_ar(v).strip().lower()
+    if t in ('نعم', 'صحيح', 'true', 'yes', 'y', '1', 'م', 'متاح'):
+        return True
+    if t in ('لا', 'خطأ', 'false', 'no', 'n', '0', 'غير متاح'):
+        return False
+    return None
+
+
+def _canon_points(v):
+    n = _to_int(str(v or '').replace('نقطة', ''))
+    return n if n in (200, 400, 600) else None
+
+
+def _split_list(val, seps=OPT_SEP):
+    return [x.strip() for x in seps.split(str(val or '')) if x.strip()]
+
+
+# --------------------------------------------------------------------------
+# per-game import definitions
+# --------------------------------------------------------------------------
+BASE_LABELS = {
+    'خيارات': 'options', 'خيار': 'options',
+    'عناصر': 'items',
+    'بدائل': 'alternatives', 'إجابات بديلة': 'alternatives', 'بدائل مقبولة': 'alternatives',
+    'صعوبة': 'difficulty', 'مستوى الصعوبة': 'difficulty',
+    'نقاط': 'points', 'والتصنيف': 'category', 'الفئة': 'category', 'تصنيف': 'category',
+    'تلميح': 'hint', 'شرح': 'explanation', 'تفسير': 'explanation', 'صورة': 'image',
+}
+
+GAME_IMPORT_DEFS = {
+    'letters': {
+        'name': 'حروف مع أمين', 'mode': 'qa', 'storage': 'questions',
+        'selectors': ['letter', 'difficulty'], 'mandatory': ['letter'],
+        'qa_fields': {'question': 'question', 'answer': 'answer'},
+        'labels': {}, 'max_records': 500, 'dedupe_on': 'question', 'template': 'letters',
+    },
+    'quiz': {
+        'name': 'س.ج', 'mode': 'qa', 'storage': 'questions',
+        'selectors': ['category', 'difficulty', 'points'], 'mandatory': ['category'],
+        'qa_fields': {'question': 'question', 'answer': 'answer'},
+        'labels': {}, 'max_records': 500, 'dedupe_on': 'question', 'template': 'quiz',
+    },
+    'million': {
+        'name': 'من سيربح المليون', 'mode': 'qa', 'storage': 'questions',
+        'selectors': ['category', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'question', 'answer': 'answer'},
+        'labels': {}, 'max_records': 500, 'dedupe_on': 'question', 'template': 'million',
+    },
+    'lastone': {
+        'name': 'آخر واحد!', 'mode': 'lines', 'storage': 'lastone',
+        'selectors': ['category'], 'mandatory': ['category'],
+        'qa_fields': {'question': 'answer', 'answer': 'answer'},
+        'labels': {}, 'max_records': 500, 'dedupe_on': 'answer', 'template': 'lastone',
+    },
+    'auction': {
+        'name': 'مزاد اللاعبين', 'mode': 'fields', 'storage': 'players',
+        'selectors': ['league', 'position', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'name'},
+        'labels': {
+            'الاسم': 'name', 'المركز': 'position', 'التقييم': 'rating', 'السرعة': 'pace',
+            'التسديد': 'shooting', 'التمرير': 'passing', 'المراوغة': 'dribbling',
+            'الدفاع': 'defending', 'القوة': 'physical', 'السعر': 'price',
+            'النادي': 'club', 'الدوري': 'league', 'المنتخب': 'nation', 'الحقبة': 'era',
+            'موثق': 'verified', 'صورة': 'image', 'الصعوبة': 'difficulty',
+        },
+        'max_records': 500, 'dedupe_on': 'name', 'template': 'auction',
+    },
+    'codenames': {
+        'name': 'كود نيمز', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['category', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'word', 'answer': 'meaning'},
+        'labels': {
+            'الكلمة': 'word', 'المعنى': 'meaning', 'التصنيف': 'category',
+            'مترابطة': 'related', 'ملتبسة': 'ambiguous', 'متشابهة': 'related',
+            'الصعوبة': 'difficulty', 'الحالة': 'status',
+        },
+        'list_fields': {'related': None, 'ambiguous': None},
+        'max_records': 500, 'dedupe_on': 'word', 'template': 'codenames',
+    },
+    'spy': {
+        'name': 'الجاسوس', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['category', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'word'},
+        'labels': {
+            'الكلمة': 'word', 'التصنيف': 'category', 'متشابهة': 'similar',
+            'الصعوبة': 'difficulty', 'الحالة': 'status',
+        },
+        'list_fields': {'similar': None},
+        'max_records': 500, 'dedupe_on': 'word', 'template': 'spy',
+    },
+    'link': {
+        'name': 'الرابط المشترك', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['category', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'answer': 'answer'},
+        'labels': {
+            'العناصر': 'items', 'الرابط': 'link', 'البدائل': 'alternatives',
+            'الشرح': 'explanation', 'التصنيف': 'category', 'الصعوبة': 'difficulty',
+            'الحالة': 'status',
+        },
+        'list_fields': {'items': None, 'alternatives': None},
+        'max_records': 500, 'dedupe_on': 'answer', 'template': 'link',
+    },
+    'debate': {
+        'name': 'أقنعني!', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['category', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'topic'},
+        'labels': {
+            'الموضوع': 'topic', 'المؤيد': 'side_a', 'المعارض': 'side_b',
+            'التصنيف': 'category', 'الحجج': 'key_arguments', 'المغالطات': 'fallacies',
+            'الصعوبة': 'difficulty', 'الحالة': 'status',
+        },
+        'list_fields': {'key_arguments': None, 'fallacies': None},
+        'max_records': 500, 'dedupe_on': 'topic', 'template': 'debate',
+    },
+    'whoplayer': {
+        'name': 'مين اللاعب؟', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'player'},
+        'labels': {
+            'اللاعب': 'player', 'التلميحات': 'hints', 'الصعوبة': 'difficulty',
+            'الحالة': 'status',
+        },
+        'list_fields': {'hints': None},
+        'max_records': 500, 'dedupe_on': 'player', 'template': 'whoplayer',
+    },
+    'culprit': {
+        'name': 'من الفاعل؟', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'title'},
+        'labels': {
+            'العنوان': 'title', 'الحادثة': 'incident', 'المشتبهون': 'suspects',
+            'معلومات أولية': 'initial_info', 'الأدلة': 'clues', 'الفاعل': 'culprit',
+            'التفسير': 'explanation', 'الصعوبة': 'difficulty', 'الحالة': 'status',
+        },
+        'list_fields': {'suspects': ['name', 'motive'], 'clues': ['text', 'eliminates'],
+                        'initial_info': None},
+        'max_records': 500, 'dedupe_on': 'title', 'template': 'culprit',
+    },
+    'detective': {
+        'name': 'المحقق', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'title'},
+        'labels': {
+            'العنوان': 'title', 'المقدمة': 'intro', 'المكان': 'setting',
+            'الشخصيات': 'characters', 'الأدلة': 'evidence', 'التسلسل الزمني': 'timeline',
+            'الحل': 'solution', 'الاستنتاج': 'reasoning', 'الأدلة الأساسية': 'key_evidence',
+            'الصعوبة': 'difficulty', 'الحالة': 'status',
+        },
+        'list_fields': {'characters': ['name', 'role', 'statement'],
+                        'evidence': ['id', 'text', 'hidden'],
+                        'timeline': None, 'key_evidence': None},
+        'max_records': 500, 'dedupe_on': 'title', 'template': 'detective',
+    },
+    'minebali': {
+        'name': 'مين في بالي؟', 'mode': 'fields', 'storage': 'content',
+        'selectors': ['category', 'subcategory', 'difficulty'], 'mandatory': [],
+        'qa_fields': {'question': 'name'},
+        'labels': {
+            'الاسم': 'name', 'أسماء شائعة': 'aliases', 'الفئة': 'category',
+            'الفئة الفرعية': 'subcategory', 'العمل': 'work', 'الجنس': 'gender',
+            'حقيقية': 'real', 'رئيسية': 'main', 'قدرات': 'powers', 'المجال': 'field',
+            'الدور': 'role', 'الجنسية': 'country', 'الحقبة': 'era',
+            'الصعوبة': 'difficulty', 'الحالة': 'status',
+        },
+        'list_fields': {'aliases': None},
+        'max_records': 500, 'dedupe_on': 'name', 'template': 'minebali',
+    },
+}
+
+CONTENT_REQUIRED = {
+    'codenames': ['word'], 'spy': ['word'], 'link': ['items', 'answer'],
+    'debate': ['topic'], 'whoplayer': ['player', 'hints'],
+    'culprit': ['title', 'culprit'], 'detective': ['title', 'solution'],
+    'minebali': ['name'],
+}
+PLAYER_NUMERIC = ('rating', 'pace', 'shooting', 'passing', 'dribbling', 'defending',
+                 'physical', 'price')
+
+# Arabic key → stored field name, for list items written as «مفتاح: قيمة».
+ITEM_KEYS = {
+    'culprit': {
+        'suspects': {'اسم': 'name', 'دافع': 'motive'},
+        'clues': {'نص': 'text', 'يستبعد': 'eliminates'},
+    },
+    'detective': {
+        'characters': {'اسم': 'name', 'دور': 'role', 'قول': 'statement'},
+        'evidence': {'معرف': 'id', 'نص': 'text', 'مخفي': 'hidden'},
+    },
+}
+
+
+def item_keys_for(game, field):
+    return (ITEM_KEYS.get(game) or {}).get(field) or {}
+
+
+def labels_for(game):
+    out = dict(BASE_LABELS)
+    out.update((GAME_IMPORT_DEFS.get(game) or {}).get('labels') or {})
+    # longest label first so «الفئة الفرعية» never resolves to «الفئة»
+    return dict(sorted(out.items(), key=lambda kv: -len(kv[0])))
+
+
+# --------------------------------------------------------------------------
+# marker detection
+# --------------------------------------------------------------------------
+MARKER_RE = re.compile(
+    r'(?P<kind>' + '|'.join(re.escape(w) for w in Q_WORDS + A_WORDS) + r')'
+    r'(?P<num>\s*\d{1,4})?'
+    r'(?P<sep>\s*[:.–—\-)])?',
+    re.IGNORECASE)
+
+BOUNDARY_BEFORE = ' \t|»«-–—•*،,؛;'
+
+FIELD_CACHE = {}
+
+
+def _field_re(labels):
+    key = tuple(sorted(labels))
+    rx = FIELD_CACHE.get(key)
+    if rx is None:
+        ordered = sorted(labels, key=len, reverse=True)
+        rx = re.compile(
+            r'^\s*(?:[-•*·]\s*)?(?:' + '|'.join(re.escape(x) for x in ordered) + r')'
+            r'\s*[:：]\s*(?P<val>.*)$')
+        FIELD_CACHE[key] = rx
+    return rx
+
+
+def _line_markers(line):
+    """Every question/answer marker that starts a fragment of this line.
+
+    Marker *words* only open a record at the very start of a line, so
+    «نص السؤال 1» is not read as a second question.  The single letters need a
+    number or a separator, so «جملة مفيدة» stays plain text.
+    """
+    out = []
+    stripped = line.strip()
+    leading = len(line) - len(line.lstrip(' \t-•*·'))
+    for m in MARKER_RE.finditer(line):
+        if m.start() > 0 and line[m.start() - 1] not in BOUNDARY_BEFORE:
+            continue
+        kind = m.group('kind')
+        num = _to_int(m.group('num'))
+        sep = m.group('sep')
+        if kind in WORD_FORMS:
+            if m.start() > leading:
+                continue
+        elif num is None and not sep and stripped != kind:
+            continue
+        out.append({'kind': kind, 'num': num, 'start': m.start(), 'end': m.end()})
+    return out
+
+
+def _is_q(kind):
+    return kind in Q_WORDS
+
+
+# --------------------------------------------------------------------------
+# record parsing
+# --------------------------------------------------------------------------
+def _new_record(num):
+    return {'num': num, 'question': [], 'answer': [], 'fields': {}, 'missing_answer': False}
+
+
+def _parse_records(text, labels, mode):
+    """Split pasted text into records.
+
+    Continuation lines are appended to the part that is currently open (question
+    before the answer, answer after it), so a question or an answer may
+    legitimately span several lines.
+    """
+    records, preamble = [], []
+    cur, cur_part = None, None
+    field_rx = _field_re(labels)
+
+    def add_text(frag):
+        frag = frag.strip()
+        if not frag:
+            return
+        if cur is None:
+            preamble.append(frag)
+            return
+        (cur['answer'] if cur_part == 'a' else cur['question']).append(frag)
+
+    for raw in text.split('\n'):
+        line = raw.strip()
+        if not line:
+            continue
+
+        # "- item" lines extend a labelled list whose value was left empty
+        if cur is not None and cur.get('_pending_list') and line.startswith(BULLETS):
+            field = cur['_pending_list']
+            cur['fields'][field] += '\n' + line.lstrip(''.join(BULLETS)).strip()
+            continue
+
+        ms = _line_markers(line)
+        labelled = None if ms else field_rx.match(line)
+
+        if not ms and not labelled:
+            add_text(line)
+            continue
+
+        if labelled:
+            if cur is None:
+                preamble.append(line)
+                continue
+            matched = None
+            for name, field in labels.items():
+                if line.lstrip(' \t-•*·').startswith(name):
+                    matched = (name, field)
+                    break
+            if matched:
+                val = labelled.group('val').strip()
+                if val:
+                    cur['fields'][matched[1]] = val
+                    cur['_pending_list'] = None
+                else:
+                    cur['fields'][matched[1]] = ''
+                    cur['_pending_list'] = matched[1]
+            continue
+
+        pos = 0
+        for m in ms:
+            add_text(line[pos:m['start']])
+            pos = m['end']
+            if _is_q(m['kind']):
+                if cur is not None and cur_part == 'q' and not cur['answer']:
+                    cur['missing_answer'] = True
+                cur = _new_record(m['num'])
+                records.append(cur)
+                cur_part = 'q'
+            else:
+                if cur is None:
+                    cur = _new_record(m['num'])
+                    cur['orphan'] = True
+                    records.append(cur)
+                cur_part = 'a'
+        add_text(line[pos:])
+
+    for r in records:
+        r.pop('_pending_list', None)
+    return records, preamble
+
+
+def _parse_lines(text):
+    """«آخر واحد!» — one answer per line (or س1: answer blocks)."""
+    records, preamble = [], []
+    cur = None
+    for raw in text.split('\n'):
+        line = raw.strip()
+        if not line:
+            continue
+        ms = _line_markers(line)
+        if ms:
+            m = ms[0]
+            if _is_q(m['kind']):
+                cur = _new_record(m['num'])
+                records.append(cur)
+                frag = line[m['end']:].strip()
+                if frag:
+                    cur['answer'].append(frag)
+            else:
+                if cur is None:
+                    cur = _new_record(m['num'])
+                    cur['orphan'] = True
+                    records.append(cur)
+                frag = line[m['end']:].strip()
+                if frag:
+                    cur['answer'].append(frag)
+            continue
+        if cur is None or cur['answer']:
+            cur = _new_record(None)
+            records.append(cur)
+        cur['answer'].append(line)
+    return records, preamble
+
+
+# --------------------------------------------------------------------------
+# field coercion
+# --------------------------------------------------------------------------
+def _coerce_list(val, subkeys, keymap=None):
+    """Items are separated by | ؛ ;  — key/value pairs inside an item by ، or ,"""
+    if isinstance(val, (list, tuple)):
+        # قيمة JSON جاءت قائمةً جاهزة — لا تُقسَّم نصياً
+        return [x for x in val if x not in (None, '')]
+    flat = []
+    for chunk in str(val or '').split('\n'):
+        flat.extend(x.strip() for x in LIST_SEP.split(chunk) if x.strip())
+    if not flat:
+        return []
+    if not subkeys:
+        return flat
+    keymap = keymap or {}
+    out = []
+    for it in flat:
+        obj = {}
+        for p in PAIR_SEP.split(it):
+            if ':' in p:
+                k, v = p.split(':', 1)
+                key = norm_ar(k).strip()
+                obj[keymap.get(key, key)] = v.strip()
+            elif p.strip():
+                obj[subkeys[0]] = p.strip()
+        if obj:
+            out.append(obj)
+    return out
+
+
+def _finalize_fields(rec, gdef, target, game=''):
+    """Turn raw labelled values into the stored field names of the game."""
+    out = {}
+    list_fields = gdef.get('list_fields') or {}
+    for field, val in (rec.get('fields') or {}).items():
+        if field in list_fields:
+            out[field] = _coerce_list(val, list_fields[field], item_keys_for(game, field))
+        elif field == 'difficulty':
+            out[field] = _canon_difficulty(val) or target.get('difficulty') or 'medium'
+        elif field == 'points':
+            out[field] = _canon_points(val)
+        elif field in ('options', 'alternatives', 'items'):
+            out[field] = list(val) if isinstance(val, list) else _split_list(val)
+        else:
+            out[field] = str(val).strip()
+    return out
+
+
+def _norm_target(target):
+    t = dict(target or {})
+    pts = _canon_points(t.get('points'))
+    cat = str(t.get('category_id') or t.get('category') or '').strip()
+    return {
+        # 'category' is the alias the UI sends; 'category_id' is what we store
+        'category': cat,
+        'category_id': cat,
+        'category_name': str(t.get('category_name') or '').strip(),
+        'letter': str(t.get('letter') or '').strip(),
+        'points': pts if pts is not None else 200,
+        'difficulty': _canon_difficulty(t.get('difficulty')) or 'medium',
+        'options': list(t.get('options') or []),
+        'league': str(t.get('league') or '').strip(),
+        'position': str(t.get('position') or '').strip(),
+        'subcategory': str(t.get('subcategory') or '').strip(),
+    }
+
+
+# --------------------------------------------------------------------------
+# JSON paste — a pasted file is already structured, so it is read as data
+# --------------------------------------------------------------------------
+JSON_META = {'id', 'game', 'status', 'source', 'created_at', 'updated_at'}
+JSON_LIST_KEYS = ('questions', 'items', 'records', 'data', 'results', 'rows')
+JSON_ITEM_HINTS = ('question', 'answer', 'word', 'title', 'topic', 'player',
+                   'name', 'items')
+
+
+def _looks_like_json(text):
+    """True when the pasted text is a JSON document rather than «س/ج» lines."""
+    t = str(text or '').lstrip()
+    return t.startswith('[') or t.startswith('{')
+
+
+def _json_items(raw):
+    """Pull the record list out of a pasted JSON document (list or envelope)."""
+    try:
+        data = json.loads(raw)
+    except ValueError as e:
+        raise ValueError('النص يبدو ملف JSON لكنه غير صالح: ' + str(e))
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        for k in JSON_LIST_KEYS:
+            if isinstance(data.get(k), list):
+                return data[k]
+        if any(k in data for k in JSON_ITEM_HINTS):
+            return [data]
+    raise ValueError('لم أجد قائمة أسئلة داخل الملف — توقع مصفوفة JSON')
+
+
+def _json_raw_record(item, idx, gdef):
+    """Turn one stored-shaped JSON object into the internal record shape."""
+    qmap = gdef.get('qa_fields') or {}
+    question = answer = ''
+    for src_key, dst_key in qmap.items():
+        val = str(item.get(dst_key) or '').strip()
+        if src_key == 'question' and val:
+            question = val
+        if src_key == 'answer' and val:
+            answer = val
+    if not question:
+        question = str(item.get('question') or '').strip()
+    if not answer:
+        answer = str(item.get('answer') or '').strip()
+
+    fields = {}
+    for k, v in item.items():
+        if k in JSON_META or v in (None, '', []):
+            continue
+        fields[k] = v
+    return {'num': idx + 1,
+            'question': [question] if question else [],
+            'answer': [answer] if answer else [],
+            'fields': fields, 'orphan': False}
+
+
+def _parse_json_records(raw, gdef):
+    """Parse a pasted JSON batch.  A non-object entry becomes a visible,
+    incomplete record instead of being silently dropped."""
+    items = _json_items(raw)
+    recs = []
+    for i, it in enumerate(items):
+        if isinstance(it, dict):
+            recs.append(_json_raw_record(it, i, gdef))
+        else:
+            recs.append({'num': i + 1, 'question': [], 'answer': [], 'fields': {},
+                         'orphan': False, 'bad_item': str(it)[:120]})
+    return recs, []
+
+
+# --------------------------------------------------------------------------
+# public API
+# --------------------------------------------------------------------------
+def parse_batch(text, game, target=None):
+    """Analyse pasted text for one game.  Pure function — no I/O, no AI."""
+    gdef = GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        raise ValueError('اللعبة غير مدعومة: ' + str(game))
+    tgt = _norm_target(target)
+    raw = str(text or '').replace('\r\n', '\n').replace('\r', '\n')
+    warnings = []
+
+    as_json = _looks_like_json(raw)
+    limit = MAX_JSON_CHARS if as_json else MAX_TEXT_CHARS
+    if len(raw) > limit:
+        raise ValueError('النص طويل جداً — الحد الأقصى ' + str(limit) + ' حرفاً')
+    if not raw.strip():
+        return {'game': game, 'records': [], 'summary': _summarize([]),
+                'warnings': [{'code': 'empty', 'message': 'النص فارغ'}],
+                'template': template_for(game, tgt), 'unparsed': [], 'truncated': 0,
+                'format': 'text'}
+
+    labels = labels_for(game)
+    if as_json:
+        recs, preamble = _parse_json_records(raw, gdef)
+    elif gdef['mode'] == 'lines':
+        recs, preamble = _parse_lines(raw)
+    else:
+        recs, preamble = _parse_records(raw, labels, gdef['mode'])
+
+    cap = MAX_JSON_RECORDS if as_json else gdef['max_records']
+    truncated = 0
+    if len(recs) > cap:
+        truncated = len(recs) - cap
+        recs = recs[:cap]
+        warnings.append({'code': 'too_many',
+                         'message': 'تم اقتصاص الدفعة إلى ' + str(cap) + ' سجلاً'})
+
+    records = []
+    seen_nums = {}
+    for i, r in enumerate(recs):
+        r['_game'] = game
+        rec = _build_record(r, i, gdef, tgt)
+        if rec['num'] is not None:
+            if rec['num'] in seen_nums:
+                _warn(rec, 'duplicate_number',
+                      'الرقم ' + str(rec['num']) + ' مكرر — سجّلان مختلفان أُبقيَا معاً')
+            else:
+                seen_nums[rec['num']] = rec['idx']
+        records.append(rec)
+
+    if preamble:
+        warnings.append({'code': 'preamble',
+                         'message': str(len(preamble)) + ' سطر خارج أي سجل (ترويسة أو نص غير مُرقّم)',
+                         'lines': preamble[:10]})
+
+    nums = [r['num'] for r in records if r['num'] is not None]
+    if nums and nums != list(range(min(nums), min(nums) + len(nums))):
+        warnings.append({'code': 'numbering',
+                         'message': 'الترقيم غير متسلسل — لا مشكلة، الترتيب يُعتمد على الظهور'})
+
+    return {'game': game, 'records': records, 'summary': _summarize(records),
+            'warnings': warnings, 'template': template_for(game, tgt),
+            'unparsed': preamble, 'truncated': truncated,
+            'format': 'json' if as_json else 'text'}
+
+
+def _warn(rec, code, message):
+    rec.setdefault('warnings', []).append({'code': code, 'message': message})
+
+
+def _build_record(raw, idx, gdef, tgt):
+    rec = {
+        'idx': idx,
+        'num': raw.get('num'),
+        'question': '\n'.join(raw.get('question') or []).strip(),
+        'answer': '\n'.join(raw.get('answer') or []).strip(),
+        'fields': raw.get('fields') or {},
+        'orphan': bool(raw.get('orphan')),
+        'excluded': False,
+        'duplicate': None,
+        'warnings': [],
+        'status': 'ok',
+    }
+    coerced = _finalize_fields(rec, gdef, tgt, raw.get('_game') or '')
+    rec['coerced'] = coerced
+
+    merged = dict(tgt)
+    for k, v in coerced.items():
+        if v not in (None, '', []):
+            merged[k] = v
+    if merged.get('letter'):
+        merged['letter'] = canon_letter(merged['letter'])
+    rec['merged'] = merged
+    missing = _missing_target(gdef, merged)
+
+    if rec['orphan']:
+        rec['status'] = 'orphan'
+        _warn(rec, 'orphan', 'إجابة بلا سؤال — تحتاج إلى إصلاح')
+        return rec
+
+    if gdef['mode'] == 'qa':
+        if not rec['question']:
+            rec['status'] = 'incomplete'
+            _warn(rec, 'no_question', 'لا يوجد نص سؤال')
+        elif not rec['answer']:
+            rec['status'] = 'incomplete'
+            _warn(rec, 'no_answer', 'لا توجد إجابة')
+        elif missing:
+            rec['status'] = 'needs_review'
+            _warn(rec, 'missing_target', 'الحقول المطلوبة ناقصة: ' + '، '.join(missing))
+    elif gdef['mode'] == 'lines':
+        if not rec['answer']:
+            rec['status'] = 'incomplete'
+            _warn(rec, 'no_answer', 'لا توجد إجابة')
+        elif missing:
+            rec['status'] = 'needs_review'
+            _warn(rec, 'missing_target', 'الحقول المطلوبة ناقصة: ' + '، '.join(missing))
+    else:
+        if not rec['question'] and not coerced and not rec['answer']:
+            rec['status'] = 'incomplete'
+            _warn(rec, 'no_content', 'لا يوجد محتوى')
+        elif missing:
+            rec['status'] = 'needs_review'
+            _warn(rec, 'missing_target', 'الحقول المطلوبة ناقصة: ' + '، '.join(missing))
+    return rec
+
+
+def _missing_target(gdef, merged):
+    """Mandatory target fields (category / letter) that the user left empty."""
+    out = []
+    for x in (gdef.get('mandatory') or []):
+        if x == 'category':
+            # «آخر واحد!» keys its lists by category *name*; the question games
+            # store an id.  Any of the three counts as chosen.
+            filled = (str(merged.get('category') or '').strip()
+                      or str(merged.get('category_id') or '').strip()
+                      or str(merged.get('category_name') or '').strip())
+            if not filled:
+                out.append(x)
+        elif not str(merged.get(x) or '').strip():
+            out.append(x)
+    return out
+
+# --------------------------------------------------------------------------
+# item building + validation (mirrors the server-side rules)
+# --------------------------------------------------------------------------
+def _main_value(game, item):
+    gdef = GAME_IMPORT_DEFS[game]
+    return item.get(gdef['dedupe_on']) or item.get('question') or item.get('answer') or ''
+
+
+def _option_index(ans):
+    table = {'أ': 0, 'ا': 0, 'ب': 1, 'ج': 2, 'د': 3, 'a': 0, 'b': 1, 'c': 2, 'd': 3}
+    t = norm_ar(ans).strip()
+    return table.get(t) if len(t) == 1 else None
+
+
+def build_item(game, rec, target=None):
+    """Build the stored dict for one record.  Returns (item, error)."""
+    gdef = GAME_IMPORT_DEFS[game]
+    tgt = _norm_target(target)
+    for k, v in (rec.get('merged') or {}).items():
+        if v not in (None, '', []):
+            tgt[k] = v
+    qmap = gdef.get('qa_fields') or {}
+    coerced = dict(rec.get('coerced') or {})
+
+    item = {}
+    for src, dst in qmap.items():
+        val = str(rec.get(src) or '').strip()
+        if val:
+            item[dst] = val
+    item.update({k: v for k, v in coerced.items() if v not in (None, '', [])})
+
+    if gdef['storage'] == 'questions':
+        item['game'] = game
+        if game == 'letters':
+            # ملف JSON قد يحمل أسئلة كل الحروف — حرف السجل نفسه أولى من هدف اللوحة
+            item['letter'] = canon_letter(item.get('letter') or tgt.get('letter') or '')
+        elif game == 'quiz':
+            item['category_id'] = item.get('category_id') or tgt.get('category_id') or ''
+            item['category_name'] = item.get('category_name') or tgt.get('category_name') or ''
+            if tgt.get('points') and 'points' not in item:
+                item['points'] = tgt['points']
+        elif game == 'million':
+            if tgt.get('category_id'):
+                item['category_id'] = tgt['category_id']
+                item['category_name'] = tgt.get('category_name') or ''
+            if not item.get('options'):
+                item['options'] = list(tgt.get('options') or [])
+        opts = item.get('options') or []
+        ans = str(item.get('answer', '')).strip()
+        if opts and ans:
+            idx = _option_index(ans)
+            if idx is not None and idx < len(opts) and norm_ar(opts[idx]) != norm_ar(ans):
+                item['answer'] = opts[idx]
+    elif gdef['storage'] == 'lastone':
+        item = {'answer': str(rec.get('answer') or rec.get('question') or '').strip()}
+    elif gdef['storage'] == 'players':
+        if 'verified' in item:
+            b = _as_bool(item['verified'])
+            item['verified'] = bool(b) if b is not None else False
+        for k in PLAYER_NUMERIC:
+            if k in item:
+                n = _to_int(item[k])
+                item[k] = n if n is not None else 0
+    else:
+        item['status'] = item.get('status') or 'approved'
+
+    item.setdefault('status', 'approved')
+    item.setdefault('source', 'import')
+    item['difficulty'] = _canon_difficulty(item.get('difficulty')) or 'medium'
+
+    if game == 'detective':
+        for ev in (item.get('evidence') or []):
+            if isinstance(ev, dict) and 'hidden' in ev:
+                b = _as_bool(ev['hidden'])
+                ev['hidden'] = bool(b) if b is not None else False
+    if game == 'minebali':
+        for k in ('real', 'main', 'powers'):
+            if k in item and not isinstance(item[k], bool):
+                b = _as_bool(item[k])
+                item[k] = bool(b) if b is not None else False
+    return item, None
+
+
+def validate_item(game, item):
+    """Deterministic schema check — mirrors server.py validate_question /
+    validate_content so the preview and the save agree."""
+    gdef = GAME_IMPORT_DEFS[game]
+    if gdef['storage'] == 'questions':
+        if not str(item.get('question', '')).strip():
+            return False, 'نص السؤال مطلوب'
+        if not str(item.get('answer', '')).strip():
+            return False, 'الإجابة مطلوبة'
+        if has_foreign(item.get('question', '')) or has_foreign(item.get('answer', '')):
+            return False, 'السؤال أو الإجابة يحتوي على حروف غير عربية'
+        if game == 'letters':
+            letter = canon_letter(item.get('letter'))
+            if not letter:
+                return False, 'الحرف مطلوب لأسئلة الحروف'
+            if letter not in AR_LETTERS:
+                return False, 'الحرف غير صحيح'
+            if not is_arabic_answer(item.get('answer', '')):
+                return False, 'الإجابة يجب أن تكون كلمة عربية'
+            if first_letter_of(item['answer']) != letter:
+                return False, 'الإجابة لا تبدأ بالحرف المطلوب (' + str(item.get('letter')) + ')'
+        if game == 'quiz':
+            if not item.get('category_id'):
+                return False, 'الفئة مطلوبة لأسئلة س.ج'
+            if item.get('points') not in (200, 400, 600):
+                return False, 'قيمة النقاط يجب أن تكون 200 أو 400 أو 600'
+        if game == 'million':
+            opts = item.get('options') or []
+            if len(opts) != 4:
+                return False, 'أسئلة «من سيربح المليون» تحتاج 4 خيارات بالضبط'
+            cleaned = [str(o).strip() for o in opts if str(o).strip()]
+            if len(cleaned) != 4:
+                return False, 'الخيارات الأربعة يجب أن تكون غير فارغة'
+            if len(set(cleaned)) != 4:
+                return False, 'الخيارات الأربعة يجب أن تكون مختلفة'
+            if str(item.get('answer', '')).strip() not in cleaned:
+                return False, 'الإجابة الصحيحة يجب أن تكون إحدى الخيارات الأربعة'
+        return True, ''
+    if gdef['storage'] == 'lastone':
+        a = str(item.get('answer', '')).strip()
+        if not a:
+            return False, 'الإجابة مطلوبة'
+        if has_foreign(a):
+            return False, 'الإجابة تحتوي حروفاً غير عربية'
+        return True, ''
+    if gdef['storage'] == 'players':
+        if not str(item.get('name', '')).strip():
+            return False, 'اسم اللاعب مطلوب'
+        if has_foreign(item.get('name', '')):
+            return False, 'الاسم يحتوي حروفاً غير عربية'
+        return True, ''
+    for f in CONTENT_REQUIRED.get(game, []):
+        v = item.get(f)
+        if v is None or (isinstance(v, str) and not v.strip()) or (isinstance(v, list) and not v):
+            return False, 'الحقل المطلوب ناقص: ' + f
+    SKIP = {'id', 'status', 'source', 'difficulty', 'created_at', 'updated_at',
+            'image', 'verified', 'answers_count', 'hidden'}
+    if has_foreign(collect_text(item, SKIP)):
+        return False, 'يحتوي حروفاً غير عربية'
+    if game == 'codenames' and len(str(item['word']).split()) > 3:
+        return False, 'كلمة كود نيمز يجب أن تكون قصيرة'
+    if game == 'detective':
+        if len(item.get('characters') or []) < 3:
+            return False, 'القضية تحتاج 3 شخصيات على الأقل'
+        if len(item.get('evidence') or []) < 4:
+            return False, 'القضية تحتاج 4 أدلة على الأقل'
+        ids = [str(e.get('id')) for e in (item.get('evidence') or []) if isinstance(e, dict)]
+        for k in (item.get('key_evidence') or []):
+            if str(k) not in ids:
+                return False, 'دليل أساسي غير موجود في قائمة الأدلة'
+    if game == 'culprit':
+        sus = item.get('suspects') or []
+        if len(sus) < 3:
+            return False, 'القضية تحتاج 3 مشتبهين على الأقل'
+        names = [str(s.get('name')) for s in sus if isinstance(s, dict)]
+        if str(item['culprit']) not in names:
+            return False, 'المسؤول يجب أن يكون أحد المشتبهين'
+    if game == 'link' and len(item.get('items') or []) < 3:
+        return False, 'اللغز يحتاج 3 عناصر على الأقل'
+    if game == 'whoplayer' and len(item.get('hints') or []) < 3:
+        return False, 'يحتاج 3 تلميحات على الأقل'
+    if game == 'minebali':
+        if item.get('gender') not in ('ذكر', 'أنثى'):
+            return False, 'الجنس يجب أن يكون «ذكر» أو «أنثى»'
+        for k in ('real', 'main', 'powers'):
+            if not isinstance(item.get(k), bool):
+                return False, 'الحقل ' + k + ' يجب أن يكون قيمة منطقية'
+        if not str(item.get('field', '')).strip():
+            return False, 'مجال الشخصية مطلوب'
+    return True, ''
+
+
+def record_key(game, rec_or_item):
+    """Normalised dedupe key — mirrors server.py q_key.
+
+    A parsed record keeps its values under ``coerced`` and may not carry the
+    stored field name yet, so fall back to it before the free text.
+    """
+    gdef = GAME_IMPORT_DEFS[game]
+    if gdef['storage'] == 'lastone':
+        return 'lastone|' + norm_ar(rec_or_item.get('answer') or rec_or_item.get('question'))
+    field = gdef['dedupe_on']
+    val = rec_or_item.get(field)
+    if not val:
+        val = (rec_or_item.get('coerced') or {}).get(field)
+    if not val:
+        val = rec_or_item.get('question') or rec_or_item.get('answer')
+    return game + '|' + norm_ar(val)
+
+
+def detect_duplicates(records, game, existing_keys, existing_answers=None):
+    """Flag each record against the store and against the rest of the batch.
+
+    existing_keys    — normalised keys already present in the store.
+    existing_answers — normalised answers already present in the store, so a new
+                        question that is really an old answer can be surfaced.
+    """
+    existing_keys = set(x for x in (existing_keys or set()) if x)
+    answers = set(x for x in (existing_answers or set()) if x)
+    seen = {}
+    for rec in records:
+        if rec.get('excluded'):
+            continue
+        key = record_key(game, rec)
+        dup = None
+        if key in seen:
+            dup = {'kind': 'batch', 'with': key,
+                   'why': 'مطابق لسجل آخر داخل الدفعة نفسها'}
+        elif key in existing_keys:
+            dup = {'kind': 'store', 'with': key,
+                   'why': 'موجود مسبقاً في نفس اللعبة والتصنيف'}
+        if dup is None and answers:
+            q = norm_ar(rec.get('question'))
+            if q and q in answers:
+                dup = {'kind': 'answer', 'with': q,
+                       'why': 'نص السؤال مطابق لإجابة مخزنة — تحقق أنه ليس تكراراً'}
+        if dup:
+            rec['duplicate'] = dup
+            _warn(rec, 'duplicate', dup['why'])
+        seen[key] = key
+    return records
+
+
+# --------------------------------------------------------------------------
+# summary
+# --------------------------------------------------------------------------
+def _summarize(records):
+    s = {'detected': len(records), 'valid': 0, 'incomplete': 0, 'needs_review': 0,
+         'orphan': 0, 'duplicates': 0, 'excluded': 0, 'to_add': 0, 'not_savable': 0}
+    for r in records:
+        st = r.get('status')
+        if st == 'ok':
+            s['valid'] += 1
+        elif st == 'incomplete':
+            s['incomplete'] += 1
+        elif st == 'orphan':
+            s['orphan'] += 1
+        elif st == 'needs_review':
+            s['needs_review'] += 1
+        if r.get('duplicate'):
+            s['duplicates'] += 1
+        if r.get('excluded'):
+            s['excluded'] += 1
+        if r.get('savable') is False:
+            s['not_savable'] += 1
+        if (st == 'ok' and not r.get('excluded') and not r.get('duplicate')
+                and r.get('savable', True)):
+            s['to_add'] += 1
+    s['problems'] = s['incomplete'] + s['orphan'] + s['needs_review']
+    return s
+
+
+def summarize(records):
+    """Public summary of a parsed batch (counts used by the preview table)."""
+    return _summarize(records)
+
+
+def validate_and_build(game, rec, target=None):
+    """Build the stored item for a record and check it against the game schema.
+
+    Returns (item, ok, error).  The UI uses this so the preview shows the exact
+    verdict the save endpoint will give.
+    """
+    item, _ = build_item(game, rec, target)
+    ok, err = validate_item(game, item)
+    return item, ok, err
+
+
+# --------------------------------------------------------------------------
+# templates
+# --------------------------------------------------------------------------
+def template_for(game, target=None):
+    gdef = GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        return ''
+    t = _norm_target(target)
+    kind = gdef.get('template')
+    cat = t.get('category_name') or ''
+    letter = t.get('letter') or ''
+
+    if kind == 'quiz':
+        return (
+            '# لعبة س.ج — الفئة: ' + (cat or '<اختر الفئة>') + '\n'
+            '# كل سجل يبدأ بـ «س» ورقمه، وسطر الإجابة يبدأ بـ «ج» ورقمه.\n'
+            '# الأسطر الفارغة بين السجلات مسموح بها.\n'
+            '# الصعوبة والنقاط تُؤخذان من الأعلى ما لم تكتبهما داخل السجل.\n\n'
+            'س1: ما الكوكب المعروف بالكوكب الأحمر؟\nج1: المريخ\n\n'
+            'س2: ما الغاز الذي تمتصه النباتات خلال عملية البناء الضوئي؟\nج2: ثاني أكسيد الكربون\n\n'
+            'س3: ما الوحدة الأساسية لقياس شدة التيار الكهربائي؟\nج3: الأمبير\n'
+            '# نقاط: 400\n'
+            '# صعوبة: سهل\n'
+            '# بدائل: عيار | مقياس\n'
+            '# تلميح: وحدة تحمل اسم عالم فرنسي\n'
+            '# شرح: سُميت نسبة إلى أندريه أمبير\n')
+    if kind == 'letters':
+        return (
+            '# لعبة حروف مع أمين — الحرف: ' + (letter or '<اختر الحرف>') + '\n'
+            '# شرط اللعبة: الإجابة يجب أن تبدأ بالحرف المختار.\n\n'
+            'س1: ما هو أسرع حيوان بري في العالم؟\nج1: الفهد\n\n'
+            'س2: ما اسم الصحابي الملقب بأمين هذه الأمة؟\nج2: أبو عبيدة\n\n'
+            'س3: ما اسم أكبر صحراء في العالم؟\nج3: الصحراء الكبرى\n')
+    if kind == 'million':
+        return (
+            '# من سيربح المليون — كل سجل يحتاج 4 خيارات والإجابة الصحيحة.\n'
+            '# تكتب الخيارات في سطر «خيارات» مفصولة بـ | ، والجواب في «ج».\n'
+            '# يمكنك كتابة الجواب كحرف الخيار (أ / ب / ج / د) وسيُحوَّل تلقائياً.\n\n'
+            'س1: ما هو الحيوان الملقب بسفينة الصحراء؟\n'
+            'خيارات: الحصان | الجمل | الفيل | الغزال\nج1: الجمل\n\n'
+            'س2: كم عدد كواكب المجموعة الشمسية؟\n'
+            'خيارات: سبعة | ثمانية | تسعة | عشرة\nج2: ب\n')
+    if kind == 'lastone':
+        return (
+            '# لعبة آخر واحد! — التصنيف: ' + (cat or '<اختر التصنيف>') + '\n'
+            '# كل سطر إجابة صحيحة تنتمي إلى التصنيف. لا حاجة لترقيم.\n'
+            '# يمكنك أيضاً الترقيم بـ «س1:» إن أردت.\n\n'
+            'السعودية\nمصر\nالأردن\nالبرازيل\n')
+    if kind == 'codenames':
+        return (
+            '# كود نيمز — كل سجل كلمة واحدة مع حقولها.\n'
+            '# القوائم تُفصل بـ | داخل السطر، أو تكتب في أسطر تبدأ بـ -\n\n'
+            'س1:\nالكلمة: صقر\nالمعنى: طائر جارح سريع البصر\nالتصنيف: حيوانات\nمترابطة: نسر | عقاب | شاهين\nملتبسة: عصفور | حمامة\n\n'
+            'س2:\nالكلمة: مفتاح\n'
+            '- المعنى: أداة تفتح الأقفال\n'
+            '- التصنيف: أدوات\n')
+    if kind == 'spy':
+        return (
+            '# الجاسوس — كل سجل كلمة سرية.\n\n'
+            'س1:\nالكلمة: بحر\nالتصنيف: طبيعة\nمتشابهة: نهر | محيط\n\n'
+            'س2:\nالكلمة: ساعة\nالتصنيف: أدوات\nمتشابهة: تقويم | منبه\n')
+    if kind == 'link':
+        return (
+            '# الرابط المشترك — عناصر الرابط مفصولة بـ | والإجابة في «ج».\n\n'
+            'س1:\nالعناصر: تفاح | موز | برتقال | عنب\nالرابط: أنواع الفواكه\nج1: الفواكه\n\n'
+            'س2:\nالعناصر: مطر | ثلج | برد | بَرَد\nالرابط: حالات تساقط الماء\nج2: المطر والثلج والبرد\n')
+    if kind == 'debate':
+        return (
+            '# أقنعني! — كل سجل موضوع نقاش متوازن.\n\n'
+            'س1:\nالموضوع: هل يجب إطالة اليوم الدراسي؟\nالمؤيد: استيعاب أكبر للمفاهيم\nالمعارض: إرهاق الطلاب وقلة النشاط\nالتصنيف: تعليم\nالحجج: التعلم العميق | الوقت الإضافي للتدريب\nالمغالطات: الاحتكام إلى العاطفة\n')
+    if kind == 'whoplayer':
+        return (
+            '# مين اللاعب؟ — كل سجل لاعب مع تلميحاته المتدرجة (3 على الأقل).\n\n'
+            'س1:\nاللاعب: محمد صلاح\nالتلميحات: لاعب أفريقى في أوروبا | يجيد الجناح الأيمن | يلعب في الدوري الإنجليزي | مصري | هداف ليفربول\n')
+    if kind == 'culprit':
+        return (
+            '# من الفاعل؟ — كل سجل قضية. عناصر القوائم بـ | وبداخلها مفتاح: قيمة\n'
+            '# مفاتيح المشتبهين: اسم ، دافع — ومفاتيح الأدلة: نص ، يستبعد\n\n'
+            'س1:\nالعنوان: حادثة المتحف\nالحادثة: سقطت لوحة من مكانها ليلاً\n'
+            'المشتبهون: أحمد ، دافع: يحتاج المال | سارة ، دافع: خلاف مع المسؤول | خالد ، دافع: غير موجود\n'
+            'الأدلة: نص: كاميرا مغلقة عند منتصف الليل ، يستبعد: أحمد | نص: بصمة سارة على الإطار ، يستبعد: لا أحد\n'
+            'الفاعل: سارة\nالتفسير: بصمتها على الإطار مع غياب شخص آخر\n')
+    if kind == 'detective':
+        return (
+            '# المحقق — كل سجل قضية كاملة.\n'
+            '# مفاتيح الشخصيات: اسم ، دور ، قول — ومفاتيح الأدلة: معرف ، نص ، مخفي\n\n'
+            'س1:\nالعنوان: سرقة المعمل\nالمقدمة: اختفى جهاز من المعمل بعد الدوام\nالمكان: معمل المدرسة\n'
+            'الشخصيات: اسم: أحمد ، دور: مشرف ، قول: غادرت قبل الجميع | اسم: سارة ، دور: طالبة ، قول: رأيت أحمد | اسم: خالد ، دور: حارس ، قول: الباب كان مغلقاً\n'
+            'الأدلة: معرف: d1 ، نص: باب مفتوح ، مخفي: لا | معرف: d2 ، نص: الكاميرا تعمل ، مخفي: لا | معرف: d3 ، نص: مفتاح احتياطي مفقود ، مخفي: نعم | معرف: d4 ، نص: آثار طين ، مخفي: نعم\n'
+            'التسلسل الزمني: إغلاق المعمل | دخول شخص | خروج الجهاز\n'
+            'الحل: خالد استخدم المفتاح الاحتياطي\nالاستنتاج: من يملك المفتاح الاحتياطي وحده من يستطيع الدخول\n'
+            'الأدلة الأساسية: d3 | d4\n')
+    if kind == 'minebali':
+        return (
+            '# مين في بالي؟ — كل سجل شخصية. الحقول المنطقية: نعم / لا\n\n'
+            'س1:\nالاسم: صلاح الدين الأيوبي\nأسماء شائعة: صلاح الدين\nالفئة: شخصيات تاريخية\nالفئة الفرعية: قادة\nالعمل: قائد عسكري وسياسي\nالجنس: ذكر\nحقيقية: نعم\nرئيسية: نعم\nقدرات: لا\nالمجال: قائد\nالدور: شخصية تاريخية\nالجنسية: كردي\nالحقبة: القرن الثاني عشر\n')
+    if kind == 'auction':
+        return (
+            '# مزاد اللاعبين — كل سجل لاعب. الحقول الرقمية اختيارية.\n\n'
+            'س1:\nالاسم: فينيسيوس جونيور\nالمركز: LW\nالتقييم: 88\nالسرعة: 92\nالتسديد: 80\nالتمرير: 84\nالمراوغة: 90\nالدفاع: 40\nالقوة: 66\nالسعر: 95\nالنادي: ريال مدريد\nالدوري: laliga\nالمنتخب: البرازيل\nالحقبة: current\n')
+    return '# ' + gdef['name'] + '\n'

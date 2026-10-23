@@ -8,7 +8,7 @@
   "defaultBoardCells": 28,
   "soundDefault": true,
   "aiBatchSize": 10,
-  "aiModel": "nvidia/nemotron-3-super-120b-a12b",
+  "aiModel": "nvidia/nemotron-3-ultra-550b-a55b",
   "aiUnderPct": 20,
   "aiMediumPct": 60,
   "aiHardPct": 20

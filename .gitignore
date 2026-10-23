@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 backup-*
 backup-templates/
+data/questions/import_history.json
+data/questions/import_draft.json

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ألعاب أمين | AMEEN GAMES - Main Server"""
-import os, json, uuid, re, tempfile, hashlib, time
+import os, json, uuid, re, tempfile, hashlib, time, csv, io
+import qimport as qi
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, redirect
 
@@ -38,7 +39,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED_IMG = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'}
 MAX_IMG_BYTES = 4 * 1024 * 1024
 
-AR_LETTERS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','هـ','و','ي']
+AR_LETTERS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي']
 
 
 def load_json(path, default=None):
@@ -171,22 +172,27 @@ def is_arabic_answer(text):
 
 
 def first_letter_of(answer):
-    """Return the first letter of an Arabic answer, ignoring the definite article 'ال'.
-    Normalizes alif variants (أإآ → أ) and ه → هـ to match AR_LETTERS.
-    Example: 'الفواكه' → 'ف', 'آسيا' → 'أ', 'الهرم' → 'هـ'"""
-    a = norm_ar(answer)
+    """أول حرف من الإجابة بعد تجاهل «ال» التعريف وتوحيد الألف.
+
+    أمثلة: «الفواكه» ← «ف»، «أبو بكر» ← «أ»، «ألكسندر» ← «ك»، «الهرم» ← «ه».
+    """
+    a = re.sub('[ً-ْٰـ]', '', str(answer or '').strip())
     if not a:
         return ''
-    # Normalize alif variants
-    if a[0] in ('إ', 'آ', 'ٱ'):
-        a = 'أ' + a[1:]
-    # Normalize ه to هـ to match AR_LETTERS
-    if a[0] == 'ه':
-        a = 'هـ' + a[1:]
-    # Remove definite article 'ال'
+    a = re.sub('[أإآٱ]', 'ا', a)
     if a.startswith('ال') and len(a) > 2:
         a = a[2:]
-    return a[:1] if a else ''
+    if not a:
+        return ''
+    return 'أ' if a[0] == 'ا' else a[:1]
+
+
+def canon_letter(v):
+    """توحيد شكل الحرف: الألف بكل أشكالها «أ»، و«هـ» تُكتب «ه»."""
+    a = re.sub('[ً-ْٰـ]', '', str(v or '').strip())
+    if not a:
+        return ''
+    return 'أ' if a[0] in ('أ', 'إ', 'آ', 'ٱ', 'ا') else a[:1]
 
 
 def validate_question(q):
@@ -200,15 +206,16 @@ def validate_question(q):
     if has_foreign(q.get('question', '')) or has_foreign(q.get('answer', '')):
         return False, 'السؤال أو الإجابة يحتوي على حروف غير عربية'
     if game == 'letters':
-        if not q.get('letter'):
+        letter = canon_letter(q.get('letter'))
+        if not letter:
             return False, 'الحرف مطلوب لأسئلة الحروف'
-        if q['letter'] not in AR_LETTERS:
+        if letter not in AR_LETTERS:
             return False, 'الحرف غير صحيح'
         ans = str(q.get('answer', '')).strip()
         if not is_arabic_answer(ans):
             return False, 'الإجابة يجب أن تكون كلمة عربية'
-        if first_letter_of(ans) != norm_ar(q['letter']):
-            return False, 'الإجابة لا تبدأ بالحرف المطلوب (' + str(q['letter']) + ')'
+        if first_letter_of(ans) != letter:
+            return False, 'الإجابة لا تبدأ بالحرف المطلوب (' + str(q.get('letter')) + ')'
     if game == 'quiz':
         if q.get('points') not in (200, 400, 600):
             return False, 'قيمة النقاط يجب أن تكون 200 أو 400 أو 600'
@@ -375,6 +382,7 @@ def import_questions():
     body = request.get_json(silent=True) or {}
     incoming = body.get('questions') or []
     mode = body.get('mode', 'preview')
+    replace = bool(body.get('replace'))
     if not isinstance(incoming, list):
         return jsonify({'error': 'صيغة الملف غير صحيحة'}), 400
 
@@ -401,6 +409,14 @@ def import_questions():
         valid.append(q)
 
     if mode == 'apply':
+        removed = 0
+        if replace and new:
+            # استبدال: إسقاط أسئلة الألعاب الموجودة في الملف ثم إضافة ملفه
+            games = {q.get('game') for q in new if q.get('game')}
+            if games:
+                kept = [q for q in all_qs if q.get('game') not in games]
+                removed = len(all_qs) - len(kept)
+                all_qs = kept
         for q in new:
             q['id'] = gen_id()
             q.setdefault('created_at', now())
@@ -413,7 +429,8 @@ def import_questions():
                     all_qs[i] = q
         save_json(Q_FILE, all_qs)
 
-    return jsonify({'mode': mode, 'total_in_file': len(incoming),
+    return jsonify({'mode': mode, 'replace': replace, 'removed': removed,
+                    'total_in_file': len(incoming),
                     'valid_count': len(valid), 'invalid_count': len(invalid),
                     'duplicate_count': len(dups), 'new_count': len(new),
                     'update_count': len(upd),
@@ -526,6 +543,513 @@ def reject_pending():
     save_json(Q_FILE, all_qs)
     return jsonify({'ok': True,
                     'remaining': len([q for q in all_qs if q.get('status') == 'pending_review'])})
+
+
+# ============ BATCH IMPORT (manual paste — local parsing, no AI) ============
+# إضافة مئة سؤال أو أكثر دفعة واحدة. التحليل يتم في qimport.py بمنطق برمجي
+# محض، والخادم هنا مسؤول عن التحقق من المخطط والحفظ الآمن.
+IMPORT_HISTORY_FILE = os.path.join(DATA, 'questions', 'import_history.json')
+IMPORT_DRAFT_FILE = os.path.join(DATA, 'questions', 'import_draft.json')
+IMPORT_JOBS = {}          # idempotency_key -> stored result (يمنع الحفظ المزدوج)
+IMPORT_MAX_HISTORY = 50
+LASTONE_FILE = os.path.join(BASE_DIR, 'static', 'lastone_categories.json')
+LASTONE_MIRROR = os.path.join(DATA, 'lastone_categories.json')
+
+
+def lastone_data():
+    return load_json(LASTONE_FILE, {}) or {}
+
+
+def _lastone_category(target):
+    """«آخر واحد!» يخزّن قوائمه باسم التصنيف لا بمعرّفه."""
+    t = target or {}
+    return str(t.get('category_name') or t.get('category') or '').strip()
+
+
+def _import_existing_keys(game, target=None):
+    """مفاتيح التكرار والإجابات الموجودة فعلاً في هدف الاستيراد."""
+    gdef = qi.GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        return set(), set()
+    keys, answers = set(), set()
+    tgt = target or {}
+
+    if gdef['storage'] == 'questions':
+        letter = str(tgt.get('letter') or '').strip()
+        cat = str(tgt.get('category_id') or tgt.get('category') or '').strip()
+        for q in load_json(Q_FILE, []):
+            if q.get('game') != game:
+                continue
+            if game == 'letters' and letter and q.get('letter') != letter:
+                continue
+            if game == 'quiz' and cat and q.get('category_id') != cat:
+                continue
+            keys.add(q_key(q))
+            answers.add(norm_ar(q.get('answer', '')))
+        return keys, answers
+
+    if gdef['storage'] == 'content':
+        cat = str(tgt.get('category_name') or tgt.get('category') or '').strip()
+        for it in load_json(content_file(game), []):
+            if cat and str(it.get('category') or '').strip() != cat:
+                continue
+            keys.add(qi.record_key(game, it))
+            answers.add(norm_ar(str(it.get('answer') or '')))
+        return keys, answers
+
+    if gdef['storage'] == 'players':
+        for p in load_json(PL_FILE, []):
+            keys.add(qi.record_key(game, p))
+            answers.add(norm_ar(p.get('name', '')))
+        return keys, answers
+
+    for arr in lastone_data().values():
+        for a in arr:
+            answers.add(norm_ar(a))
+            keys.add('lastone|' + norm_ar(a))
+    return keys, answers
+
+
+def _import_history():
+    h = load_json(IMPORT_HISTORY_FILE, [])
+    return h if isinstance(h, list) else []
+
+
+def _import_log(entry):
+    h = _import_history()
+    h.insert(0, entry)
+    save_json(IMPORT_HISTORY_FILE, h[:IMPORT_MAX_HISTORY])
+
+
+def _import_difficulties(game):
+    if game == 'quiz':
+        return [{'id': 'under', 'name': 'تحت المتوسط'}, {'id': 'easy', 'name': 'سهل'},
+                {'id': 'medium', 'name': 'متوسط'}, {'id': 'hard', 'name': 'صعب'}]
+    return [{'id': 'easy', 'name': 'سهل'}, {'id': 'medium', 'name': 'متوسط'},
+            {'id': 'hard', 'name': 'صعب'}]
+
+
+@app.route('/api/import/games', methods=['GET'])
+def import_games():
+    """كل لعبة موجودة فعلاً في المشروع، مع محدداتها وعدّاداتها الحقيقية."""
+    cats = load_json(CAT_FILE, [])
+    cat_counts, letter_counts = {}, {}
+    for q in load_json(Q_FILE, []):
+        if q.get('game') == 'quiz':
+            cid = q.get('category_id')
+            cat_counts[cid] = cat_counts.get(cid, 0) + 1
+        elif q.get('game') == 'letters':
+            lt = q.get('letter')
+            letter_counts[lt] = letter_counts.get(lt, 0) + 1
+    players = load_json(PL_FILE, [])
+    leagues = sorted({p.get('league') for p in players if p.get('league')})
+
+    out = []
+    for g, d in qi.GAME_IMPORT_DEFS.items():
+        entry = {'game': g, 'name': d['name'], 'mode': d['mode'], 'storage': d['storage'],
+                 'selectors': d['selectors'], 'mandatory': d['mandatory'],
+                 'max_records': d['max_records'],
+                 'template': qi.template_for(g, {}),
+                 'difficulties': _import_difficulties(g)}
+        if 'category' in d['selectors']:
+            if g == 'lastone':
+                entry['categories'] = [{'id': k, 'name': k, 'count': len(v)}
+                                       for k, v in lastone_data().items()]
+            elif d['storage'] == 'content':
+                vals = sorted({str(x.get('category') or '').strip() for x in
+                               load_json(content_file(g), []) if x.get('category')})
+                entry['categories'] = [{'id': v, 'name': v} for v in vals]
+            else:
+                entry['categories'] = [{'id': c['id'], 'name': c['name'],
+                                        'count': cat_counts.get(c['id'], 0)} for c in cats]
+        if 'letter' in d['selectors']:
+            entry['letters'] = [{'id': l, 'name': l, 'count': letter_counts.get(l, 0)}
+                                for l in AR_LETTERS]
+        if 'points' in d['selectors']:
+            entry['points'] = [{'id': p, 'name': str(p)} for p in (200, 400, 600)]
+        if 'league' in d['selectors']:
+            entry['leagues'] = [{'id': l, 'name': LEAGUE_NAMES.get(l, l)} for l in leagues]
+        if 'position' in d['selectors']:
+            entry['positions'] = [{'id': p, 'name': p} for p in PLAYER_POSITIONS]
+        if 'subcategory' in d['selectors']:
+            vals = sorted({str(x.get('subcategory') or '').strip() for x in
+                           load_json(content_file(g), []) if x.get('subcategory')})
+            entry['subcategories'] = [{'id': v, 'name': v} for v in vals]
+        out.append(entry)
+    return jsonify({'games': out})
+
+
+@app.route('/api/import/parse', methods=['POST'])
+def import_parse():
+    """تحليل النص محلياً: فصل السجلات والتحقق منها وكشف التكرار."""
+    body = request.get_json(silent=True) or {}
+    game = str(body.get('game') or '')
+    text = str(body.get('text') or '')
+    target = body.get('target') or {}
+    mode = str(body.get('mode') or 'append')
+    try:
+        res = qi.parse_batch(text, game, target)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+    # في وضع الاستبدال السجل المكرر هو نفسه السجل الذي سيُحلّ محله، فمقارنته
+    # بالمخزن خطأ: ستظهر كل الدفعة «مكررة» ولا يُحفظ شيء.
+    if mode == 'replace':
+        keys, answers = set(), set()
+    else:
+        keys, answers = _import_existing_keys(game, target)
+    qi.detect_duplicates(res['records'], game, keys, answers)
+
+    # حكم المخطط على كل سجل، ليكون ما تراه المعاينة هو ما سيقوله الحفظ
+    for rec in res['records']:
+        if rec.get('status') in ('ok', 'needs_review'):
+            item, ok, err = qi.validate_and_build(game, rec, target)
+            rec['savable'] = ok
+            rec['schema_error'] = err
+        else:
+            rec['savable'] = False
+            rec['schema_error'] = ''
+    res['summary'] = qi.summarize(res['records'])
+    return jsonify(res)
+
+
+@app.route('/api/import/check', methods=['POST'])
+def import_check():
+    """حكم المخطط على سجل واحد بعد تعديله في المعاينة."""
+    body = request.get_json(silent=True) or {}
+    game = str(body.get('game') or '')
+    rec = body.get('record')
+    if game not in qi.GAME_IMPORT_DEFS or not isinstance(rec, dict):
+        return jsonify({'error': 'سجل غير صالح'}), 400
+    item, ok, err = qi.validate_and_build(game, rec, body.get('target') or {})
+    return jsonify({'savable': ok, 'schema_error': err, 'item': item})
+
+
+@app.route('/api/import/summary', methods=['POST'])
+def import_summary():
+    body = request.get_json(silent=True) or {}
+    records = body.get('records') or []
+    if not isinstance(records, list):
+        return jsonify({'error': 'صيغة غير صحيحة'}), 400
+    return jsonify(qi.summarize(records))
+
+
+def _import_scope_pred(game, target, scope):
+    """محمول على عناصر المخزن: True حين ينتمي العنصر إلى نطاق الحذف المختار."""
+    t = target or {}
+    if scope != 'target':
+        return lambda x: x.get('game') == game
+    if game == 'letters':
+        lt = canon_letter(t.get('letter'))
+        return lambda x: x.get('game') == 'letters' and canon_letter(x.get('letter')) == lt
+    if game == 'quiz':
+        cid = str(t.get('category_id') or t.get('category') or '').strip()
+        return lambda x: x.get('game') == 'quiz' and str(x.get('category_id') or '').strip() == cid
+    if game == 'million':
+        return lambda x: x.get('game') == 'million'
+    if game == 'auction':
+        lg = str(t.get('league') or '').strip()
+        pos = str(t.get('position') or '').strip()
+
+        def _auction(x):
+            if lg and str(x.get('league') or '').strip() != lg:
+                return False
+            return not (pos and str(x.get('position') or '').strip() != pos)
+        return _auction
+    cat = str(t.get('category_name') or t.get('category') or '').strip()
+    return lambda x: str(x.get('category') or '').strip() == cat
+
+
+def _import_store_items(game):
+    """عناصر مخزن اللعبة الواحدة (دون عناصر الألعاب الأخرى)."""
+    gdef = qi.GAME_IMPORT_DEFS.get(game) or {}
+    if gdef.get('storage') == 'questions':
+        return [q for q in load_json(Q_FILE, []) if q.get('game') == game]
+    if gdef.get('storage') == 'content':
+        return load_json(content_file(game), [])
+    if gdef.get('storage') == 'players':
+        return load_json(PL_FILE, [])
+    return []
+
+
+def _import_counts(game, target, scope):
+    """(عدد ما سيُحذف، إجمالي الموجود) — للمعاينة قبل أي كتابة."""
+    gdef = qi.GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        return 0, 0
+    if gdef['storage'] == 'lastone':
+        data = lastone_data()
+        total = sum(len(v) for v in data.values())
+        if scope == 'target':
+            return len(data.get(_lastone_category(target), [])), total
+        return total, total
+    items = _import_store_items(game)
+    if scope != 'target':
+        return len(items), len(items)
+    pred = _import_scope_pred(game, target, 'target')
+    return sum(1 for x in items if pred(x)), len(items)
+
+
+def _import_write(game, target, items, mode='append', scope='game'):
+    """كتابة واحدة ذرّية لكل مخزن.
+
+    ترجع (عدد المحفوظ، قائمة الفاشل، المتجاوز، عدد المحذوف). وضع «الاستبدال»
+    يحذف أسئلة النطاق أولاً ثم يضيف الدفعة، فيكون المخزن مطابقاً للدفعة.
+    """
+    gdef = qi.GAME_IMPORT_DEFS[game]
+    ts = now()
+    deleted = 0
+    replacing = mode == 'replace'
+
+    if gdef['storage'] == 'questions':
+        store = load_json(Q_FILE, [])
+        if replacing:
+            pred = _import_scope_pred(game, target, scope)
+            kept = [q for q in store if not pred(q)]
+            deleted = len(store) - len(kept)
+            store = kept
+        for it in items:
+            it['id'] = gen_id()
+            it['created_at'] = ts
+            it['updated_at'] = ts
+            it['status'] = 'approved'
+            it['source'] = 'import'
+            store.append(it)
+        save_json(Q_FILE, store)
+        return len(items), [], 0, deleted
+
+    if gdef['storage'] == 'content':
+        store = load_json(content_file(game), [])
+        if replacing:
+            pred = _import_scope_pred(game, target, scope)
+            kept = [x for x in store if not pred(x)]
+            deleted = len(store) - len(kept)
+            store = kept
+        for it in items:
+            it['id'] = gen_id()
+            it['created_at'] = ts
+            it['updated_at'] = ts
+            it.setdefault('status', 'approved')
+            it['source'] = 'import'
+            store.append(it)
+        save_json(content_file(game), store)
+        return len(items), [], 0, deleted
+
+    if gdef['storage'] == 'players':
+        store = load_json(PL_FILE, [])
+        if replacing:
+            pred = _import_scope_pred(game, target, scope)
+            kept = [x for x in store if not pred(x)]
+            deleted = len(store) - len(kept)
+            store = kept
+        for it in items:
+            it['id'] = gen_id()
+            it.setdefault('verified', False)
+            store.append(it)
+        save_json(PL_FILE, store)
+        return len(items), [], 0, deleted
+
+    # «آخر واحد!»: الإجابات تُضاف إلى قائمة التصنيف المستهدف
+    cat = _lastone_category(target)
+    data = lastone_data()
+    if not cat:
+        raise ValueError('التصنيف مطلوب')
+    if cat not in data:
+        raise ValueError('التصنيف غير موجود في آخر واحد')
+    if replacing:
+        if scope == 'game':
+            for k in list(data.keys()):
+                deleted += len(data[k])
+            data = {}
+        else:
+            deleted = len(data.get(cat, []))
+    arr = [str(x).strip() for x in data.get(cat, []) if str(x).strip()]
+    seen = {norm_ar(x) for x in arr}
+    saved = 0
+    for it in items:
+        a = str(it.get('answer') or '').strip()
+        if not a or norm_ar(a) in seen:
+            continue
+        seen.add(norm_ar(a))
+        arr.append(a)
+        saved += 1
+    data[cat] = arr
+    save_json(LASTONE_FILE, data)
+    if os.path.abspath(LASTONE_MIRROR) != os.path.abspath(LASTONE_FILE):
+        save_json(LASTONE_MIRROR, data)
+    return saved, [], len(items) - saved, deleted
+
+
+@app.route('/api/import/save', methods=['POST'])
+def import_save():
+    """تحقق من كل السجلات أولاً، ثم اكتب الدفعة كاملة في عملية واحدة."""
+    body = request.get_json(silent=True) or {}
+    game = str(body.get('game') or '')
+    target = body.get('target') or {}
+    records = body.get('records') or []
+    keep_dups = set(body.get('keep_duplicates') or [])
+    idem = str(body.get('idempotency_key') or '').strip()
+    allow_partial = bool(body.get('allow_partial'))
+    mode = str(body.get('mode') or 'append')
+    scope = str(body.get('scope') or 'game')
+    if mode not in ('append', 'replace'):
+        return jsonify({'error': 'وضع حفظ غير معروف'}), 400
+    if scope not in ('game', 'target'):
+        scope = 'game'
+
+    gdef = qi.GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        return jsonify({'error': 'اللعبة غير مدعومة'}), 400
+    if not isinstance(records, list) or not records:
+        return jsonify({'error': 'لا توجد سجلات للحفظ'}), 400
+    if idem and idem in IMPORT_JOBS:
+        cached = dict(IMPORT_JOBS[idem])
+        cached['cached'] = True
+        return jsonify(cached)
+
+    accepted, rejected = [], []
+    for rec in records:
+        if not isinstance(rec, dict):
+            rejected.append({'idx': None, 'question': '', 'reason': 'سجل غير صالح'})
+            continue
+        if rec.get('excluded'):
+            continue
+        if rec.get('duplicate') and rec.get('idx') not in keep_dups:
+            continue
+        item, ok, err = qi.validate_and_build(game, rec, target)
+        if not ok:
+            rejected.append({
+                'idx': rec.get('idx'),
+                'question': str(item.get('question') or item.get('name')
+                                or item.get('word') or '')[:120],
+                'reason': err})
+            continue
+        accepted.append(item)
+
+    # لا معاملة حقيقية في مخزن JSON، لذا القاعدة: تحقق قبل الكتابة + كتابة
+    # ذرّية واحدة. عند رفض أي سجل لا يُكتب شيء، فيكون إعادة المحاولة آمنة.
+    if rejected and not allow_partial:
+        return jsonify({'ok': False, 'strategy': 'validate-then-atomic-write',
+                        'saved': 0, 'failed': len(rejected), 'rejected': rejected,
+                        'error': 'بعض السجلات غير صالحة — لم يُحفظ شيء'}), 400
+    if not accepted:
+        return jsonify({'ok': False, 'saved': 0, 'failed': len(rejected),
+                        'rejected': rejected, 'error': 'لا توجد سجلات صالحة'}), 400
+
+    try:
+        saved, failed, skipped, deleted = _import_write(game, target, accepted, mode, scope)
+    except Exception as e:
+        return jsonify({'ok': False, 'saved': 0, 'failed': len(accepted),
+                        'rejected': rejected,
+                        'error': 'فشل الحفظ في طبقة التخزين: ' + str(e),
+                        'strategy': 'validate-then-atomic-write'}), 500
+
+    result = {'ok': True, 'strategy': 'validate-then-atomic-write',
+              'game': game, 'target': target, 'mode': mode, 'scope': scope,
+              'requested': len(records), 'accepted': len(accepted),
+              'saved': saved, 'skipped': skipped, 'deleted': deleted,
+              'failed': len(failed) + len(rejected),
+              'rejected': rejected + failed,
+              'duplicates_kept': len(keep_dups)}
+    _import_log({'id': gen_id(), 'at': now(), 'game': game, 'target': target,
+                 'mode': mode, 'scope': scope, 'deleted': deleted,
+                 'requested': len(records), 'saved': saved,
+                 'excluded': len(records) - len(accepted),
+                 'duplicates_kept': len(keep_dups), 'ok': True})
+    if idem:
+        IMPORT_JOBS[idem] = result
+        if len(IMPORT_JOBS) > 200:
+            for k in list(IMPORT_JOBS)[:100]:
+                IMPORT_JOBS.pop(k, None)
+    return jsonify(result)
+
+
+@app.route('/api/import/count', methods=['GET'])
+def import_count():
+    """عدد الأسئلة التي سيحذفها وضع الاستبدال — للمعاينة قبل الكتابة."""
+    # هذا المسار GET، وbefore_request لا يحرس القراءات — يُحرس هنا حتى لا
+    # يقرأ عدد أسئلة البنك أي زائر.
+    if not is_admin(request):
+        return jsonify({'error': 'غير مصرّح — سجّل الدخول إلى لوحة الإدارة'}), 401
+    game = request.args.get('game', '')
+    gdef = qi.GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        return jsonify({'error': 'اللعبة غير مدعومة'}), 400
+    scope = request.args.get('scope') or 'game'
+    if scope not in ('game', 'target'):
+        scope = 'game'
+    target = {'letter': request.args.get('letter', ''),
+              'category_id': request.args.get('category', ''),
+              'category_name': request.args.get('category', ''),
+              'league': request.args.get('league', ''),
+              'position': request.args.get('position', '')}
+    deleted, total = _import_counts(game, target, scope)
+    return jsonify({'game': game, 'scope': scope, 'deleted': deleted, 'total': total})
+
+
+@app.route('/api/import/history', methods=['GET'])
+def import_history():
+    return jsonify({'history': _import_history()[:IMPORT_MAX_HISTORY]})
+
+
+@app.route('/api/import/draft', methods=['GET'])
+def import_draft_get():
+    return jsonify(load_json(IMPORT_DRAFT_FILE, {}) or {})
+
+
+@app.route('/api/import/draft', methods=['POST'])
+def import_draft_save():
+    """حفظ النص الملصوق مؤقتاً إذا تعطّل التحليل قبل أن يُفقد."""
+    body = request.get_json(silent=True) or {}
+    save_json(IMPORT_DRAFT_FILE, {
+        'at': now(),
+        'game': str(body.get('game') or ''),
+        'target': body.get('target') or {},
+        'text': str(body.get('text') or '')[:qi.MAX_TEXT_CHARS]})
+    return jsonify({'ok': True})
+
+
+@app.route('/api/import/template', methods=['GET'])
+def import_template():
+    game = request.args.get('game', '')
+    target = {'category_name': request.args.get('category', ''),
+              'letter': request.args.get('letter', '')}
+    return qi.template_for(game, target), 200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="ameen-import-template.txt"'}
+
+
+@app.route('/api/import/export', methods=['POST'])
+def import_export():
+    """تصدير السجلات المستخرجة JSON أو CSV — بلا حفظ في الخادم."""
+    body = request.get_json(silent=True) or {}
+    records = body.get('records') or []
+    fmt = str(body.get('format') or 'json')
+    fields = ['idx', 'num', 'question', 'answer', 'status', 'duplicate',
+              'schema_error', 'options', 'difficulty']
+    rows = []
+    for r in records:
+        if r.get('excluded'):
+            continue
+        merged = r.get('merged') or {}
+        rows.append({
+            'idx': r.get('idx'), 'num': r.get('num'),
+            'question': r.get('question') or '', 'answer': r.get('answer') or '',
+            'status': r.get('status'),
+            'duplicate': (r.get('duplicate') or {}).get('why', ''),
+            'schema_error': r.get('schema_error') or '',
+            'options': ' | '.join((r.get('coerced') or {}).get('options') or []),
+            'difficulty': merged.get('difficulty', '')})
+    if fmt == 'csv':
+        buf = io.StringIO()
+        w = csv.DictWriter(buf, fieldnames=fields, extrasaction='ignore')
+        w.writeheader()
+        for row in rows:
+            w.writerow(row)
+        return buf.getvalue().encode('utf-8-sig'), 200, {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="ameen-import.csv"'}
+    return jsonify({'records': rows, 'count': len(rows)})
 
 
 # ============ CATEGORIES ============
@@ -1305,7 +1829,7 @@ def admin_check():
 
 # Any write to content APIs requires an admin token. Public gameplay stays open:
 # players only need to READ questions, and the AI match judge is part of gameplay.
-GUARDED_PREFIXES = ('/api/questions', '/api/categories', '/api/players',
+GUARDED_PREFIXES = ('/api/questions', '/api/categories', '/api/players', '/api/import',
                     '/api/pending', '/api/settings', '/api/ai/generate',
                     '/api/ai/run', '/api/ai/job', '/api/ai/progress/clear')
 

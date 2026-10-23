@@ -39,6 +39,35 @@
 .gen-card .hint{color:var(--text-secondary);font-size:.85rem;margin-bottom:.8rem;line-height:1.8}
 #loginGate{max-width:420px;margin:4rem auto;background:var(--bg-card);border:1px solid var(--border-color);
   border-radius:18px;padding:2rem;text-align:center}
+
+/* ================= استيراد دفعة أسئلة ================= */
+.imp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:.7rem;margin-bottom:.9rem}
+.imp-grid .form-group{margin:0}
+.imp-template{border:1px solid var(--border-color);border-radius:12px;overflow:hidden;margin-bottom:.9rem;background:var(--bg-secondary)}
+.imp-template-head{display:flex;gap:.6rem;align-items:center;padding:.55rem .8rem;background:var(--bg-card);border-bottom:1px solid var(--border-color);font-size:.85rem;flex-wrap:wrap}
+.imp-template pre{margin:0;padding:.7rem .85rem;font-size:.78rem;max-height:200px;overflow:auto;white-space:pre-wrap;direction:rtl;text-align:right;line-height:1.8;font-family:inherit}
+#impText{width:100%;font-family:inherit;font-size:.92rem;line-height:1.9;direction:rtl;resize:vertical}
+.imp-text-meta{display:flex;gap:.5rem;align-items:center;margin-top:.5rem;flex-wrap:wrap;font-size:.8rem;color:var(--text-secondary)}
+.imp-actions{display:flex;gap:.6rem;align-items:center;margin-top:.9rem;flex-wrap:wrap}
+.imp-mode{border:1px solid var(--border-color);border-radius:12px;padding:.8rem .9rem;
+  margin-bottom:.9rem;background:var(--bg-secondary)}
+.imp-mode-row{display:flex;gap:.7rem;flex-wrap:wrap}
+.imp-mode-row .form-group{flex:1;min-width:180px}
+.imp-mode-note{margin-top:.6rem;font-size:.82rem;line-height:1.9}
+.imp-mode-note b{color:var(--accent-red)}
+.imp-warn{margin-top:.7rem;display:grid;gap:.35rem}
+.imp-warn div{background:var(--bg-secondary);border-right:3px solid var(--accent-gold);padding:.45rem .7rem;border-radius:8px;font-size:.82rem;line-height:1.7}
+.imp-preview-bar{display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;flex-wrap:wrap}
+.imp-row-excluded{opacity:.5}
+.imp-edit{width:100%;min-width:200px;resize:vertical;font-family:inherit}
+.imp-target{font-size:.78rem;color:var(--text-secondary);line-height:1.6}
+.imp-result-ok{border-right:4px solid var(--accent-green);background:var(--bg-secondary);padding:.8rem 1rem;border-radius:10px;margin-bottom:.8rem;line-height:1.9}
+.imp-result-bad{border-right:4px solid var(--accent-red);background:var(--bg-secondary);padding:.8rem 1rem;border-radius:10px;margin-bottom:.8rem;line-height:1.9}
+.imp-reject{margin:.35rem 0;font-size:.82rem;color:var(--text-secondary);line-height:1.7}
+@media (max-width:640px){
+  .imp-grid{grid-template-columns:1fr 1fr}
+  .imp-actions .btn{flex:1;justify-content:center}
+}
 </style>
 
 <!-- ============ LOGIN GATE ============ -->
@@ -76,6 +105,7 @@
         <div class="tab" data-tab="ai" onclick="switchTab('ai')">الذكاء الاصطناعي</div>
         <div class="tab" data-tab="rev" onclick="switchTab('rev')">المراجعة <span id="revBadge" class="badge badge-gold">0</span></div>
         <div class="tab" data-tab="aiq" onclick="switchTab('aiq')"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> أسئلة الذكاء <span id="aiqBadge" class="badge badge-blue">0</span></div>
+        <div class="tab" data-tab="import" onclick="switchTab('import')"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg> استيراد دفعة</div>
         <div class="tab" data-tab="content" onclick="switchTab('content')"><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg> إدارة المحتوى</div>
         <div class="tab" data-tab="settings" onclick="switchTab('settings')">إعدادات الألعاب</div>
     </div>
@@ -122,6 +152,119 @@
         </div>
         <div class="pager" id="pager"></div>
     </div>
+
+<!-- ===== BATCH IMPORT ===== -->
+<div id="tab-import" style="display:none;">
+    <div class="gen-card">
+        <h3><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg> إضافة الأسئلة يدويًا — استيراد دفعة</h3>
+        <div class="hint">
+            الصق مئة سؤال أو أكثر دفعة واحدة من أي مصدر. التحليل يتم داخل الموقع بمنطق برمجي محض —
+            لا ذكاء اصطناعي ولا اشتراك. تختار اللعبة، تختار الفئة أو الحرف، تلصق النص،
+            ثم تضغط «تحليل النص» وتراجع كل سجل قبل الحفظ.
+        </div>
+
+        <div class="imp-grid">
+            <div class="form-group"><label for="impGame">اللعبة</label><select id="impGame" onchange="impGameChanged()"></select></div>
+        </div>
+
+        <div class="imp-grid" id="impTargetGrid"></div>
+
+        <div class="imp-mode">
+            <div class="imp-mode-row">
+                <div class="form-group" style="margin:0">
+                    <label for="impMode">وضع الحفظ</label>
+                    <select id="impMode" onchange="impModeChanged()">
+                        <option value="append">إضافة أسئلة جديدة — لا يُحذف أي سؤال</option>
+                        <option value="replace">استبدال — حذف الأسئلة القديمة ثم إضافة الجديدة</option>
+                    </select>
+                </div>
+                <div class="form-group" id="impScopeWrap" style="display:none;margin:0">
+                    <label for="impScope">نطاق الحذف</label>
+                    <select id="impScope" onchange="impModeChanged()">
+                        <option value="game">اللعبة كاملة</option>
+                        <option value="target">الحرف / الفئة المحدد فقط</option>
+                    </select>
+                </div>
+            </div>
+            <div class="imp-mode-note" id="impModeNote"></div>
+        </div>
+
+        <div class="imp-template">
+            <div class="imp-template-head">
+                <b>قالب اللعبة</b>
+                <span id="impTplName" style="color:var(--text-secondary)"></span>
+                <span style="flex:1"></span>
+                <button class="btn btn-secondary btn-sm" onclick="impCopyTemplate()"><svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg> نسخ القالب</button>
+                <button class="btn btn-secondary btn-sm" onclick="impDownloadTemplate()"><svg class="ico" aria-hidden="true"><use href="#i-chevron-down"></use></svg> تنزيل القالب</button>
+            </div>
+            <pre id="impTpl">—</pre>
+        </div>
+
+        <div class="form-group">
+            <label for="impText">نص الأسئلة</label>
+            <textarea id="impText" rows="12" placeholder="س1: ما الكوكب المعروف بالكوكب الأحمر؟&#10;ج1: المريخ&#10;&#10;س2: ما الغاز الذي تمتصه النباتات؟&#10;ج2: ثاني أكسيد الكربون"></textarea>
+            <div class="imp-text-meta">
+                <span id="impTextInfo">0 سطر · 0 حرف</span>
+                <span style="flex:1"></span>
+                <button class="btn btn-secondary btn-sm" onclick="impSample()">عرض مثال</button>
+                <button class="btn btn-secondary btn-sm" onclick="impExportRecords('json')">تصدير JSON</button>
+                <button class="btn btn-secondary btn-sm" onclick="impExportRecords('csv')">تصدير CSV</button>
+                <button class="btn btn-danger btn-sm" onclick="impClear()">مسح النص</button>
+            </div>
+        </div>
+
+        <div class="imp-actions">
+            <button class="btn btn-primary btn-lg" id="impAnalyzeBtn" onclick="impAnalyze()">
+                <svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> تحليل النص
+            </button>
+            <span id="impBusy" style="display:none;color:var(--accent-gold);font-weight:700">⏳ جاري التحليل...</span>
+        </div>
+        <div id="impWarnings"></div>
+    </div>
+
+    <div class="gen-card" id="impSummaryCard" style="display:none;">
+        <h3>نتيجة التحليل</h3>
+        <div class="library-stats" id="impSummary"></div>
+        <div id="impUnparsed" style="font-size:.82rem;color:var(--text-secondary);line-height:1.8"></div>
+        <div class="imp-final" id="impFinal" style="margin-top:.8rem;font-size:.88rem;line-height:2"></div>
+        <div class="imp-actions">
+            <button class="btn btn-success btn-lg" id="impSaveBtn" onclick="impSave()">
+                <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ الأسئلة
+            </button>
+            <button class="btn btn-secondary" onclick="impAnalyze()">إعادة التحليل</button>
+            <span id="impSaveHint" style="font-size:.8rem;color:var(--text-secondary)"></span>
+        </div>
+    </div>
+
+    <div class="gen-card" id="impPreviewCard" style="display:none;">
+        <h3>معاينة السجلات</h3>
+        <div class="imp-preview-bar">
+            <span id="impPreviewCount" style="font-size:.85rem"></span>
+            <span style="flex:1"></span>
+            <button class="btn btn-secondary small-btn" onclick="impHideProblems(0)">إظهار كل السجلات</button>
+            <button class="btn btn-secondary small-btn" onclick="impHideProblems(1)">إظهار الصالح فقط</button>
+        </div>
+        <div style="overflow-x:auto;max-height:62vh;overflow-y:auto;border:1px solid var(--border-color);border-radius:10px">
+            <table class="tbl">
+                <thead><tr>
+                    <th>#</th><th>السؤال</th><th>الإجابة</th><th>اللعبة / التصنيف</th>
+                    <th>الحالة</th><th>تحذيرات</th><th>إجراءات</th>
+                </tr></thead>
+                <tbody id="impBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="gen-card" id="impResultCard" style="display:none;">
+        <h3>نتيجة الحفظ</h3>
+        <div id="impResult"></div>
+    </div>
+
+    <div class="gen-card">
+        <h3>آخر عمليات الاستيراد</h3>
+        <div id="impHistory" class="log">—</div>
+    </div>
+</div>
 
     <!-- ===== CATEGORIES ===== -->
     <div id="tab-cat" style="display:none;">
@@ -500,6 +643,23 @@
     </div>
 </div>
 
+<!-- تعديل سجل داخل المعاينة -->
+<div id="impEditModal" class="modal-overlay">
+    <div class="modal" style="max-width:660px;">
+        <h2 id="impEditTitle">تعديل سجل</h2>
+        <div class="form-group"><label for="impEditQ">السؤال</label><textarea id="impEditQ" rows="3"></textarea></div>
+        <div class="form-group"><label for="impEditA">الإجابة</label><textarea id="impEditA" rows="2"></textarea></div>
+        <div class="form-group" id="impEditOptsWrap" style="display:none;">
+            <label for="impEditOpts">الخيارات (افصل بينها بـ |)</label>
+            <input type="text" id="impEditOpts">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" id="impEditSave">حفظ التعديل</button>
+            <button class="btn btn-secondary" onclick="closeModal('impEditModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <div id="confirmModal" class="modal-overlay">
     <div class="modal" style="max-width:420px;text-align:center;">
         <h3 id="cfmTitle">تأكيد</h3>
@@ -574,7 +734,7 @@ function confirmBox(title, body, fn) {
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 function switchTab(t) {
-    ['q','cat','players','ai','rev','aiq','content','settings'].forEach(function (x) {
+    ['q','cat','players','ai','rev','aiq','content','settings','import'].forEach(function (x) {
         var el = document.getElementById('tab-' + x);
         if (el) el.style.display = (x === t) ? 'block' : 'none';
     });
@@ -586,6 +746,7 @@ function switchTab(t) {
     if (t === 'content') loadContent();
     if (t === 'ai') { testAI(); loadModels(); loadMilCount(); }
     if (t === 'settings') loadSettings();
+    if (t === 'import') impInit();
 }
 
 function card(n, l, c) {
@@ -1721,6 +1882,625 @@ function finishAiJob() {
 }
 
 function stopAiJob() { finishAiJob(); showToast('تم إيقاف التوليد'); }
+
+
+/* =========================================================================
+   استيراد دفعة أسئلة — لصق نص، تحليل محلي، معاينة، حفظ آمن
+   ========================================================================= */
+var IMP = {defs: [], def: null, game: '', target: {}, records: [], template: '',
+           summary: {}, warnings: [], unparsed: [], saving: false, idem: '', saved: false};
+var IMP_DRAFT_KEY = 'ameen_import_draft_v1';
+var IMP_HIDE = 0;   /* 0 = كل السجلات، 1 = الصالح فقط */
+
+function impInit() {
+    fetch('/api/import/games').then(function (r) { return r.json(); }).then(function (d) {
+        IMP.defs = d.games || [];
+        document.getElementById('impGame').innerHTML = IMP.defs.map(function (g) {
+            return '<option value="' + g.game + '">' + esc(g.name) + '</option>';
+        }).join('');
+        impGameChanged();
+    }).catch(function () { showToast('تعذر تحميل قائمة الألعاب', 'error'); });
+
+    var ta = document.getElementById('impText');
+    ta.addEventListener('input', function () {
+        document.getElementById('impTextInfo').textContent =
+            ta.value.split('\n').length + ' سطر · ' + ta.value.length + ' حرف';
+        IMP.saved = false;
+        try {
+            localStorage.setItem(IMP_DRAFT_KEY, JSON.stringify({
+                at: Date.now(), game: IMP.game, target: impReadTarget(), text: ta.value}));
+        } catch (e) {}
+    });
+    ta.addEventListener('blur', impSaveDraft);
+    window.addEventListener('beforeunload', function (e) {
+        if (IMP.records.length && !IMP.saved) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    impRestoreDraft();
+    impLoadHistory();
+    impModeChanged();
+}
+
+function impSelHtml(id, label, opts, withCount) {
+    var o = (opts || []).map(function (x) {
+        var n = esc(x.name || x.id);
+        if (withCount && x.count != null) n += ' (' + x.count + ')';
+        return '<option value="' + esc(x.id) + '" data-name="' + esc(x.name || x.id) + '">' + n + '</option>';
+    }).join('');
+    return '<div class="form-group"><label for="' + id + '">' + label + '</label>' +
+           '<select id="' + id + '" onchange="impTargetChanged()">' + o + '</select></div>';
+}
+
+function impGameChanged() {
+    IMP.game = document.getElementById('impGame').value;
+    IMP.records = []; IMP.saved = false; IMP.idem = '';
+    var def = null;
+    IMP.defs.forEach(function (x) { if (x.game === IMP.game) def = x; });
+    IMP.def = def;
+    var grid = document.getElementById('impTargetGrid');
+    if (!def) { grid.innerHTML = ''; return; }
+    var s = def.selectors, html = '';
+    if (s.indexOf('category') >= 0) {
+        html += impSelHtml('impCat', IMP.game === 'lastone' ? 'التصنيف' : 'الفئة',
+                           def.categories || [], true);
+    }
+    if (s.indexOf('letter') >= 0) html += impSelHtml('impLetter', 'الحرف', def.letters || [], true);
+    if (s.indexOf('points') >= 0) html += impSelHtml('impPoints', 'النقاط', def.points || [], false);
+    if (s.indexOf('league') >= 0) html += impSelHtml('impLeague', 'الدوري', def.leagues || [], false);
+    if (s.indexOf('position') >= 0) html += impSelHtml('impPosition', 'المركز', def.positions || [], false);
+    if (s.indexOf('subcategory') >= 0) html += impSelHtml('impSub', 'التصنيف الفرعي', def.subcategories || [], false);
+    if (s.indexOf('difficulty') >= 0) html += impSelHtml('impDiff', 'الصعوبة', def.difficulties || [], false);
+    grid.innerHTML = html;
+    document.getElementById('impTplName').textContent = def.name + (def.max_records ? ' — حتى ' + def.max_records + ' سجلاً' : '');
+    impTargetChanged();
+    impModeChanged();
+}
+
+function impMode() {
+    var el = document.getElementById('impMode');
+    return el ? el.value : 'append';
+}
+function impScope() {
+    var el = document.getElementById('impScope');
+    return el ? el.value : 'game';
+}
+function impScopeName() {
+    return impScope() === 'game' ? 'اللعبة كاملة' : 'الحرف/الفئة المحدد فقط';
+}
+function impModeChanged() {
+    var replacing = impMode() === 'replace';
+    var sw = document.getElementById('impScopeWrap');
+    var note = document.getElementById('impModeNote');
+    if (sw) sw.style.display = replacing ? '' : 'none';
+    if (note) {
+        note.innerHTML = replacing
+            ? '<b>وضع الاستبدال:</b> ستُحذف الأسئلة القديمة في النطاق المختار نهائياً، ' +
+              'ثم تُضاف أسئلة الدفعة مكانها.'
+            : 'وضع الإضافة: تُضاف الأسئلة الجديدة إلى المخزن الحالي دون تعديل أو حذف أي سؤال سابق.';
+    }
+    IMP.saved = false;
+    impLoadCount();
+    /* كشف التكرار يختلف بين الوضعين: في الاستبدال السجل المكرر هو نفسه من سيُستبدل */
+    if (IMP.records.length) impAnalyze();
+}
+function impLoadCount() {
+    if (impMode() !== 'replace') return;
+    var t = impReadTarget();
+    var qs = '?game=' + encodeURIComponent(IMP.game) + '&scope=' + impScope();
+    if (t.letter) qs += '&letter=' + encodeURIComponent(t.letter);
+    if (t.category) qs += '&category=' + encodeURIComponent(t.category);
+    fetch('/api/import/count' + qs, {headers: {'X-Admin-Token': TOKEN}})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var el = document.getElementById('impModeNote');
+            if (!el || impMode() !== 'replace') return;
+            el.innerHTML = '<b>وضع الاستبدال:</b> سيُحذف <b>' + d.deleted +
+                '</b> سؤالاً قديماً من ' + impScopeName() +
+                ' (الموجود حالياً: ' + d.total + ')، ثم تُضاف أسئلة الدفعة مكانها.';
+        }).catch(function () {});
+}
+
+function impReadTarget() {
+    var def = IMP.def || {selectors: []};
+    var s = def.selectors, t = {};
+    function v(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+    function nm(id) {
+        var el = document.getElementById(id);
+        return (el && el.selectedIndex >= 0)
+            ? (el.options[el.selectedIndex].getAttribute('data-name') || '') : '';
+    }
+    if (s.indexOf('category') >= 0) {
+        var cid = v('impCat');
+        if (IMP.game === 'lastone') { t.category_name = cid; t.category = cid; }
+        else { t.category_id = cid; t.category = cid; t.category_name = nm('impCat'); }
+    }
+    if (s.indexOf('letter') >= 0) t.letter = v('impLetter');
+    if (s.indexOf('points') >= 0) t.points = parseInt(v('impPoints'), 10) || 200;
+    if (s.indexOf('league') >= 0) t.league = v('impLeague');
+    if (s.indexOf('position') >= 0) t.position = v('impPosition');
+    if (s.indexOf('subcategory') >= 0) t.subcategory = v('impSub');
+    if (s.indexOf('difficulty') >= 0) t.difficulty = v('impDiff');
+    IMP.target = t;
+    return t;
+}
+
+function impTargetChanged() {
+    impReadTarget();
+    var t = IMP.target;
+    var qs = '?game=' + encodeURIComponent(IMP.game);
+    if (t.category_name) qs += '&category=' + encodeURIComponent(t.category_name);
+    if (t.letter) qs += '&letter=' + encodeURIComponent(t.letter);
+    fetch('/api/import/template' + qs).then(function (r) { return r.text(); }).then(function (txt) {
+        document.getElementById('impTpl').textContent = txt;
+    }).catch(function () {});
+    IMP.saved = false;
+    impModeChanged();
+}
+
+function impAnalyze() {
+    var text = document.getElementById('impText').value;
+    if (!text.trim()) { showToast('الصق نص الأسئلة أولاً', 'error'); return; }
+    var btn = document.getElementById('impAnalyzeBtn');
+    btn.disabled = true;
+    document.getElementById('impBusy').style.display = 'inline';
+    var t = impReadTarget();
+    impSaveDraft();
+    authFetch('/api/import/parse', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game: IMP.game, text: text, target: t, mode: impMode()})})
+        .then(function (r) { return r.json().then(function (d) { return {status: r.status, d: d}; }); })
+        .then(function (res) {
+            btn.disabled = false;
+            document.getElementById('impBusy').style.display = 'none';
+            if (res.status !== 200 || res.d.error) {
+                showToast(res.d.error || 'فشل التحليل', 'error');
+                return;
+            }
+            IMP.records = res.d.records || [];
+            IMP.summary = res.d.summary || {};
+            IMP.warnings = res.d.warnings || [];
+            IMP.unparsed = res.d.unparsed || [];
+            IMP.idem = '';
+            IMP.saved = false;
+            impRender();
+            document.getElementById('impSummaryCard').scrollIntoView({behavior: 'smooth', block: 'start'});
+        })
+        .catch(function () {
+            btn.disabled = false;
+            document.getElementById('impBusy').style.display = 'none';
+            showToast('خطأ في الاتصال بالخادم', 'error');
+        });
+}
+
+function impTargetLabel() {
+    var t = IMP.target || {};
+    var parts = [];
+    if (IMP.game === 'letters') parts.push('حرف ' + (t.letter || '—'));
+    else if (t.category_name) parts.push(t.category_name);
+    else if (t.category) parts.push(t.category);
+    if (t.points) parts.push(t.points + ' نقطة');
+    return parts.join(' · ') || '—';
+}
+
+function impRender() {
+    var s = IMP.summary || {};
+    document.getElementById('impSummaryCard').style.display = 'block';
+    document.getElementById('impPreviewCard').style.display = 'block';
+    document.getElementById('impSummary').innerHTML =
+        card(s.detected, 'سجل مكتشف') + card(s.valid, 'صالح', 'var(--accent-green)') +
+        card(s.incomplete, 'غير مكتمل', 'var(--accent-gold)') +
+        card(s.needs_review, 'يحتاج مراجعة', 'var(--accent-gold)') +
+        card(s.orphan, 'إجابة بلا سؤال', 'var(--accent-gold)') +
+        card(s.duplicates, 'مكرر', 'var(--accent-red)') +
+        card(s.not_savable, 'لن يُحفظ', 'var(--accent-red)') +
+        card(s.to_add, 'متوقع إضافته', 'var(--accent-blue)');
+
+    document.getElementById('impWarnings').innerHTML = (IMP.warnings || []).length
+        ? '<div class="imp-warn">' + IMP.warnings.map(function (x) {
+            return '<div>' + esc(x.message) + '</div>';
+        }).join('') + '</div>'
+        : '';
+
+    var un = IMP.unparsed || [];
+    document.getElementById('impUnparsed').innerHTML = un.length
+        ? 'أسطر خارج أي سجل (تُعرض للمراجعة ولا تُخمَّن): ' + un.map(esc).join(' · ')
+        : '';
+
+    impRenderFinal();
+    impRenderPreview();
+}
+
+function impWillAdd() {
+    return IMP.records.filter(function (r) {
+        return !r.excluded && r.savable !== false && (!r.duplicate || impKeepChecked(r.idx));
+    });
+}
+
+function impRenderFinal() {
+    var r = IMP.records;
+    var add = impWillAdd();
+    var excluded = r.filter(function (x) { return x.excluded; }).length;
+    var dupSkipped = r.filter(function (x) { return !x.excluded && x.duplicate && !impKeepChecked(x.idx); }).length;
+    var unsavable = r.filter(function (x) { return !x.excluded && x.savable === false; }).length;
+    var t = IMP.target || {};
+    var where = (IMP.def ? IMP.def.name : IMP.game) +
+        (IMP.game === 'letters' ? ' — حرف ' + (t.letter || '—')
+                                : (t.category_name ? ' — ' + t.category_name : ''));
+    document.getElementById('impFinal').innerHTML =
+        '<div><b>اللعبة المستهدفة:</b> ' + esc(where) + '</div>' +
+        '<div><b>عدد الأسئلة التي ستضاف:</b> ' + add.length + '</div>' +
+        '<div><b>عدد السجلات المستبعدة:</b> ' + excluded + '</div>' +
+        '<div><b>مكررات لم تُحتفظ بها:</b> ' + dupSkipped + '</div>' +
+        '<div><b>سجلات لن تُحفظ (غير صالحة):</b> ' + unsavable + '</div>' +
+        (impMode() === 'replace'
+            ? '<div><b>وضع الحفظ:</b> استبدال — ' + esc(impScopeName()) + '</div>'
+            : '');
+    var btn = document.getElementById('impSaveBtn');
+    btn.disabled = add.length === 0;
+    document.getElementById('impSaveHint').textContent = add.length
+        ? (impMode() === 'replace'
+            ? 'سيُحذف ما في النطاق المختار ثم تُحفظ الدفعة مكانه — لا يمكن التراجع.'
+            : 'سيُحفظ في المخزن الحالي — لن يُعدَّل أو يُحذف أي سؤال سابق.')
+        : 'لا توجد سجلات صالحة للحفظ.';
+}
+
+function impKeepChecked(idx) {
+    var el = document.getElementById('impKeep-' + idx);
+    return !!el && el.checked;
+}
+
+function impRow(r) {
+    var stMap = {ok: ['صالح', 'badge-green'], incomplete: ['غير مكتمل', 'badge-gold'],
+                 orphan: ['إجابة بلا سؤال', 'badge-gold'], needs_review: ['يحتاج مراجعة', 'badge-gold']};
+    var st = stMap[r.status] || [r.status, 'badge-blue'];
+    var warns = (r.warnings || []).map(function (w) { return esc(w.message); }).join('<br>');
+    if (r.schema_error) {
+        warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red)">' + esc(r.schema_error) + '</span>';
+    } else if (r.savable === false) {
+        warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red)">لن يُحفظ</span>';
+    }
+    var dup = '';
+    if (r.duplicate) {
+        dup = '<label style="display:block;font-size:.78rem;margin-top:.3rem">' +
+               '<input type="checkbox" id="impKeep-' + r.idx + '" onchange="impRenderFinal()"> ' +
+               'الاحتفاظ به</label>';
+    }
+    return '<tr class="' + (r.excluded ? 'imp-row-excluded' : '') + '">' +
+        '<td style="white-space:nowrap">' + (r.num != null ? r.num : (r.idx + 1)) + '</td>' +
+        '<td style="min-width:200px">' + esc(r.question || '—') + '</td>' +
+        '<td style="min-width:150px">' + esc(r.answer || '—') + '</td>' +
+        '<td class="imp-target">' + esc(impTargetLabel()) + '</td>' +
+        '<td><span class="badge ' + st[1] + '">' + st[0] + '</span></td>' +
+        '<td style="min-width:190px">' + (warns ? warns + (dup ? '<br>' + dup : '') : (dup || '—')) + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="btn btn-secondary small-btn" onclick="impEdit(' + r.idx + ')">تعديل</button> ' +
+          (r.excluded
+            ? '<button class="btn btn-success small-btn" onclick="impToggleExclude(' + r.idx + ')">استعادة</button>'
+            : '<button class="btn btn-danger small-btn" onclick="impToggleExclude(' + r.idx + ')">استبعاد</button>') +
+        '</td></tr>';
+}
+
+function impRenderPreview() {
+    var rows = IMP_HIDE
+        ? IMP.records.filter(function (r) { return !r.excluded && r.savable !== false; })
+        : IMP.records;
+    document.getElementById('impPreviewCount').textContent =
+        'معروض ' + rows.length + ' من ' + IMP.records.length + ' سجلاً';
+    document.getElementById('impBody').innerHTML = rows.length
+        ? rows.map(impRow).join('')
+        : '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">لا سجلات</td></tr>';
+}
+
+function impHideProblems(v) { IMP_HIDE = v; impRenderPreview(); }
+
+function impToggleExclude(idx) {
+    IMP.records[idx].excluded = !IMP.records[idx].excluded;
+    impRefresh();
+}
+
+function impEdit(idx) {
+    var r = IMP.records[idx];
+    document.getElementById('impEditTitle').textContent =
+        'تعديل السجل ' + (r.num != null ? r.num : (idx + 1));
+    document.getElementById('impEditQ').value = r.question || '';
+    document.getElementById('impEditA').value = r.answer || '';
+    var opts = (r.coerced || {}).options || [];
+    document.getElementById('impEditOptsWrap').style.display = opts.length ? 'block' : 'none';
+    document.getElementById('impEditOpts').value = opts.join(' | ');
+    document.getElementById('impEditSave').onclick = function () { impEditSave(idx); };
+    openModal('impEditModal');
+}
+
+function impEditSave(idx) {
+    var r = IMP.records[idx];
+    r.question = document.getElementById('impEditQ').value;
+    r.answer = document.getElementById('impEditA').value;
+    var ov = document.getElementById('impEditOpts').value.trim();
+    if (ov) {
+        if (!r.coerced) r.coerced = {};
+        if (!r.merged) r.merged = {};
+        r.coerced.options = ov.split('|').map(function (s) { return s.trim(); }).filter(Boolean);
+        r.merged.options = r.coerced.options;
+    }
+    r.warnings = (r.warnings || []).filter(function (w) {
+        return w.code !== 'no_answer' && w.code !== 'no_question';
+    });
+    closeModal('impEditModal');
+    impRecheck(idx);
+}
+
+function impRecheck(idx) {
+    var r = IMP.records[idx];
+    authFetch('/api/import/check', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game: IMP.game, target: IMP.target, record: r})})
+        .then(function (x) { return x.json(); })
+        .then(function (d) {
+            r.savable = d.savable;
+            r.schema_error = d.schema_error || '';
+            impRefresh();
+        })
+        .catch(function () { impRefresh(); });
+}
+
+function impRefresh() {
+    authFetch('/api/import/summary', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({records: IMP.records})})
+        .then(function (x) { return x.json(); })
+        .then(function (s) { IMP.summary = s; impRender(); })
+        .catch(function () { impRender(); });
+}
+
+function impSave() {
+    if (IMP.saving) return;
+    var add = impWillAdd();
+    if (!add.length) { showToast('لا توجد سجلات صالحة للحفظ', 'error'); return; }
+    var t = IMP.target || {};
+    var where = (IMP.def ? IMP.def.name : IMP.game) +
+        (IMP.game === 'letters' ? ' — حرف ' + (t.letter || '—')
+                                : (t.category_name ? ' — ' + t.category_name : ''));
+    var excluded = IMP.records.filter(function (r) { return r.excluded; }).length;
+    var kept = IMP.records.filter(function (r) { return r.duplicate && impKeepChecked(r.idx); }).length;
+    var replacing = impMode() === 'replace';
+    function doConfirm(deleted) {
+        var msg = 'اللعبة: ' + where +
+            '\nعدد الأسئلة التي ستضاف: ' + add.length +
+            '\nعدد السجلات المستبعدة: ' + excluded +
+            '\nمكررات قررت الاحتفاظ بها: ' + kept;
+        if (replacing) {
+            msg += '\n\nسيُحذف ' + (deleted == null ? 'كل' : deleted) +
+                   ' سؤالاً قديماً من ' + impScopeName() +
+                   ' نهائياً، ثم تُضاف الدفعة مكانها.';
+        } else {
+            msg += '\n\nسيُحفظ في المخزن الحالي، ولن يُعدَّل أو يُحذف أي سؤال سابق.';
+        }
+        confirmBox('تأكيد حفظ الدفعة', msg, function () { impDoSave(); });
+    }
+    if (!replacing) { doConfirm(null); return; }
+    var t2 = IMP.target || {};
+    var qs = '?game=' + encodeURIComponent(IMP.game) + '&scope=' + impScope();
+    if (t2.letter) qs += '&letter=' + encodeURIComponent(t2.letter);
+    if (t2.category) qs += '&category=' + encodeURIComponent(t2.category);
+    fetch('/api/import/count' + qs, {headers: {'X-Admin-Token': TOKEN}})
+        .then(function (r) { return r.json(); })
+        .then(function (d) { doConfirm(d.deleted); })
+        .catch(function () { doConfirm(null); });
+}
+
+function impDoSave() {
+    var btn = document.getElementById('impSaveBtn');
+    if (IMP.saving) return;
+    IMP.saving = true;
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري الحفظ...';
+    var keep = IMP.records
+        .filter(function (r) { return r.duplicate && impKeepChecked(r.idx); })
+        .map(function (r) { return r.idx; });
+    if (!IMP.idem) {
+        IMP.idem = IMP.game + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    }
+    authFetch('/api/import/save', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game: IMP.game, target: IMP.target, records: IMP.records,
+                              keep_duplicates: keep, idempotency_key: IMP.idem,
+                              mode: impMode(), scope: impScope()})})
+        .then(function (r) { return r.json().then(function (d) { return {status: r.status, d: d}; }); })
+        .then(function (res) {
+            IMP.saving = false;
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ الأسئلة';
+            impShowResult(res.d);
+            if (res.d.ok) {
+                IMP.saved = true;
+                showToast('تم حفظ ' + res.d.saved + ' سؤالاً');
+                loadStats();
+                impLoadHistory();
+                try { localStorage.removeItem(IMP_DRAFT_KEY); } catch (e) {}
+                var ta = document.getElementById('impText');
+                ta.value = '';
+                ta.dispatchEvent(new Event('input'));
+            } else {
+                showToast(res.d.error || 'لم يُحفظ شيء', 'error');
+            }
+        })
+        .catch(function () {
+            IMP.saving = false;
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> حفظ الأسئلة';
+            showToast('خطأ في الاتصال بالخادم', 'error');
+        });
+}
+
+function impShowResult(d) {
+    document.getElementById('impResultCard').style.display = 'block';
+    var el = document.getElementById('impResult');
+    var html = '';
+    if (d.ok) {
+        html += '<div class="imp-result-ok"><b>تم الحفظ بنجاح.</b> اللعبة: ' + esc(d.game) +
+                ' — حُفظ ' + d.saved + ' من ' + d.accepted + ' سجلاً مقبولاً.';
+        if (d.mode === 'replace') {
+            html += '<br><b>وضع الاستبدال:</b> حُذف ' + d.deleted + ' سؤالاً قديماً' +
+                    (d.scope === 'target' ? ' من النطاق المحدد' : ' من اللعبة') +
+                    ' ثم أُضيفت الدفعة مكانه.';
+        }
+        if (d.skipped) html += '<br>تخطّى المكرر داخل الدفعة: ' + d.skipped + '.';
+        if (d.cached) html += '<br><b>هذه الدفعة حُفظت من قبل</b> — لم تُضف نسخة ثانية.';
+        html += '</div>';
+    } else {
+        html += '<div class="imp-result-bad"><b>لم يُحفظ شيء.</b> ' + esc(d.error || '') + '</div>';
+    }
+    (d.rejected || []).forEach(function (x) {
+        html += '<div class="imp-reject">سجل ' + ((x.idx || 0) + 1) + ': ' + esc(x.question || '') +
+                ' — <b>' + esc(x.reason || '') + '</b></div>';
+    });
+    if (d.ok) {
+        html += '<div class="imp-actions">' +
+                '<button class="btn btn-primary" onclick="impGoToGame()">فتح اللعبة</button> ' +
+                '<button class="btn btn-secondary" onclick="impReviewInList()">مراجعة في تبويب الأسئلة</button>' +
+                '</div>';
+    }
+    el.innerHTML = html;
+    el.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+var IMP_GAME_URLS = {
+    letters: '/game/letters', quiz: '/game/quiz', million: '/game/million',
+    lastone: '/game/lastone', auction: '/game/auction', codenames: '/game/codenames',
+    spy: '/game/spy', debate: '/game/debate', whoplayer: '/game/whoplayer',
+    culprit: '/game/culprit', detective: '/game/detective', minebali: '/game/minebali',
+    link: '/game/link'
+};
+
+function impGoToGame() {
+    window.open(IMP_GAME_URLS[IMP.game] || '/games', '_blank');
+}
+
+function impReviewInList() {
+    var t = IMP.target || {};
+    var g = document.getElementById('fGame');
+    var c = document.getElementById('fCat');
+    var l = document.getElementById('fLetter');
+    if (g) g.value = IMP.game;
+    if (IMP.game === 'letters') { if (l && t.letter) l.value = t.letter; if (c) c.value = ''; }
+    else { if (c && t.category_id) c.value = t.category_id; if (l) l.value = ''; }
+    switchTab('q');
+    loadQ(1);
+}
+
+function impLoadHistory() {
+    fetch('/api/import/history', {headers: {'X-Admin-Token': TOKEN}})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var h = d.history || [];
+            document.getElementById('impHistory').innerHTML = h.length
+                ? h.map(function (x) {
+                    var t = x.target || {};
+                    var where = t.category_name ? t.category_name
+                               : (t.letter ? 'حرف ' + t.letter : '—');
+                    return esc(x.at) + ' — ' + esc(x.game) + ' — ' + esc(where) +
+                           ' — طُلب ' + x.requested + '، حُفظ ' + x.saved +
+                           (x.duplicates_kept ? ' (مكررات محتفظ بها: ' + x.duplicates_kept + ')' : '');
+                }).join('\n')
+                : 'لا توجد عمليات استيراد بعد.';
+        })
+        .catch(function () {});
+}
+
+function impExportRecords(fmt) {
+    if (!IMP.records.length) { showToast('لا توجد سجلات بعد — حلل النص أولاً', 'error'); return; }
+    authFetch('/api/import/export', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({records: IMP.records, format: fmt})})
+        .then(function (r) { return r.blob(); })
+        .then(function (blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'ameen-import.' + (fmt === 'csv' ? 'csv' : 'json');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        })
+        .catch(function () { showToast('تعذر التصدير', 'error'); });
+}
+
+function impSample() {
+    var ta = document.getElementById('impText');
+    if (ta.value.trim()) { showToast('القالب معروض في أعلى هذه الصفحة'); return; }
+    ta.value = document.getElementById('impTpl').textContent
+        .split('\n').filter(function (l) { return l.indexOf('#') !== 0; }).join('\n').trim();
+    ta.dispatchEvent(new Event('input'));
+}
+
+function impCopyTemplate() {
+    var txt = document.getElementById('impTpl').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function () { showToast('تم نسخ القالب'); },
+                                          function () { impFallbackCopy(txt); });
+    } else impFallbackCopy(txt);
+}
+
+function impFallbackCopy(txt) {
+    var ta = document.createElement('textarea');
+    ta.value = txt;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('تم نسخ القالب'); }
+    catch (e) { showToast('تعذر النسخ', 'error'); }
+    document.body.removeChild(ta);
+}
+
+function impDownloadTemplate() {
+    var t = IMP.target || {};
+    var qs = '?game=' + encodeURIComponent(IMP.game);
+    if (t.category_name) qs += '&category=' + encodeURIComponent(t.category_name);
+    if (t.letter) qs += '&letter=' + encodeURIComponent(t.letter);
+    window.location.href = '/api/import/template' + qs;
+}
+
+function impClear() {
+    var ta = document.getElementById('impText');
+    if (!ta.value.trim()) { showToast('النص فارغ أصلاً'); return; }
+    confirmBox('مسح النص', 'سيُمسح النص الملصوق نهائياً. هل تريد المتابعة؟', function () {
+        ta.value = '';
+        ta.dispatchEvent(new Event('input'));
+        IMP.records = []; IMP.summary = {}; IMP.warnings = []; IMP.unparsed = [];
+        IMP.saved = false;
+        document.getElementById('impSummaryCard').style.display = 'none';
+        document.getElementById('impPreviewCard').style.display = 'none';
+        document.getElementById('impResultCard').style.display = 'none';
+        try { localStorage.removeItem(IMP_DRAFT_KEY); } catch (e) {}
+        showToast('تم مسح النص');
+    });
+}
+
+function impSaveDraft() {
+    var ta = document.getElementById('impText');
+    if (!ta.value.trim()) return;
+    authFetch('/api/import/draft', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game: IMP.game, target: impReadTarget(), text: ta.value})})
+        .catch(function () {});
+}
+
+function impRestoreDraft() {
+    var local = null;
+    try { local = JSON.parse(localStorage.getItem(IMP_DRAFT_KEY) || 'null'); } catch (e) {}
+    var ta = document.getElementById('impText');
+    if (local && local.text && !ta.value) {
+        ta.value = local.text;
+        ta.dispatchEvent(new Event('input'));
+        return;
+    }
+    fetch('/api/import/draft', {headers: {'X-Admin-Token': TOKEN}})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d && d.text && !document.getElementById('impText').value) {
+                document.getElementById('impText').value = d.text;
+                document.getElementById('impText').dispatchEvent(new Event('input'));
+                if (d.game) {
+                    document.getElementById('impGame').value = d.game;
+                    impGameChanged();
+                }
+            }
+        })
+        .catch(function () {});
+}
 
 // auto-login if the session already has a valid token
 if (TOKEN) {
