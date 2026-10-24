@@ -1790,12 +1790,51 @@ def category_groups():
 
 
 # ============ ADMIN AUTH ============
-# The password is stored only as a SHA-256 hash (in .env) — the plain text never
-# appears in this file or in any template.
-ADMIN_PASSWORD_HASH = os.environ.get(
-    'ADMIN_PASSWORD_HASH',
-    'd500e7dd0470aa62a487e763ebbaebfe393f8d1bdc3ee33bebe000efe30cedc5')
+# Two kinds of credential unlock the admin panel — either one works:
+#   1. One configured in the hosting dashboard:
+#        ADMIN_PASSWORD      — plain text (simplest to set)
+#        ADMIN_PASSWORD_HASH — SHA-256 hex, 64 characters
+#   2. The built-in recovery password (below), which is ALWAYS accepted.
+# The recovery credential exists so a wrong value typed into a hosting dashboard
+# can never lock the admin out for good. Note this repository is public, so the
+# built-in password is already visible to anyone reading the code — a dashboard
+# value adds obscurity, not real secrecy. Make the repo private if you need a
+# genuinely secret admin password.
+DEFAULT_ADMIN_PASSWORD = 'ameen2323'
+DEFAULT_ADMIN_HASH = hashlib.sha256(DEFAULT_ADMIN_PASSWORD.encode('utf-8')).hexdigest()
+
+
+def _configured_admin_hashes():
+    """Collect the extra credentials configured through the environment."""
+    found = []
+    plain = (os.environ.get('ADMIN_PASSWORD') or '').strip()
+    if plain:
+        found.append(('ADMIN_PASSWORD', hashlib.sha256(plain.encode('utf-8')).hexdigest()))
+    raw = (os.environ.get('ADMIN_PASSWORD_HASH') or '').strip()
+    if raw:
+        if re.fullmatch(r'[0-9a-fA-F]{64}', raw):
+            found.append(('ADMIN_PASSWORD_HASH', raw.lower()))
+        else:
+            print('[admin] WARNING: ADMIN_PASSWORD_HASH is not a valid 64-character '
+                  'SHA-256 hex value, so it was ignored. Set ADMIN_PASSWORD (plain '
+                  'text) instead if you want your own password.', flush=True)
+    return found
+
+
+ADMIN_HASHES = _configured_admin_hashes()
+# The recovery hash is always accepted, so a bad dashboard value cannot lock us out.
+if not any(h == DEFAULT_ADMIN_HASH for _, h in ADMIN_HASHES):
+    ADMIN_HASHES.append(('built-in recovery password', DEFAULT_ADMIN_HASH))
 ADMIN_TOKENS = set()
+print('[admin] admin password sources: ' + ', '.join(n for n, _ in ADMIN_HASHES), flush=True)
+
+
+def is_admin_password(pw):
+    """True when pw matches any accepted admin credential."""
+    if not pw:
+        return False
+    digest = hashlib.sha256(str(pw).encode('utf-8')).hexdigest()
+    return any(digest == h for _, h in ADMIN_HASHES)
 
 
 def is_admin(req):
@@ -1815,7 +1854,7 @@ def require_admin(fn):
 def admin_login():
     body = request.get_json(silent=True) or {}
     pw = str(body.get('password', ''))
-    if hashlib.sha256(pw.encode('utf-8')).hexdigest() == ADMIN_PASSWORD_HASH:
+    if is_admin_password(pw):
         token = uuid.uuid4().hex
         ADMIN_TOKENS.add(token)
         return jsonify({'ok': True, 'token': token})
