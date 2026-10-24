@@ -1363,6 +1363,20 @@ GAME_SCHEMAS = {
             'والإجابة قصيرة. كل النصوص عربية.'
         ),
     },
+    'draw_guess': {
+        'name': 'ارسم وخمّن',
+        'required': ['word'],
+        'fields': ['word', 'category', 'difficulty', 'altAccepted', 'status', 'source'],
+        'prompt': (
+            'أنشئ {n} كلمةلعبة «ارسم وخمّن» (لوطة رسم + تخمين شفهي).\n'
+            'الصيغة: [{"word":"الكلمة","category":"الفئة","difficulty":"سهل|متوسط|صعب|خلط","altAccepted":["بديل1","بديل2"]}]\n'
+            'شروط: الكلمة عربية مفردة وواضحة، لا تحوي حروفا أجنبية، لا تكرر، '
+            'واضحة للرسم (لاENTITY ولا jملة)، '
+            'altAccepted تحتوي كلمة أو كلمتين فقط كبدائل مقبولة. '
+            'الفئات: الحيوانات، الأفعال، الأشياء، الطعام، المشاهير، الأماكن، الكل. '
+            'كل النصوص عربية.'
+        ),
+    },
 }
 
 CONTENT_GAMES = list(GAME_SCHEMAS.keys())
@@ -3093,7 +3107,7 @@ def game_minebali():
 
 @app.route('/game/<game>')
 def game(game):
-    valid = ['codenames','detective','culprit','spy','debate','whoplayer','link']
+    valid = ['codenames','detective','culprit','spy','debate','whoplayer','link','draw_guess']
     if game not in valid:
         return redirect('/games')
     return render_template('game_' + game + '.html', game=game)
