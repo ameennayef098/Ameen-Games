@@ -258,6 +258,14 @@
         <svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
     </button>
 
+    <!-- ================= تكبير/تصغير الرقعة (كل الألعاب) ================= -->
+    <div class="zoom-ctl" id="zoomCtl" role="group" aria-label="تكبير وتصغير الشاشة">
+        <button type="button" class="zoom-btn" id="zoomOut" aria-label="تصغير">â</button>
+        <span class="zoom-val" id="zoomVal" aria-live="polite">100%</span>
+        <button type="button" class="zoom-btn" id="zoomIn" aria-label="تكبير">+</button>
+        <button type="button" class="zoom-btn zoom-reset" id="zoomReset" aria-label="إعادة الضبط">&#8635;</button>
+    </div>
+
     <script src="/static/js/main.js"></script>
     <script src="/static/js/ui-kit.js"></script>
     {% block scripts %}{% endblock %}

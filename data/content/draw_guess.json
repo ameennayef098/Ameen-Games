@@ -1,0 +1,1677 @@
+[
+  {
+    "id": "w_001",
+    "word": "أسد",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_002",
+    "word": "فيل",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [
+      "فيلة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_003",
+    "word": "زرافة",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [
+      "زرافات"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_004",
+    "word": "قرد",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [
+      "قردة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_005",
+    "word": "حصان",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [
+      "أحصنة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_006",
+    "word": "جمل",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [
+      "جمال"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_007",
+    "word": "أرنب",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [
+      "أرانب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_008",
+    "word": "بقرة",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_009",
+    "word": "خروف",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_010",
+    "word": "دجاجة",
+    "category": "حيوانات",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_011",
+    "word": "نمر",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [
+      "نمرات"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_012",
+    "word": "غزال",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_013",
+    "word": "ذئب",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_014",
+    "word": "ثعلب",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [
+      "ثعالب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_015",
+    "word": "دب",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [
+      "دببة"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_016",
+    "word": "سلحفاة",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_017",
+    "word": "تمساح",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_018",
+    "word": "ثعبان",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_019",
+    "word": "نسر",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_020",
+    "word": "بومة",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_021",
+    "word": "نحلة",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_022",
+    "word": "فراشة",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_023",
+    "word": "دولفين",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_024",
+    "word": "سمكة",
+    "category": "حيوانات",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_025",
+    "word": "عقرب",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_026",
+    "word": "طاووس",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_027",
+    "word": "قرش",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_028",
+    "word": "أخطبوط",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_029",
+    "word": "قنفذ",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_030",
+    "word": "إيل",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_031",
+    "word": "صقر",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_032",
+    "word": "شاهين",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_033",
+    "word": "وشق",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_034",
+    "word": "سلمندر",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_035",
+    "word": "آكل النمل",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_036",
+    "word": "خنزير بري",
+    "category": "حيوانات",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_037",
+    "word": "أكل",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_038",
+    "word": "شرب",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_039",
+    "word": "نوم",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_040",
+    "word": "مشي",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_041",
+    "word": "ركض",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_042",
+    "word": "قفز",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_043",
+    "word": "ضحك",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_044",
+    "word": "كتابة",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_045",
+    "word": "قراءة",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_046",
+    "word": "سباحة",
+    "category": "أفعال",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_047",
+    "word": "طبخ",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_048",
+    "word": "ركوب",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_049",
+    "word": "طيران",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_050",
+    "word": "صيد",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_051",
+    "word": "رسم",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_052",
+    "word": "غناء",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_053",
+    "word": "رقص",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_054",
+    "word": "تسلق",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_055",
+    "word": "استحمام",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_056",
+    "word": "تصفيق",
+    "category": "أفعال",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_057",
+    "word": "تزلج",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_058",
+    "word": "إبحار",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_059",
+    "word": "مصارعة",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_060",
+    "word": "قفز بالمظلة",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_061",
+    "word": "تسوّق",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_062",
+    "word": "استلقاء",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_063",
+    "word": "صراخ",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_064",
+    "word": "همس",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_065",
+    "word": "تأمل",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_066",
+    "word": "عناق",
+    "category": "أفعال",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_067",
+    "word": "كتاب",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [
+      "كتب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_068",
+    "word": "قلم",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [
+      "أقلام"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_069",
+    "word": "كرسي",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_070",
+    "word": "طاولة",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_071",
+    "word": "باب",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [
+      "أبواب"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_072",
+    "word": "نافذة",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [
+      "نوافذ"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_073",
+    "word": "سرير",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_074",
+    "word": "مصباح",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_075",
+    "word": "ساعة",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_076",
+    "word": "هاتف",
+    "category": "أشياء",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_077",
+    "word": "دراجة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_078",
+    "word": "سيارة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [
+      "سيارات"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_079",
+    "word": "طائرة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [
+      "طائرات"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_080",
+    "word": "سفينة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [
+      "سفن"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_081",
+    "word": "تلفاز",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_082",
+    "word": "ثلاجة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_083",
+    "word": "غسالة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_084",
+    "word": "مفتاح",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_085",
+    "word": "مرآة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_086",
+    "word": "سجادة",
+    "category": "أشياء",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_087",
+    "word": "تلسكوب",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_088",
+    "word": "ميكروسكوب",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_089",
+    "word": "بوصلة",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_090",
+    "word": "إبريق",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_091",
+    "word": "مطرقة",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_092",
+    "word": "منشار",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_093",
+    "word": "مظلة",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_094",
+    "word": "محفظة",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_095",
+    "word": "شماعة",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_096",
+    "word": "مثقاب",
+    "category": "أشياء",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_097",
+    "word": "خبز",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_098",
+    "word": "تفاح",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [
+      "تفاحات"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_099",
+    "word": "حليب",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_100",
+    "word": "عصير",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_101",
+    "word": "أرز",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_102",
+    "word": "بيض",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [
+      "بيضات"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_103",
+    "word": "جبن",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_104",
+    "word": "عسل",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_105",
+    "word": "تمر",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_106",
+    "word": "ماء",
+    "category": "طعام",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_107",
+    "word": "بيتزا",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_108",
+    "word": "برجر",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_109",
+    "word": "شاورما",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_110",
+    "word": "فلافل",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_111",
+    "word": "كبسة",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_112",
+    "word": "مندي",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_113",
+    "word": "شوربة",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_114",
+    "word": "سلطة",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_115",
+    "word": "مكرونة",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_116",
+    "word": "ساندويتش",
+    "category": "طعام",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_117",
+    "word": "كنافة",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_118",
+    "word": "بقلاوة",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_119",
+    "word": "مشاوي",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_120",
+    "word": "مقلوبة",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_121",
+    "word": "منسف",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_122",
+    "word": "جريش",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_123",
+    "word": "مشروم",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_124",
+    "word": "زعفران",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_125",
+    "word": "هيل",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_126",
+    "word": "مخلل",
+    "category": "طعام",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_127",
+    "word": "محمد صلاح",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_128",
+    "word": "ميسي",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_129",
+    "word": "رونالدو",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_130",
+    "word": "أم كلثوم",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_131",
+    "word": "فيروز",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_132",
+    "word": "إيلون ماسك",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_133",
+    "word": "عبد الحليم حافظ",
+    "category": "مشاهير",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_134",
+    "word": "عمر الشريف",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_135",
+    "word": "طلال مداح",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_136",
+    "word": "ماجد عبد الله",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_137",
+    "word": "ستيف جوبز",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_138",
+    "word": "بيل غيتس",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_139",
+    "word": "مارك زوكربيرغ",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_140",
+    "word": "عادل إمام",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_141",
+    "word": "محمد عبده",
+    "category": "مشاهير",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_142",
+    "word": "نصري شمس الدين",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_143",
+    "word": "صباح",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_144",
+    "word": "وردة",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_145",
+    "word": "عبد المجيد عبد الله",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_146",
+    "word": "نزار قباني",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_147",
+    "word": "محمود درويش",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_148",
+    "word": "طه حسين",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_149",
+    "word": "ابن خلدون",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_150",
+    "word": "ابن سينا",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_151",
+    "word": "الخوارزمي",
+    "category": "مشاهير",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_152",
+    "word": "مدرسة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [
+      "مدارس"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_153",
+    "word": "بيت",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [
+      "بيوت"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_154",
+    "word": "بحر",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_155",
+    "word": "جبل",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_156",
+    "word": "مدينة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [
+      "مدن"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_157",
+    "word": "قرية",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [
+      "قرى"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_158",
+    "word": "مطار",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_159",
+    "word": "مستشفى",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_160",
+    "word": "مكتبة",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_161",
+    "word": "مسجد",
+    "category": "أماكن",
+    "difficulty": "easy",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_162",
+    "word": "صحراء",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_163",
+    "word": "جزيرة",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_164",
+    "word": "نهر",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_165",
+    "word": "شلال",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_166",
+    "word": "قلعة",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_167",
+    "word": "برج",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_168",
+    "word": "سوق",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_169",
+    "word": "محطة",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_170",
+    "word": "ساحة",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_171",
+    "word": "جامع",
+    "category": "أماكن",
+    "difficulty": "medium",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_172",
+    "word": "هرم",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [
+      "أهرام"
+    ],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_173",
+    "word": "بركان",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_174",
+    "word": "كهف",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_175",
+    "word": "غابة",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_176",
+    "word": "مسرح",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_177",
+    "word": "ملعب",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_178",
+    "word": "منتجع",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_179",
+    "word": "سجن",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_180",
+    "word": "قناة السويس",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  },
+  {
+    "id": "w_181",
+    "word": "سفارة",
+    "category": "أماكن",
+    "difficulty": "hard",
+    "altAccepted": [],
+    "status": "approved",
+    "source": "manual"
+  }
+]

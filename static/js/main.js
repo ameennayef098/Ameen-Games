@@ -331,3 +331,59 @@ document.addEventListener('DOMContentLoaded', () => {
     initReveal();
     initToTop();
 });
+
+/* =====================================================================
+   تكبير/تصغير الرقعة — ينطبق على كل الصفحات والألعاب.
+    Ctrl + / Ctrl - / Ctrl 0 هي اختصارات لوحة المفاتيح.
+   ===================================================================== */
+var ZoomCtl = (function () {
+    var KEY = "ameen_zoom";
+    var MIN = 70, MAX = 150, STEP = 10, DEF = 100;
+
+    function read() {
+        var v = parseInt(localStorage.getItem(KEY) || "", 10);
+        if (isNaN(v) || v < MIN || v > MAX) v = DEF;
+        return v;
+    }
+    function paint(v) {
+        var label = document.getElementById("zoomVal");
+        if (label) label.textContent = v + "%";
+    }
+    function apply(v) {
+        document.documentElement.style.zoom = (v / 100);
+        paint(v);
+        try { localStorage.setItem(KEY, String(v)); } catch (e) {}
+    }
+    function set(v) {
+        v = Math.max(MIN, Math.min(MAX, Math.round(v / STEP) * STEP));
+        if (v === DEF) {
+            document.documentElement.style.zoom = "";
+            paint(DEF);
+            try { localStorage.removeItem(KEY); } catch (e) {}
+            return;
+        }
+        apply(v);
+    }
+    function init() {
+        set(read());
+        var inBtn = document.getElementById("zoomIn");
+        var outBtn = document.getElementById("zoomOut");
+        var resetBtn = document.getElementById("zoomReset");
+        if (inBtn) inBtn.addEventListener("click", function () { set(read() + STEP); });
+        if (outBtn) outBtn.addEventListener("click", function () { set(read() - STEP); });
+        if (resetBtn) resetBtn.addEventListener("click", function () { set(DEF); });
+        document.addEventListener("keydown", function (e) {
+            if (!e.ctrlKey) return;
+            if (e.key === "=" || e.key === "+") { e.preventDefault(); set(read() + STEP); }
+            else if (e.key === "-") { e.preventDefault(); set(read() - STEP); }
+            else if (e.key === "0") { e.preventDefault(); set(DEF); }
+        });
+    }
+    return { init: init, set: set, get: read };
+})();
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ZoomCtl.init);
+} else {
+    ZoomCtl.init();
+}

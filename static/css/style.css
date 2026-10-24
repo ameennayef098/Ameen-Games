@@ -3092,3 +3092,24 @@ select { min-height: 2.75rem; }
     box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 6px var(--accent-blue);
 }
 .color-field > label { display: inline-flex; align-items: center; gap: 0.4rem; }
+/* =====================================================================
+   تكبير/تصغير الرقعة — زرّا + و - يظهران في كل الألعاب والصفحات.
+   القيمة محفوظة في localStorage فتبقى بعد التحديث.
+   ===================================================================== */
+.zoom-ctl{position:fixed;bottom:var(--space-5);inset-inline-start:var(--space-4);z-index:900;
+  display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1);
+  background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius-pill);
+  box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.zoom-btn{min-width:2.1rem;height:2.1rem;border-radius:50%;border:1px solid var(--border-color);
+  background:var(--bg-secondary);color:var(--text-primary);font-family:inherit;
+  font-weight:900;font-size:1rem;line-height:1;cursor:pointer;display:grid;place-items:center;
+  transition:var(--transition-fast)}
+.zoom-btn:hover{border-color:var(--accent-blue);color:var(--accent-blue)}
+.zoom-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-primary),0 0 0 6px var(--accent-blue)}
+.zoom-val{min-width:3.1rem;text-align:center;font-size:var(--font-size-xs);font-weight:800;
+  font-variant-numeric:tabular-nums;color:var(--text-secondary)}
+@media (max-width:640px){
+  .zoom-ctl{bottom:var(--space-3);inset-inline-start:var(--space-2)}
+  .zoom-btn{min-width:1.9rem;height:1.9rem}
+}
+

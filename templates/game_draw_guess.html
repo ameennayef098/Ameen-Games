@@ -1,451 +1,1011 @@
 {% extends "base.html" %}
-
 {% block content %}
 <style>
-.dg{max-width:960px;margin:1.2rem auto}
-.dg-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:1.2rem}
-.dg-canvas-wrap{position:relative;max-width:640px;margin:0 auto}
-.dg-canvas{border:2px solid var(--border-strong);border-radius:10px;cursor:crosshair;display:block;width:100%;height:420px;background:#fff}
-.dg-toolbar{display:flex;align-items:center;gap:.6rem;margin: .8rem 0;font-size:.9rem;flex-wrap:wrap}
-.dg-toolbar .grp{display:flex;gap:.4rem;align-items:center}
-.dg-toolbar .grp input[type=color]{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer}
-.dg-toolbar .grp .w{width:2rem;height:.9rem;border-radius:999px;background:#000}
-.dg-ab{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
-.dg-ab .btn{padding:.7rem 1.2rem;border-radius:12px;font-weight:800;font-family:inherit}
-.dg-ab .btn-danger{background:#ef4444;color:#fff}
-.dg-ab .btn-success{background:#22c55e;color:#fff}
-.dg-ab .btn-blue{background:var(--accent-blue);color:#041022}
-.dg-hint{display:none;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:10px;margin:.6rem 0;background:var(--accent-blue-tint);border:1px solid var(--accent-blue);color:#a9c8ff;font-size:.88rem;font-weight:700}
-.dg-hint.on{display:flex}
-.dg-turn{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:10px;font-weight:800;font-size:1rem}
-.dg-turn.p0{background:var(--accent-blue-tint);border:1px solid var(--accent-blue);color:#a9c8ff}
-.dg-turn.p1{background:var(--accent-purple-tint);border:1px solid var(--accent-purple);color:#d6c2ff}
-.dg-qrow{display:flex;gap:.5rem;margin:.8rem 0}
-.dg-qrow input{flex:1;padding:.7rem .9rem;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-inset);color:var(--text-primary);font-family:inherit;font-size:1rem}
-.dg-qrow input:focus{outline:none;border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-blue-tint)}
-.dg-presets{display:flex;flex-wrap:wrap;gap:.45rem;margin:.4rem 0}
-.dg-presets button{padding:.45rem .8rem;border-radius:999px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:.82rem}
-.dg-presets button:hover{border-color:var(--accent-blue);color:#fff}
-.dg-answer{min-height:2.6rem;text-align:center;font-size:1.6rem;font-weight:900;margin:.6rem 0;color:var(--accent-gold)}
-.dg-answer small{display:block;font-size:.72rem;font-weight:600;color:var(--text-muted)}
-.dg-src{font-size:.72rem;font-weight:700;padding:.15rem .6rem;border-radius:999px;background:var(--bg-inset);border:1px solid var(--border-color);color:var(--text-muted)}
-.dg-sb{position:fixed;inset:0;z-index:400;background:rgba(4,6,16,.96);display:grid;place-items:center;padding:1rem}
-.dg-sb .hc{width:min(440px,100%);background:#000;border:1px solid var(--border-strong);border-radius:16px;padding:2.2rem 1.5rem;text-align:center;color:#fff}
-.dg-sb .hc h3{margin:0 0 .6rem;font-size:1.3rem}
-.dg-sb .hc p{color:#b9bdd6;font-size:.9rem;margin:.4rem 0 1.2rem}
-.dg-sb .hc .who{font-size:2.1rem;font-weight:900;color:var(--accent-gold);margin:.8rem 0}
-.dg-sb .hc button{width:100%;padding:.9rem;border-radius:10px;border:1px solid #fff;background:transparent;color:#fff;font-family:inherit;font-size:1.05rem;font-weight:800;cursor:pointer}
-.dg-sb .hc button:hover{background:#fff;color:#000}
-@media (max-width:560px){.dg-canvas{height:320px}}.dg-canvas{height:420px}
+/* =====================================================================
+   🎨 ارسم وخمّن — لوحة رسم + تخمين شفهي بين فريقين.
+   كل الألوان والمسافات من نظام التصميم المشترك، بدون إعادة تعريف.
+   ===================================================================== */
+.dg-wrap{max-width:980px;margin:0 auto;padding:var(--space-4) var(--space-3)}
+.dg-h1{text-align:center;font-size:var(--font-size-2xl);margin:var(--space-3) 0 var(--space-2)}
+.dg-sub{text-align:center;color:var(--text-secondary);margin:0 0 var(--space-5);font-size:var(--font-size-sm)}
+.dg-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);
+  padding:var(--space-4);box-shadow:var(--shadow-sm)}
+.dg-h2{font-size:var(--font-size-base);margin:0 0 var(--space-3);font-weight:900}
+
+/* --- الإعداد --- */
+.dg-teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);margin-bottom:var(--space-4)}
+.dg-team{border:1px solid var(--border-color);border-radius:var(--radius);padding:var(--space-3);
+  background:var(--bg-secondary);display:flex;flex-direction:column;gap:var(--space-2)}
+.dg-team input[type=color]{width:100%;height:44px;border:1px solid var(--border-color);
+  border-radius:var(--radius-sm);background:var(--bg-inset);cursor:pointer}
+.dg-team input[type=text]{width:100%;padding:.65rem .85rem;border-radius:var(--radius-sm);
+  border:1px solid var(--border-color);background:var(--bg-inset);color:var(--text-primary);font-family:inherit}
+.dg-team input[type=text]:focus{outline:none;border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-blue-tint)}
+.dg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)}
+.dg-field{display:flex;flex-direction:column;gap:var(--space-2)}
+.dg-field>label{font-weight:800;font-size:var(--font-size-sm)}
+.dg-field select{padding:.65rem .85rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);
+  background:var(--bg-inset);color:var(--text-primary);font-family:inherit;font-size:var(--font-size-sm)}
+.dg-opts{display:flex;flex-direction:column;gap:var(--space-2)}
+.dg-opts label{display:flex;align-items:flex-start;gap:var(--space-2);padding:var(--space-2) var(--space-3);
+  border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-secondary);cursor:pointer;
+  font-size:var(--font-size-sm);font-weight:600}
+.dg-opts label:hover{border-color:var(--border-strong)}
+.dg-opts input{margin-top:.2rem;accent-color:var(--accent-blue)}
+.dg-opts small{display:block;font-weight:400;color:var(--text-muted);font-size:var(--font-size-xs)}
+.dg-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}
+
+/* --- شريط النقاط --- */
+.dg-scorebar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);
+  margin-bottom:var(--space-3)}
+.dg-team-chip{display:flex;align-items:center;gap:var(--space-2);padding:.45rem .9rem;border-radius:var(--radius);
+  background:var(--bg-inset);border:1px solid var(--border-color);min-width:8rem;transition:var(--transition)}
+.dg-team-chip.is-turn{border-color:var(--accent-gold);box-shadow:0 0 0 3px rgba(246,167,20,.18)}
+.dg-chip-name{font-weight:800;font-size:var(--font-size-sm);max-width:9rem;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dg-chip-pts{font-size:var(--font-size-lg);font-weight:900;font-variant-numeric:tabular-nums;color:var(--accent-gold)}
+.dg-turn-pill{padding:.4rem 1.1rem;border-radius:var(--radius-pill);background:var(--gradient-brand);
+  color:var(--text-on-brand);font-weight:900;font-size:var(--font-size-sm);text-align:center}
+
+/* --- اللوحة --- */
+.dg-warn{text-align:center;font-weight:900;font-size:var(--font-size-sm);color:var(--accent-gold);
+  background:var(--bg-inset);border:1px dashed var(--accent-gold);border-radius:var(--radius-sm);
+  padding:.4rem .8rem;margin-bottom:var(--space-3)}
+.dg-board-row{display:flex;gap:var(--space-3);align-items:flex-start;flex-wrap:wrap;margin-bottom:var(--space-3)}
+.dg-canvas-holder{position:relative;flex:1 1 520px;min-width:0}
+.dg-canvas{display:block;width:100%;height:430px;background:#fff;border:2px solid var(--border-strong);
+  border-radius:var(--radius);cursor:crosshair;touch-action:none;box-shadow:var(--shadow-sm)}
+.dg-flip{position:absolute;bottom:.6rem;inset-inline-start:.6rem;padding:.15rem .55rem;border-radius:var(--radius-sm);
+  background:rgba(0,0,0,.72);color:#fff;font-weight:900;font-size:var(--font-size-sm);
+  transform:rotate(180deg);pointer-events:none;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dg-side{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:var(--space-2);
+  padding:var(--space-3);background:var(--bg-inset);border:1px solid var(--border-color);border-radius:var(--radius)}
+.dg-ring{position:relative;width:116px;height:116px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--dg-ring-color,var(--accent-blue)) calc(var(--dg-p,100) * 1%),rgba(255,255,255,.10) 0)}
+.dg-ring::after{content:'';position:absolute;inset:9px;border-radius:50%;background:var(--bg-inset)}
+.dg-ring span{position:relative;z-index:1;font-size:2rem;font-weight:900;font-variant-numeric:tabular-nums}
+.dg-timer-label{font-size:var(--font-size-xs);font-weight:800;color:var(--text-muted);text-align:center}
+
+/* --- الأدوات --- */
+.dg-toolbar{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-3);
+  padding:var(--space-3);background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius)}
+.dg-grp{display:flex;align-items:center;gap:var(--space-2)}
+.dg-tool{padding:.5rem .95rem;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+  background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-family:inherit;
+  font-weight:800;font-size:var(--font-size-sm);transition:var(--transition-fast)}
+.dg-tool:hover:not(:disabled){border-color:var(--accent-blue);color:var(--accent-blue)}
+.dg-tool.active{border-color:var(--accent-blue);background:var(--accent-blue-tint);color:var(--accent-blue)}
+.dg-tool:disabled{opacity:.4;cursor:not-allowed}
+.dg-colors{gap:.45rem}
+.dg-color{width:30px;height:30px;border-radius:50%;border:2px solid var(--border-strong);
+  cursor:pointer;padding:0;transition:var(--transition-fast)}
+.dg-color.active{border-color:#fff;box-shadow:0 0 0 3px var(--accent-blue-tint);transform:scale(1.1)}
+
+/* --- الكلمة --- */
+.dg-wordbar{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-3)}
+.dg-peek{padding:.6rem 1.1rem;border-radius:var(--radius-sm);border:1px solid var(--accent-gold);
+  background:var(--bg-inset);color:var(--accent-gold);cursor:pointer;font-family:inherit;
+  font-weight:900;font-size:var(--font-size-sm);user-select:none;-webkit-user-select:none;touch-action:none}
+.dg-peek:hover{background:rgba(246,167,20,.14)}
+.dg-peek:disabled{opacity:.4;cursor:not-allowed}
+.dg-hint{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:600}
+.dg-peek-overlay{position:fixed;inset:0;z-index:600;background:rgba(4,6,16,.96);display:grid;place-items:center;padding:1rem}
+.dg-peek-word{font-size:clamp(2rem,8vw,4rem);font-weight:900;color:var(--accent-gold);text-align:center;padding:0 var(--space-4)}
+.dg-peek-note{margin-top:var(--space-3);color:var(--text-muted);font-size:var(--font-size-sm);font-weight:700}
+
+/* --- التحكم --- */
+.dg-controls{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-bottom:var(--space-3)}
+
+/* --- اختيار الكلمة --- */
+.dg-pick{position:absolute;inset:0;z-index:20;background:rgba(4,6,16,.95);border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);padding:var(--space-4)}
+.dg-pick h3{margin:0;font-size:var(--font-size-base);text-align:center}
+.dg-pick h3 span{color:var(--accent-gold);font-weight:900;font-variant-numeric:tabular-nums}
+.dg-pick-row{display:flex;gap:var(--space-2);flex-wrap:wrap;justify-content:center}
+.dg-pick-row button{padding:var(--space-3) var(--space-5);border-radius:var(--radius);
+  border:1px solid var(--border-strong);background:var(--bg-card);color:var(--text-primary);
+  font-family:inherit;font-weight:900;font-size:var(--font-size-lg);cursor:pointer;transition:var(--transition-fast)}
+.dg-pick-row button:hover{border-color:var(--accent-gold);color:var(--accent-gold);transform:translateY(-2px)}
+.dg-pick-note{margin:0;font-size:var(--font-size-xs);color:var(--text-muted);font-weight:700}
+
+/* --- السرقة --- */
+.dg-steal-panel{position:absolute;inset:0;z-index:25;background:rgba(4,6,16,.96);border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);
+  padding:var(--space-4);text-align:center}
+.dg-steal-panel h3{margin:0;font-size:var(--font-size-lg)}
+.dg-steal-panel p{margin:0;color:var(--text-secondary);font-size:var(--font-size-sm);max-width:26rem}
+.dg-steal-btns{display:flex;gap:var(--space-2);flex-wrap:wrap;justify-content:center}
+
+/* --- النتيجة --- */
+.dg-result{text-align:center;padding:var(--space-4);background:var(--bg-inset);
+  border:1px solid var(--border-color);border-radius:var(--radius)}
+.dg-result-title{font-size:var(--font-size-lg);font-weight:900;margin-bottom:var(--space-2)}
+.dg-result-word{font-size:var(--font-size-2xl);font-weight:900;color:var(--accent-gold);margin-bottom:var(--space-2)}
+.dg-result-pts{font-size:var(--font-size-base);font-weight:800;color:var(--text-secondary);margin-bottom:var(--space-3)}
+.dg-result-pts b{color:var(--accent-gold);font-size:var(--font-size-lg)}
+
+/* --- استكمال الجلسة --- */
+.dg-resume{text-align:center;display:flex;flex-direction:column;gap:var(--space-3);align-items:center}
+.dg-resume h2{margin:0;font-size:var(--font-size-lg)}
+.dg-resume p{margin:0;color:var(--text-secondary);font-size:var(--font-size-sm)}
+.dg-end-scores{display:flex;justify-content:space-around;gap:var(--space-3);margin:var(--space-3) 0;
+  padding:var(--space-3);background:var(--bg-inset);border:1px solid var(--border-color);border-radius:var(--radius)}
+.dg-end-scores>div{text-align:center}
+.dg-end-scores .n{font-weight:800;font-size:var(--font-size-sm);max-width:10rem;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dg-end-scores .p{font-size:var(--font-size-2xl);font-weight:900;color:var(--accent-gold);font-variant-numeric:tabular-nums}
+.dg-end-winner{font-size:var(--font-size-xl);font-weight:900;color:var(--accent-gold)}
+
+@media (max-width:640px){
+  .dg-teams{grid-template-columns:1fr}
+  .dg-canvas{height:320px}
+  .dg-board-row{flex-direction:column}
+  .dg-side{width:100%;flex-direction:row;justify-content:center;flex-wrap:wrap}
+}
 </style>
 
-<h1 style="text-align:center;margin:.5rem 0">🎨 ارسم وخمّن</h1>
-<p style="text-align:center;color:var(--text-secondary);margin-bottom:1rem">
-ارسم الكلمة السرية وفريقك يخمّن — والفريق الآخر يترقب السرقة!
-</p>
+<!-- ===================== شاشة الإعداد (1 من 3) ===================== -->
+<section id="dgSetup" class="dg-wrap">
+  <h1 class="dg-h1">🎨 ارسم وخمّن</h1>
+  <p class="dg-sub">ارسم الكلمة السرية وفريقك يخمّن — والفريق الآخر يترقب السرقة!</p>
 
-<div id="setup"></div>
-
-<div id="select" class="dg dg-card" style="display:none;margin:1.5rem auto;max-width:960px">
-  <h2 style="text-align:center;margin-top:0">👥 اختر الفريق:</h2>
-  <div class="dg-grid" id="selGrid"></div>
-  <div style="text-align:center;margin-top:1rem">
-    <button class="btn btn-primary" onclick="confirmSel()">تأكيد الاختيار</button>
-  </div>
-</div>
-
-<div id="draw" class="dg dg-card" style="display:none">
-  <div class="dg-canvas-wrap">
-    <canvas id="canvas" class="dg-canvas"></canvas>
-  </div>
-  <div class="dg-toolbar">
-    <div class="grp">
-      <button class="tog" data-tool="pen">قلم</button>
-      <button class="tog" data-tool="eraser">ممحاة</button>
+  <div class="dg-card">
+    <h2 class="dg-h2">👥 الفريقان</h2>
+    <div class="dg-teams">
+      <div class="dg-team">
+        <input type="color" id="dgColor1" value="#2563eb">
+        <input type="text" id="dgName1" maxlength="20" placeholder="اسم الفريق الأول">
+        <input type="text" id="dgDrawer1" maxlength="20" placeholder="اسم الرسّام (اختياري)">
+      </div>
+      <div class="dg-team">
+        <input type="color" id="dgColor2" value="#16a34a">
+        <input type="text" id="dgName2" maxlength="20" placeholder="اسم الفريق الثاني">
+        <input type="text" id="dgDrawer2" maxlength="20" placeholder="اسم الرسّام (اختياري)">
+      </div>
     </div>
-    <div class="grp" id="colors">
-      <button class="clr" data-color="#000000"></button>
-      <button class="clr" data-color="#ff0000"></button>
-      <button class="clr" data-color="#00ff00"></button>
-      <button class="clr" data-color="#0000ff"></button>
-      <button class="clr" data-color="#ffff00"></button>
-      <button class="clr" data-color="#ff00ff"></button>
+
+    <div class="dg-grid">
+      <div class="dg-field">
+        <label for="dgDuration">مدة الرسم</label>
+        <select id="dgDuration">
+          <option value="45">45 ثانية</option>
+          <option value="60" selected>60 ثانية</option>
+          <option value="90">90 ثانية</option>
+        </select>
+      </div>
+      <div class="dg-field">
+        <label for="dgRounds">عدد الأدوار</label>
+        <select id="dgRounds">
+          <option value="3">3 أدوار</option>
+          <option value="5" selected>5 أدوار</option>
+          <option value="7">7 أدوار</option>
+        </select>
+      </div>
+      <div class="dg-field">
+        <label for="dgSteal">تفعيل السرقة</label>
+        <select id="dgSteal">
+          <option value="1" selected>نعم</option>
+          <option value="0">لا</option>
+        </select>
+      </div>
     </div>
-    <div class="grp">
-      <button class="btn-sm" onclick="undo()">رجوع</button>
-      <button class="btn-sm" onclick="clearCanvas()">مسح الكل</button>
+
+    <div class="dg-grid">
+      <div class="dg-field">
+        <label for="dgCategory">فئة الكلمات</label>
+        <select id="dgCategory">
+          <option value="الكل" selected>الكل</option>
+          <option value="حيوانات">حيوانات</option>
+          <option value="أفعال">أفعال</option>
+          <option value="أشياء">أشياء</option>
+          <option value="طعام">طعام</option>
+          <option value="مشاهير">مشاهير</option>
+          <option value="أماكن">أماكن</option>
+        </select>
+      </div>
+      <div class="dg-field">
+        <label for="dgDifficulty">الصعوبة</label>
+        <select id="dgDifficulty">
+          <option value="خلط" selected>خلط</option>
+          <option value="سهل">سهل</option>
+          <option value="متوسط">متوسط</option>
+          <option value="صعب">صعب</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dg-field" style="margin-bottom:0">
+      <label>طريقة إظهار الكلمة للرسّام</label>
+      <div class="dg-opts">
+        <label><input type="radio" name="dgReveal" value="hold" checked>
+          <span>زر كشف بالضغط المستمر<small>تظهر الكلمة طوال فترة الضغط فقط</small></span></label>
+        <label><input type="radio" name="dgReveal" value="flip">
+          <span>عرض مقلوب 180 درجة<small>الكلمة ظاهرة بشكل دائم ومقلوبة أسفل اللوحة</small></span></label>
+      </div>
+    </div>
+
+    <div class="dg-actions">
+      <button class="btn btn-primary btn-lg" onclick="dgStart()">ابدأ اللعب</button>
+      <button class="btn btn-secondary" onclick="window.location.href='/games'">العودة</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== شاشة اللعب (2 من 3) ===================== -->
+<section id="dgPlay" class="dg-wrap" style="display:none">
+  <div class="dg-scorebar">
+    <div class="dg-team-chip" id="dgScoreCard1">
+      <span class="dg-chip-name" id="dgScoreName1">الفريق 1</span>
+      <span class="dg-chip-pts" id="dgScorePts1">0</span>
+    </div>
+    <div class="dg-turn-pill" id="dgTurnPill">—</div>
+    <div class="dg-team-chip" id="dgScoreCard2">
+      <span class="dg-chip-name" id="dgScoreName2">الفريق 2</span>
+      <span class="dg-chip-pts" id="dgScorePts2">0</span>
     </div>
   </div>
 
-  <div class="dg-toolbar" style="margin-top:.8rem">
-    <div class="grp">
-      <label style="font-size:.85rem">مدة الرسم (ثانية):</label>
-      <select id="duration">
-        <option value="45">45</option>
-        <option value="60" selected>60</option>
-        <option value="90">90</option>
-      </select>
-    </div>
-    <div class="grp">
-      <label style="font-size:.85rem">عدد الأدوار:</label>
-      <select id="roles">
-        <option value="3">3</option>
-        <option value="5" selected>5</option>
-        <option value="7">7</option>
-      </select>
-    </div>
-    <div class="grp">
-      <label style="font-size:.85rem">السرقة:</label>
-      <select id="steal">
-        <option value="0">لا</option>
-        <option value="1" selected>نعم</option>
-      </select>
-    </div>
-  </div>
+  <div class="dg-warn" id="dgWarn">ممنوع كتابة حروف أو أرقام! ⚠️</div>
 
-  <div class="dg-turn" id="turn" style="display:none">
-    <span id="turnText">دور الفريق 1</span>
-    <span id="turnDrawer" style="font-weight:600">— الرسّام: فريق 1</span>
-  </div>
+  <div class="dg-board-row">
+    <div class="dg-canvas-holder">
+      <canvas id="dgCanvas" class="dg-canvas"></canvas>
+      <div class="dg-flip" id="dgFlip" style="display:none"></div>
 
-  <div class="dg-qrow">
-    <input id="wordInput" type="text" placeholder="الكلمة" disabled>
-    <button class="btn btn-sm" onclick="revealWord()">أرني الكلمة 👁️</button>
-  </div>
+      <div class="dg-pick" id="dgPick" style="display:none">
+        <h3>اختر الكلمة السرية — <span id="dgPickTimer">10</span></h3>
+        <div class="dg-pick-row" id="dgPickRow"></div>
+        <p class="dg-pick-note">انتهى الوقت؟ سيتم اختيار كلمة تلقائياً</p>
+      </div>
 
-  <div class="dg-hint" id="hint">⏰ وقت نموذجي!</div>
-
-  <div id="controls" style="display:none">
-    <div class="dg-toolbar">
-      <button class="btn btn-success dg-ab" onclick="submitGuess()">إجابة صحيحة ✅</button>
-      <button class="btn btn-secondary dg-ab" onclick="skipTurn()">تخطي ⏭️</button>
-      <button class="btn btn-danger dg-ab" id="stealBtn" disabled>سرقة 🔥</button>
-    </div>
-    <div class="dg-canvas-wrap" style="max-width:640px;margin:0 auto">
-      <canvas id="canvas2" class="dg-canvas" style="display:none"></canvas>
-    </div>
-  </div>
-
-  <div id="result" style="display:none;text-align:center;padding:1rem">
-    <div class="dg-answer" id="resultText"></div>
-    <div id="nextBtn" style="margin-top:.8rem"><button class="btn btn-primary" onclick="nextTurn()">الدور التالي →</button></div>
-  </div>
-</div>
-
-<script>
-// Initialize drawing
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let drawing = false;
-let tool = 'pen';
-let color = '#000000';
-let size = 4;
-let imgData = null;
-let words = [];
-let currentWord = null;
-let turn = 0;
-let roles = 5;
-let duration = 60;
-let steal = true;
-let teams = ['فريق 1', 'فريق 2'];
-let currentTurn = 0;
-let skippedThisTurn = false;
-
-function resizeCanvas() {
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr;
-  canvas.height = 420 * dpr;
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = '420px';
-  ctx.scale(dpr, dpr);
-}
-
-canvas.addEventListener('mousedown', (e) => {
-  drawing = true;
-  ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-});
-canvas.addEventListener('mousemove', (e) => {
-  if (!drawing) return;
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.strokeStyle = tool === 'eraser' ? '#fff' : color;
-  ctx.lineWidth = tool === 'eraser' ? 30 : size;
-  ctx.stroke();
-});
-canvas.addEventListener('mouseup', () => drawing = false);
-canvas.addEventListener('mouseleave', () => drawing = false);
-
-canvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  drawing = true;
-  const touch = e.touches[0];
-  ctx.beginPath();
-  ctx.moveTo(touch.clientX, touch.clientY);
-});
-canvas.addEventListener('touchmove', (e) => {
-  e.preventDefault();
-  if (!drawing) return;
-  const touch = e.touches[0];
-  ctx.lineTo(touch.clientX, touch.clientY);
-  ctx.strokeStyle = tool === 'eraser' ? '#fff' : color;
-  ctx.lineWidth = tool === 'eraser' ? 30 : size;
-  ctx.stroke();
-});
-canvas.addEventListener('touchend', () => drawing = false);
-
-// Tool selection
-document.querySelectorAll('[data-tool]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    tool = btn.dataset.tool;
-  });
-});
-
-// Color selection
-document.querySelectorAll('.clr').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.clr').forEach(b => b.style.borderColor = 'transparent');
-    btn.style.borderColor = '#fff';
-    color = btn.dataset.color;
-  });
-});
-
-// Words bank
-const WORDS_BANK = [
-  // حيوانات
-  {word: 'زelephant', category: 'حيوانات'},
-  {word: 'فرخ', category: 'حيوانات'},
-  {word: 'ثعلب', category: 'حيوانات'},
-  {word: 'قرش', category: 'حيوانات'},
-  {word: 'ضفدع', category: 'حيوانات'},
-  // أفعال
-  {word: 'ركض', category: 'أفعال'},
-  {word: 'قفز', category: 'أفعال'},
-  {word: 'غرد', category: 'أفعال'},
-  {word: 'غسل', category: 'أفعال'},
-  {word: 'استلق', category: 'أفعال'},
-  // أشياء
-  {word: 'كتاب', category: 'أشياء'},
-  {word: 'مصباح', category: 'أشياء'},
-  {word: 'دراجة', category: 'أشياء'},
-  {word: 'ساعة', category: 'أشياء'},
-  {word: 'نافذة', category: 'أشياء'},
-  // طعام
-  {word: 'خبز', category: 'طعام'},
-  {word: 'تفاحة', category: 'طعام'},
-  {word: 'حليب', category: 'طعام'},
-  {word: 'عصير', category: 'طعام'},
-  {word: 'مليش', category: 'طعام'},
-  // مشاهير
-  {word: ' محمد', category: 'مشاهير'},
-  {word: ' علي', category: 'مشاهير'},
-  {word: ' فهد', category: 'مشاهير'},
-  {word: 'سارة', category: 'مشاهير'},
-  {word: 'نورة', category: 'مشاهير'},
-  // أماكن
-  {word: 'مدرسة', category: 'أماكن'},
-  {word: 'بحر', category: 'أماكن'},
-  {word: 'جبل', category: 'أماكن'},
-  {word: 'مدينة', category: 'أماكن'},
-  {word: 'مطبخ', category: 'أماكن'},
-].map(w => ({...w}));
-
-function getWords(category) {
-  if (!category || category === 'الكل') return words;
-  return words.filter(w => w.category === category);
-}
-
-function pickWord(category) {
-  const list = getWords(category);
-  return list[Math.floor(Math.random() * list.length)];
-}
-
-function drawWord(word) {
-  ctx.fillStyle = '#000';
-  ctx.font = '28px ' + getComputedStyle(document.body).fontFamily.replace(/,/g, ', ');
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(word.word, canvas.width / 2, canvas.height / 2);
-}
-
-function saveCanvas() {
-  const data = canvas.toDataURL('image/png');
-  localStorage.setItem('draw_guess_canvas', data);
-}
-
-function loadCanvas() {
-  const data = localStorage.getItem('draw_guess_canvas');
-  if (data) {
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
-    img.src = data;
-  }
-}
-
-function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  saveCanvas();
-}
-
-function undo() {
-  // Simplified undo - just clear
-  clearCanvas();
-}
-
-// Start drawing game
-async function startDrawGame() {
-  const duration = parseInt(document.getElementById('duration').value);
-  const roles = parseInt(document.getElementById('roles').value);
-  const steal = parseInt(document.getElementById('steal').value) === 1;
-  const teams = [document.getElementById('team1').value, document.getElementById('team2').value];
-  currentWord = pickWord(teams);
-  words = [];
-  turn = 0;
-  skippedThisTurn = false;
-  document.getElementById('select').style.display = 'none';
-  document.getElementById('draw').style.display = 'block';
-  document.getElementById('controls').style.display = 'block';
-  document.getElementById('result').style.display = 'none';
-  document.getElementById('turn').style.display = 'flex';
-  document.getElementById('turnText').textContent = `دور الفريق ${currentTurn + 1} — الرسّام: ${teams[currentTurn % 2]}`;
-  document.getElementById('turnDrawer').textContent = `— الرسّام: ${teams[currentTurn % 2]}`;
-  document.getElementById('wordInput').value = currentWord.word;
-  document.getElementById('wordInput').disabled = true;
-  document.getElementById('stealBtn').disabled = !steal;
-  drawWord(currentWord);
-  saveCanvas();
-
-  // Start timer
-  if (duration > 0) {
-    let remaining = duration;
-    const timerEl = document.getElementById('turn');
-    timerEl.innerHTML = `<span id="turnText">دور الفريق ${currentTurn + 1} — الرسّام: ${teams[currentTurn % 2]}</span> <span style="font-weight:600">المتبقي: ${remaining} ثانية</span>`;
-    const interval = setInterval(() => {
-      remaining--;
-      timerEl.innerHTML = `<span id="turnText">دور الفريق ${currentTurn + 1} — الرسّام: ${teams[currentTurn % 2]}</span> <span style="font-weight:600">المتبقي: ${remaining} ثانية</span>`;
-      if (remaining <= 0) {
-        clearInterval(interval);
-        finishTurn();
-      }
-    }, 1000);
-  } else {
-    finishTurn();
-  }
-}
-
-function finishTurn() {
-  document.getElementById('controls').style.display = 'none';
-  document.getElementById('result').style.display = 'block';
-  if (currentWord && currentWord.word) {
-    document.getElementById('resultText').innerHTML = `
-      الكلمة: ${currentWord.word}<br>
-      <small>الفريق: ${teams[currentTurn % 2]}</small>
-    `;
-  }
-  document.getElementById('nextBtn').innerHTML = 'الدور التالي →';
-  skippedThisTurn = false;
-}
-
-function nextTurn() {
-  turn++;
-  if (turn >= roles) {
-    // Game over
-    document.getElementById('result').style.display = 'none';
-    document.getElementById('draw').style.display = 'none';
-    document.getElementById('turn').style.display = 'none';
-    return;
-  }
-  currentTurn = turn % 2;
-  currentWord = pickWord();
-  document.getElementById('turn').style.display = 'flex';
-  document.getElementById('turnText').textContent = `دور الفريق ${currentTurn + 1} — الرسّام: ${teams[currentTurn % 2]}`;
-  document.getElementById('turnDrawer').textContent = `— الرسّام: ${teams[currentTurn % 2]}`;
-  document.getElementById('controls').style.display = 'block';
-  document.getElementById('result').style.display = 'none';
-  drawWord(currentWord);
-  saveCanvas();
-  document.getElementById('wordInput').disabled = true;
-  document.getElementById('wordInput').value = currentWord.word;
-  document.getElementById('stealBtn').disabled = !steal;
-}
-
-// Submit guess
-function submitGuess() {
-  if (!currentWord) return;
-  const guess = document.getElementById('wordInput').value.trim();
-  if (guess === currentWord.word) {
-    document.getElementById('resultText').innerHTML = `
-      ✅ إجابة صحيحة! ${currentWord.word}<br>
-      <small>الفريق: ${teams[currentTurn % 2]}</small>
-    `;
-  } else {
-    document.getElementById('resultText').innerHTML = `
-      ❌ لم تختبر بأسلوب صحيح. حاولوا مرة أخرى!<br>
-      <small>التخمين: ${guess}</small>
-    `;
-  }
-  document.getElementById('result').style.display = 'block';
-  document.getElementById('controls').style.display = 'none';
-}
-
-function skipTurn() {
-  if (skippedThisTurn) return;
-  skippedThisTurn = true;
-  currentWord = pickWord();
-  drawWord(currentWord);
-  saveCanvas();
-  document.getElementById('wordInput').disabled = true;
-  document.getElementById('wordInput').value = currentWord.word;
-}
-
-// Setup
-function init() {
-  setTimeout(() => {
-    const cat = localStorage.getItem('draw_guess_team1') || 'فريق 1';
-    const cat2 = localStorage.getItem('draw_guess_team2') || 'فريق 2';
-    document.getElementById('team1').value = cat;
-    document.getElementById('team2').value = cat2;
-    document.getElementById('setup').innerHTML = `
-      <div class="dg dg-card" style="text-align:center">
-        <h2>أسماء الفريقين</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem auto">
-          <div>
-            <input id="team1" class="dg-input" placeholder="اسم الفريق 1" value="${cat}">
-            <button class="btn btn-primary btn-sm" onclick="saveTeam1()">حفظ</button>
-          </div>
-          <div>
-            <input id="team2" class="dg-input" placeholder="اسم الفريق 2" value="${cat2}">
-            <button class="btn btn-primary btn-sm" onclick="saveTeam2()">حفظ</button>
-          </div>
-        </div>
-        <div style="margin-top:.8rem">
-          <button class="btn btn-primary" onclick="start()">بدء اللعب →</button>
+      <div class="dg-steal-panel" id="dgStealPanel" style="display:none">
+        <h3>🔥 سرقة من الفريق الآخر</h3>
+        <p id="dgStealText"></p>
+        <div class="dg-steal-btns">
+          <button class="btn btn-success" onclick="dgStealResult(true)">✅ السرقة ناجحة</button>
+          <button class="btn btn-danger" onclick="dgStealResult(false)">❌ فشلت السرقة</button>
+          <button class="btn btn-secondary" onclick="dgStealCancel()">إلغاء</button>
         </div>
       </div>
-    `;
-  }, 200);
+    </div>
+
+    <div class="dg-side">
+      <div class="dg-ring" id="dgRing"><span id="dgRingNum">60</span></div>
+      <div class="dg-timer-label" id="dgTimerLabel">⏱️ المؤقّت</div>
+    </div>
+  </div>
+
+  <div class="dg-toolbar" id="dgToolbar">
+    <div class="dg-grp">
+      <button class="dg-tool active" data-tool="pen">✏️ قلم</button>
+      <button class="dg-tool" data-tool="eraser">🧽 ممحاة</button>
+    </div>
+    <div class="dg-grp dg-colors" id="dgColors">
+      <button class="dg-color active" data-color="#000000" style="background:#000000"></button>
+      <button class="dg-color" data-color="#e11d48" style="background:#e11d48"></button>
+      <button class="dg-color" data-color="#2563eb" style="background:#2563eb"></button>
+      <button class="dg-color" data-color="#16a34a" style="background:#16a34a"></button>
+      <button class="dg-color" data-color="#facc15" style="background:#facc15"></button>
+      <button class="dg-color" data-color="#8b5cf6" style="background:#8b5cf6"></button>
+    </div>
+    <div class="dg-grp">
+      <button class="dg-tool" id="dgUndoBtn" onclick="dgUndo()">↶ تراجع</button>
+      <button class="dg-tool" onclick="dgClear()">🗑 مسح الكل</button>
+    </div>
+  </div>
+
+  <div class="dg-wordbar">
+    <button class="dg-peek" id="dgPeekBtn" disabled>👁️ أرني الكلمة</button>
+    <span class="dg-hint" id="dgPeekHint">اضغط مطوّلاً لإظهار الكلمة للرسّام</span>
+  </div>
+
+  <div class="dg-controls" id="dgControls">
+    <button class="btn btn-success btn-lg" onclick="dgCorrect()">✅ إجابة صحيحة</button>
+    <button class="btn btn-secondary btn-lg" id="dgSkipBtn" onclick="dgSkip()">⏭️ تخطي</button>
+    <button class="btn btn-danger btn-lg" id="dgStealBtn" onclick="dgSteal()" disabled>🔥 سرقة</button>
+  </div>
+
+  <div class="dg-result" id="dgResult" style="display:none">
+    <div class="dg-result-title" id="dgResultTitle"></div>
+    <div class="dg-result-word" id="dgResultWord"></div>
+    <div class="dg-result-pts" id="dgResultPts"></div>
+    <button class="btn btn-primary btn-lg" id="dgNextBtn" onclick="dgNext()">الدور التالي →</button>
+  </div>
+</section>
+
+<!-- كشف الكلمة بالضغط المستمر -->
+<div class="dg-peek-overlay" id="dgPeekOverlay" style="display:none">
+  <div>
+    <div class="dg-peek-word" id="dgPeekWord"></div>
+    <div class="dg-peek-note" style="text-align:center">الكلمة السرية — أبعدها عن أنظار الفريق الآخر</div>
+  </div>
+</div>
+
+<!-- ===================== شاشة الاستكمال ===================== -->
+<div class="modal-overlay" id="dgResumeModal" style="display:none">
+  <div class="modal" style="max-width:440px">
+    <div class="dg-resume">
+      <h2>⏸️ لديك جولة غير منتهية</h2>
+      <p id="dgResumeInfo"></p>
+      <button class="btn btn-primary btn-lg" onclick="dgResume()">▶️ استكمال الجولة السابقة</button>
+      <button class="btn btn-secondary" onclick="dgNewSession()">جلسة جديدة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== شاشة النهاية (3 من 3) ===================== -->
+<div class="modal-overlay" id="dgEndModal" style="display:none">
+  <div class="modal" style="max-width:560px">
+    <h1 style="text-align:center;margin-top:0">🏁 انتهت الجولة</h1>
+    <div class="dg-end-winner" id="dgEndWinner" style="text-align:center"></div>
+    <div class="dg-end-scores" id="dgEndScores"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="dgNewSession()">🔄 جولة جديدة</button>
+      <button class="btn btn-secondary" onclick="window.location.href='/games'">🎮 العودة للألعاب</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* =====================================================================
+   ارسم وخمّن — منطق اللعبة.
+   ثوابت النقاط في أعلى الملف حتى تُعدَّل من مكان واحد.
+   ===================================================================== */
+var DG_PTS_EARLY = 300;   // إجابة صحيحة قبل نصف الوقت
+var DG_PTS_LATE  = 200;   // إجابة صحيحة بعد نصف الوقت
+var DG_PTS_STEAL = 100;   // سرقة ناجحة
+var DG_STEAL_AFTER = 0.5; // السرقة تُفعَّل بعد 50% من الوقت
+var DG_PICK_SECS = 10;    // مهلة اختيار الكلمة
+var DG_SETUP_KEY = 'ameen_dg_setup';
+var DG_SESSION_KEY = 'ameen_dg_session';
+var DG_WORDS_KEY = 'ameen_dg_bank_cache';
+var DG_DIFFICULTY = { 'سهل': 'easy', 'متوسط': 'medium', 'صعب': 'hard' };
+
+var DG = null;          // حالة الجولة الحالية
+var dgBank = [];        // بنك الكلمات (items من /api/content/draw_guess)
+var dgOffers = [];      // الكلمات المعروضة للاختيار في هذا الدور
+var dgCtx = null;
+var dgCanvas = null;
+var dgTool = 'pen';
+var dgColor = '#000000';
+var dgDrawing = false;
+var dgStack = [];       // تراجع: لقطات للوحة
+var dgTimerId = null;
+var dgPickTimerId = null;
+var dgRemaining = 0;
+
+/* ---------------- أدوات صوتية صغيرة (لا تعتمد على SoundManager) ---------------- */
+var dgAudio = null;
+function dgTone(freq, ms, delay) {
+  try {
+    if (!dgAudio) dgAudio = new (window.AudioContext || window.webkitAudioContext)();
+    var t = dgAudio.currentTime + (delay || 0);
+    var osc = dgAudio.createOscillator();
+    var gain = dgAudio.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
+    osc.connect(gain); gain.connect(dgAudio.destination);
+    osc.start(t); osc.stop(t + ms / 1000);
+  } catch (e) { /* الصوت غير متاح — لا نوقف اللعبة */ }
+}
+function dgTickSound() { dgTone(880, 90); }
+function dgBellSound() { dgTone(1200, 520); dgTone(800, 420, 0.16); }
+function dgGoodSound() { dgTone(660, 120); dgTone(990, 180, 0.12); }
+
+/* ---------------- أدوات مساعدة ---------------- */
+function dgShuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function dgEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function dgRoundLabel(i, total) { return 'الدور ' + (i + 1) + ' / ' + total; }
+
+/* ---------------- بنك الكلمات ---------------- */
+function dgPool() {
+  var cat = DG.setup.category, diff = DG.setup.difficulty;
+  var pool = dgBank.filter(function (w) {
+    if (cat && cat !== 'الكل' && w.category !== cat) return false;
+    if (diff && diff !== 'خلط' && w.difficulty !== DG_DIFFICULTY[diff]) return false;
+    return true;
+  });
+  if (!pool.length) pool = dgBank.slice();   // احتياط: أي كلمة متاحة
+  return pool;
 }
 
-function saveTeam1() {
-  localStorage.setItem('draw_guess_team1', document.getElementById('team1').value);
-  document.getElementById('team1').value = document.getElementById('team1').value;
+function dgOfferWords(count) {
+  return dgShuffle(dgPool()).slice(0, count || 3);
 }
 
-function saveTeam2() {
-  localStorage.setItem('draw_guess_team2', document.getElementById('team2').value);
-  document.getElementById('team2').value = document.getElementById('team2').value;
+/* ---------------- اللوحة (Canvas) ---------------- */
+function dgResizeCanvas() {
+  var holder = dgCanvas.parentElement;
+  var rect = holder.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  var h = dgCanvas.clientHeight || 430;
+  var snap = dgCanvas.width ? dgCanvas.toDataURL() : null;
+  dgCanvas.width = Math.max(1, Math.round(rect.width * dpr));
+  dgCanvas.height = Math.max(1, Math.round(h * dpr));
+  dgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  dgCtx.fillStyle = '#ffffff';
+  dgCtx.fillRect(0, 0, rect.width, h);
+  if (snap) {
+    var img = new Image();
+    img.onload = function () { dgCtx.drawImage(img, 0, 0, rect.width, h); };
+    img.src = snap;
+  }
 }
 
-function start() {
-  document.getElementById('setup').style.display = 'none';
-  startDrawGame();
+function dgPos(e) {
+  var r = dgCanvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function dgStrokeTo(p) {
+  dgCtx.strokeStyle = dgTool === 'eraser' ? '#ffffff' : dgColor;
+  dgCtx.lineWidth = dgTool === 'eraser' ? 34 : 5;
+  dgCtx.lineCap = 'round';
+  dgCtx.lineJoin = 'round';
+  dgCtx.lineTo(p.x, p.y);
+  dgCtx.stroke();
+}
+
+function dgPushHistory() {
+  try {
+    dgStack.push(dgCanvas.toDataURL());
+    if (dgStack.length > 40) dgStack.shift();
+  } catch (e) { /* تجاهل */ }
+}
+
+function dgUndo() {
+  if (!dgStack.length) { showToast('لا يوجد ما يُتراجع عنه', 'error'); return; }
+  var snap = dgStack.pop();
+  var img = new Image();
+  img.onload = function () {
+    var r = dgCanvas.getBoundingClientRect();
+    dgCtx.save();
+    dgCtx.setTransform(1, 0, 0, 1, 0, 0);
+    dgCtx.clearRect(0, 0, dgCanvas.width, dgCanvas.height);
+    dgCtx.restore();
+    dgCtx.fillStyle = '#ffffff';
+    dgCtx.fillRect(0, 0, r.width, r.height);
+    dgCtx.drawImage(img, 0, 0, r.width, r.height);
+  };
+  img.src = snap;
+}
+
+function dgClear() {
+  var r = dgCanvas.getBoundingClientRect();
+  dgCtx.fillStyle = '#ffffff';
+  dgCtx.fillRect(0, 0, r.width, r.height);
+}
+
+/* ---------------- الجولة ---------------- */
+function dgStart() {
+  var t1 = document.getElementById('dgName1').value.trim() || 'الفريق الأول';
+  var t2 = document.getElementById('dgName2').value.trim() || 'الفريق الثاني';
+  var d1 = document.getElementById('dgDrawer1').value.trim();
+  var d2 = document.getElementById('dgDrawer2').value.trim();
+  var setup = {
+    names: [t1, t2],
+    colors: [document.getElementById('dgColor1').value, document.getElementById('dgColor2').value],
+    drawers: [d1, d2],
+    duration: parseInt(document.getElementById('dgDuration').value, 10),
+    rounds: parseInt(document.getElementById('dgRounds').value, 10),
+    steal: document.getElementById('dgSteal').value === '1',
+    category: document.getElementById('dgCategory').value,
+    difficulty: document.getElementById('dgDifficulty').value,
+    reveal: (document.querySelector('input[name=dgReveal]:checked') || {}).value || 'hold'
+  };
+  try { localStorage.setItem(DG_SETUP_KEY, JSON.stringify(setup)); } catch (e) {}
+
+  DG = {
+    setup: setup,
+    teams: [
+      { name: t1, color: setup.colors[0], drawer: d1 },
+      { name: t2, color: setup.colors[1], drawer: d2 }
+    ],
+    scores: [0, 0],
+    turn: 0,
+    totalTurns: setup.rounds * 2,   // الدور الواحد = فرصة رسم لكل فريق
+    word: null,
+    skipped: false,
+    stealUsed: false,
+    stealOpen: false,
+    phase: 'pick',
+    over: false
+  };
+
+  document.getElementById('dgSetup').style.display = 'none';
+  document.getElementById('dgPlay').style.display = 'block';
+  dgSyncScorebar();
+  try { localStorage.removeItem(DG_SESSION_KEY); } catch (e) {}
+  dgBeginTurn();
+}
+
+function dgTeamIdx() { return DG.turn % 2; }
+function dgOtherIdx() { return DG.turn % 2 === 0 ? 1 : 0; }
+function dgDrawer(i) {
+  var t = DG.teams[i];
+  return t.drawer ? t.drawer : t.name;
+}
+
+function dgSyncScorebar() {
+  document.getElementById('dgScoreName1').textContent = DG.teams[0].name;
+  document.getElementById('dgScoreName2').textContent = DG.teams[1].name;
+  document.getElementById('dgScorePts1').textContent = DG.scores[0];
+  document.getElementById('dgScorePts2').textContent = DG.scores[1];
+  document.getElementById('dgScoreCard1').style.borderColor = DG.teams[0].color;
+  document.getElementById('dgScoreCard2').style.borderColor = DG.teams[1].color;
+  document.getElementById('dgScoreCard1').classList.toggle('is-turn', dgTeamIdx() === 0 && !DG.over);
+  document.getElementById('dgScoreCard2').classList.toggle('is-turn', dgTeamIdx() === 1 && !DG.over);
+}
+
+/* --- بداية الدور --- */
+function dgBeginTurn() {
+  DG.phase = 'pick';
+  DG.skipped = false;
+  DG.stealUsed = false;
+  DG.stealOpen = false;
+  DG.word = null;
+
+  document.getElementById('dgResult').style.display = 'none';
+  document.getElementById('dgControls').style.display = 'none';
+  document.getElementById('dgPeekBtn').disabled = true;
+  document.getElementById('dgStealBtn').disabled = true;
+  document.getElementById('dgStealBtn').textContent = '🔥 سرقة';
+  document.getElementById('dgSkipBtn').disabled = false;
+  document.getElementById('dgTurnPill').textContent =
+    dgRoundLabel(DG.turn, DG.totalTurns) + ' — دور ' + DG.teams[dgTeamIdx()].name +
+    ' · الرسّام: ' + dgDrawer(dgTeamIdx());
+  document.getElementById('dgFlip').style.display = 'none';
+  document.getElementById('dgTimerLabel').textContent = '⏱️ اختر الكلمة أولاً';
+  dgSetRing(100, DG.setup.duration);
+  dgSaveSession();          // نحفظ من بداية الدور حتى يمكن الاستكمال حتى أثناء اختيار الكلمة
+
+  var offers = dgOfferWords(3);
+  dgOffers = offers;
+  var row = document.getElementById('dgPickRow');
+  row.innerHTML = '';
+  offers.forEach(function (w, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = w.word;
+    b.setAttribute('aria-label', 'اختر الكلمة ' + w.word);
+    b.onclick = (function (idx) { return function () { dgChooseWord(idx); }; })(i);
+    row.appendChild(b);
+  });
+  document.getElementById('dgPick').style.display = 'flex';
+
+  var left = DG_PICK_SECS;
+  document.getElementById('dgPickTimer').textContent = left;
+  clearInterval(dgPickTimerId);
+  dgPickTimerId = setInterval(function () {
+    left--;
+    document.getElementById('dgPickTimer').textContent = Math.max(0, left);
+    if (left <= 0) {
+      clearInterval(dgPickTimerId);
+      dgChooseWord(0);   // انتهى الوقت — اختيار تلقائي
+    }
+  }, 1000);
+}
+
+function dgChooseWord(i) {
+  if (DG.phase !== 'pick') return;
+  clearInterval(dgPickTimerId);
+  var w = dgOffers[i] || dgOffers[0];
+  if (!w) return;
+  DG.word = w;
+  DG.phase = 'draw';
+
+  document.getElementById('dgPick').style.display = 'none';
+  document.getElementById('dgControls').style.display = 'flex';
+  document.getElementById('dgPeekBtn').disabled = false;
+  document.getElementById('dgPeekWord').textContent = w.word;
+
+  if (DG.setup.reveal === 'flip') {
+    var f = document.getElementById('dgFlip');
+    f.textContent = w.word;
+    f.style.display = 'block';
+    document.getElementById('dgPeekHint').textContent = 'الكلمة ظاهرة مقلوبة أسفل اللوحة';
+  } else {
+    document.getElementById('dgPeekHint').textContent = 'اضغط مطوّلاً لإظهار الكلمة للرسّام';
+  }
+
+  dgResizeCanvas();
+  dgStack = [];
+  dgSetRing(100, DG.setup.duration);
+  dgStartTimer(DG.setup.duration);
+  dgSaveSession();
+}
+
+/* --- المؤقّت --- */
+function dgSetRing(pct, seconds) {
+  document.getElementById('dgRing').style.setProperty('--dg-p', Math.max(0, Math.min(100, pct)));
+  document.getElementById('dgRingNum').textContent = seconds;
+}
+function dgSetRingColor(color) {
+  document.getElementById('dgRing').style.setProperty('--dg-ring-color', color);
+}
+
+function dgStartTimer(seconds) {
+  clearInterval(dgTimerId);
+  dgRemaining = seconds;
+  var total = seconds;
+  var lastTick = -1;
+  var stealUnlocked = false;
+  dgSetRing(100, seconds);
+  dgSetRingColor(DG.setup.steal ? DG.teams[dgOtherIdx()].color : 'var(--accent-blue)');
+  document.getElementById('dgTimerLabel').textContent = '⏱️ الوقت المتبقي';
+
+  dgTimerId = setInterval(function () {
+    var elapsed = total - dgRemaining;
+    dgSetRing((dgRemaining / total) * 100, dgRemaining);
+
+    if (dgRemaining <= 5 && dgRemaining > 0 && dgRemaining !== lastTick) {
+      dgSetRingColor('var(--accent-red)');
+      dgTickSound();
+      lastTick = dgRemaining;
+    }
+    if (!stealUnlocked && elapsed >= total * DG_STEAL_AFTER) {
+      stealUnlocked = true;
+      dgStealUnlock();
+    }
+    if (dgRemaining <= 0) {
+      clearInterval(dgTimerId);
+      dgBellSound();
+      dgTimeUp();
+    } else {
+      dgRemaining--;
+    }
+  }, 1000);
+}
+
+function dgStopTimer() { clearInterval(dgTimerId); }
+
+function dgTimeUp() {
+  if (DG.phase !== 'draw') return;
+  DG.phase = 'result';
+  dgStopTimer();
+  document.getElementById('dgStealBtn').disabled = true;
+  document.getElementById('dgPeekBtn').disabled = true;
+  document.getElementById('dgFlip').style.display = 'none';
+  dgShowResult('انتهى الوقت', 0, '⏰ انتهى الوقت دون إجابة');
+}
+
+/* --- النقاط --- */
+function dgCorrect() {
+  if (DG.phase !== 'draw') return;
+  DG.phase = 'result';
+  dgStopTimer();
+  var total = DG.setup.duration;
+  var early = (dgRemaining / total) > DG_STEAL_AFTER;
+  var pts = early ? DG_PTS_EARLY : DG_PTS_LATE;
+  DG.scores[dgTeamIdx()] += pts;
+  document.getElementById('dgStealBtn').disabled = true;
+  document.getElementById('dgPeekBtn').disabled = true;
+  document.getElementById('dgFlip').style.display = 'none';
+  dgGoodSound();
+  dgShowResult('إجابة صحيحة ✅', pts,
+    (early ? 'قبل' : 'بعد') + ' نصف الوقت — فريق ' + DG.teams[dgTeamIdx()].name);
+  dgSyncScorebar();
+}
+
+function dgSkip() {
+  if (DG.phase !== 'draw' || DG.skipped) return;
+  DG.skipped = true;
+  document.getElementById('dgSkipBtn').disabled = true;   // التخطي مرة واحدة فقط لكل دور
+  var pool = dgPool().filter(function (w) { return !DG.word || w.id !== DG.word.id; });
+  if (!pool.length) pool = dgPool();
+  var w = pool[Math.floor(Math.random() * pool.length)];
+  DG.word = w;
+  document.getElementById('dgPeekWord').textContent = w.word;
+  if (DG.setup.reveal === 'flip') {
+    var f = document.getElementById('dgFlip');
+    f.textContent = w.word;
+    f.style.display = 'block';
+  }
+  dgShowResultInline('⏭️ كلمة جديدة — المؤقّت يبقى كما هو');
+  dgSaveSession();
+}
+
+/* --- السرقة --- */
+function dgStealUnlock() {
+  if (!DG.setup.steal || DG.stealUsed || DG.stealOpen) return;
+  DG.stealOpen = true;
+  var btn = document.getElementById('dgStealBtn');
+  btn.disabled = false;
+  btn.textContent = '🔥 سرقة';
+  showToast('🔥 السرقة متاحة الآن للفريق الآخر');
+}
+
+function dgSteal() {
+  if (DG.phase !== 'draw' || !DG.stealOpen || DG.stealUsed) return;
+  var other = dgOtherIdx();
+  document.getElementById('dgStealText').textContent =
+    'فريق ' + DG.teams[other].name + ' يحاول السرقة — هل أصاب الكلمة؟';
+  document.getElementById('dgStealPanel').style.display = 'flex';
+}
+
+function dgStealCancel() {
+  document.getElementById('dgStealPanel').style.display = 'none';
+}
+
+function dgStealResult(hit) {
+  document.getElementById('dgStealPanel').style.display = 'none';
+  DG.stealUsed = true;
+  var btn = document.getElementById('dgStealBtn');
+  btn.disabled = true;
+  btn.textContent = '🔥 استُخدمت السرقة';
+
+  if (hit) {
+    var other = dgOtherIdx();
+    DG.phase = 'result';
+    dgStopTimer();
+    DG.scores[other] += DG_PTS_STEAL;
+    document.getElementById('dgPeekBtn').disabled = true;
+    document.getElementById('dgFlip').style.display = 'none';
+    dgGoodSound();
+    dgShowResult('سرقة ناجحة 🔥', DG_PTS_STEAL, 'فريق ' + DG.teams[other].name + ' خطف النقاط');
+    dgSyncScorebar();
+  } else {
+    showToast('❌ فشلت السرقة — يكمل فريق ' + DG.teams[dgTeamIdx()].name + ' الرسم', 'error');
+  }
+}
+
+/* --- عرض النتائج --- */
+function dgShowResultInline(text) {
+  var r = document.getElementById('dgResult');
+  document.getElementById('dgResultTitle').textContent = text;
+  document.getElementById('dgResultWord').textContent = DG.word ? DG.word.word : '';
+  document.getElementById('dgResultPts').innerHTML =
+    '⏳ الوقت المتبقي: <b>' + dgRemaining + ' ثانية</b>';
+  document.getElementById('dgNextBtn').style.display = 'none';
+  r.style.display = 'block';
+  setTimeout(function () { r.style.display = 'none'; }, 2200);
+}
+
+function dgShowResult(title, pts, note) {
+  var r = document.getElementById('dgResult');
+  document.getElementById('dgResultTitle').textContent = title;
+  document.getElementById('dgResultWord').textContent = DG.word ? DG.word.word : '';
+  document.getElementById('dgResultPts').innerHTML =
+    note + (pts ? ' · النقاط: <b>+' + pts + '</b>' : '');
+  var last = DG.turn >= DG.totalTurns - 1;
+  document.getElementById('dgNextBtn').textContent = last ? '🏁 عرض النتيجة النهائية' : 'الدور التالي →';
+  document.getElementById('dgNextBtn').style.display = '';
+  r.style.display = 'block';
+  dgSaveSession();
+}
+
+function dgNext() {
+  if (DG.turn >= DG.totalTurns - 1) { dgEnd(); return; }
+  DG.turn++;
+  dgSyncScorebar();
+  dgBeginTurn();
+}
+
+/* --- النهاية --- */
+function dgEnd() {
+  DG.phase = 'over';
+  DG.over = true;
+  dgStopTimer();
+  clearInterval(dgPickTimerId);
+  try { localStorage.removeItem(DG_SESSION_KEY); } catch (e) {}
+
+  var s = DG.scores;
+  var winText = s[0] > s[1] ? '🏆 الفائز: ' + DG.teams[0].name
+             : s[1] > s[0] ? '🏆 الفائز: ' + DG.teams[1].name
+             : '🤝 تعادل!';
+  document.getElementById('dgEndWinner').textContent = winText;
+  document.getElementById('dgEndScores').innerHTML =
+    '<div><div class="p">' + s[0] + '</div><div class="n">' + dgEsc(DG.teams[0].name) + '</div></div>' +
+    '<div><div class="p" style="color:var(--text-muted)">ضد</div></div>' +
+    '<div><div class="p">' + s[1] + '</div><div class="n">' + dgEsc(DG.teams[1].name) + '</div></div>';
+  document.getElementById('dgEndModal').classList.add('active');
+  dgGoodSound();
+}
+
+function dgNewSession() {
+  document.getElementById('dgEndModal').classList.remove('active');
+  document.getElementById('dgResumeModal').style.display = 'none';
+  try { localStorage.removeItem(DG_SESSION_KEY); } catch (e) {}
+  document.getElementById('dgPlay').style.display = 'none';
+  document.getElementById('dgSetup').style.display = 'block';
+  DG = null;
+  dgStopTimer();
+  clearInterval(dgPickTimerId);
+}
+
+/* --- حفظ/استكمال الجلسة --- */
+function dgSaveSession() {
+  if (!DG || DG.over) return;
+  try {
+    localStorage.setItem(DG_SESSION_KEY, JSON.stringify({
+      setup: DG.setup, turn: DG.turn, totalTurns: DG.totalTurns,
+      scores: DG.scores, names: [DG.teams[0].name, DG.teams[1].name],
+      colors: [DG.teams[0].color, DG.teams[1].color],
+      drawers: [DG.teams[0].drawer, DG.teams[1].drawer]
+    }));
+  } catch (e) {}
+}
+
+function dgResume() {
+  var raw = null;
+  try { raw = localStorage.getItem(DG_SESSION_KEY); } catch (e) {}
+  if (!raw) return;
+  var saved;
+  try { saved = JSON.parse(raw); } catch (e) { return; }
+  if (!saved || !saved.setup) return;
+
+  DG = {
+    setup: saved.setup,
+    teams: [
+      { name: saved.names[0], color: saved.colors[0], drawer: saved.drawers[0] },
+      { name: saved.names[1], color: saved.colors[1], drawer: saved.drawers[1] }
+    ],
+    scores: saved.scores || [0, 0],
+    turn: saved.turn || 0,
+    totalTurns: saved.totalTurns || saved.setup.rounds * 2,
+    word: null, skipped: false, stealUsed: false, stealOpen: false,
+    phase: 'pick', over: false
+  };
+
+  document.getElementById('dgResumeModal').style.display = 'none';
+  document.getElementById('dgSetup').style.display = 'none';
+  document.getElementById('dgPlay').style.display = 'block';
+  dgSyncScorebar();
+  showToast('▶️ تم الاستكمال من الدور ' + (DG.turn + 1));
+  dgBeginTurn();
+}
+
+/* ---------------- التهيئة ---------------- */
+function dgLoadBank() {
+  return fetch('/api/content/draw_guess?status=approved')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var items = (d && d.items) ? d.items : [];
+      if (!items.length) items = [{ id: 'w_fb', word: 'قمر', category: 'الكل', difficulty: 'easy' }];
+      dgBank = items;
+      try { localStorage.setItem(DG_WORDS_KEY, JSON.stringify(items)); } catch (e) {}
+      return items;
+    })
+    .catch(function () {
+      var cached = null;
+      try { cached = JSON.parse(localStorage.getItem(DG_WORDS_KEY) || 'null'); } catch (e) {}
+      dgBank = (cached && cached.length) ? cached
+        : [{ id: 'w_fb', word: 'قمر', category: 'الكل', difficulty: 'easy' }];
+      return dgBank;
+    });
+}
+
+function dgRestoreSetup() {
+  var raw = null;
+  try { raw = localStorage.getItem(DG_SETUP_KEY); } catch (e) {}
+  if (!raw) return;
+  var s;
+  try { s = JSON.parse(raw); } catch (e) { return; }
+  if (!s) return;
+  if (s.names) {
+    document.getElementById('dgName1').value = s.names[0] || '';
+    document.getElementById('dgName2').value = s.names[1] || '';
+  }
+  if (s.drawers) {
+    document.getElementById('dgDrawer1').value = s.drawers[0] || '';
+    document.getElementById('dgDrawer2').value = s.drawers[1] || '';
+  }
+  if (s.colors) {
+    document.getElementById('dgColor1').value = s.colors[0] || '#2563eb';
+    document.getElementById('dgColor2').value = s.colors[1] || '#16a34a';
+  }
+  if (s.duration) document.getElementById('dgDuration').value = String(s.duration);
+  if (s.rounds) document.getElementById('dgRounds').value = String(s.rounds);
+  if (typeof s.steal === 'boolean') document.getElementById('dgSteal').value = s.steal ? '1' : '0';
+  if (s.category) document.getElementById('dgCategory').value = s.category;
+  if (s.difficulty) document.getElementById('dgDifficulty').value = s.difficulty;
+  if (s.reveal) {
+    var el = document.querySelector('input[name=dgReveal][value="' + s.reveal + '"]');
+    if (el) el.checked = true;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  dgCanvas = document.getElementById('dgCanvas');
+  dgCtx = dgCanvas.getContext('2d');
+
+  document.querySelectorAll('#dgColors .dg-color').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('#dgColors .dg-color').forEach(function (x) {
+        x.classList.remove('active'); x.style.borderColor = '';
+      });
+      b.classList.add('active');
+      b.style.borderColor = '#fff';
+      dgColor = b.getAttribute('data-color');
+      if (dgTool === 'eraser') {
+        dgTool = 'pen';
+        document.querySelectorAll('[data-tool]').forEach(function (t) {
+          t.classList.toggle('active', t.getAttribute('data-tool') === 'pen');
+        });
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-tool]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-tool]').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      dgTool = b.getAttribute('data-tool');
+    });
+  });
+
+  // الرسم — Pointer Events (يدعم اللمس والقلم والفأرة)
+  dgCanvas.addEventListener('pointerdown', function (e) {
+    if (!DG || DG.phase !== 'draw') return;
+    e.preventDefault();
+    dgCanvas.setPointerCapture(e.pointerId);
+    dgDrawing = true;
+    dgPushHistory();
+    dgCtx.strokeStyle = dgTool === 'eraser' ? '#ffffff' : dgColor;
+    dgCtx.lineWidth = dgTool === 'eraser' ? 34 : 5;
+    dgCtx.lineCap = 'round';
+    dgCtx.lineJoin = 'round';
+    dgCtx.beginPath();
+    var p = dgPos(e);
+    dgCtx.moveTo(p.x, p.y);
+    dgCtx.lineTo(p.x + 0.01, p.y + 0.01);
+    dgCtx.stroke();
+  });
+  dgCanvas.addEventListener('pointermove', function (e) {
+    if (!dgDrawing) return;
+    e.preventDefault();
+    dgStrokeTo(dgPos(e));
+  });
+  function dgEndStroke() { dgDrawing = false; }
+  dgCanvas.addEventListener('pointerup', dgEndStroke);
+  dgCanvas.addEventListener('pointercancel', dgEndStroke);
+  dgCanvas.addEventListener('pointerleave', dgEndStroke);
+
+  // زر «أرني الكلمة» — ضغط مستمر فقط
+  var peek = document.getElementById('dgPeekBtn');
+  function dgPeekShow() {
+    if (!DG || DG.phase !== 'draw') return;
+    document.getElementById('dgPeekOverlay').style.display = 'grid';
+  }
+  function dgPeekHide() {
+    document.getElementById('dgPeekOverlay').style.display = 'none';
+  }
+  peek.addEventListener('pointerdown', function (e) { e.preventDefault(); dgPeekShow(); });
+  peek.addEventListener('pointerup', dgPeekHide);
+  peek.addEventListener('pointerleave', dgPeekHide);
+  peek.addEventListener('pointercancel', dgPeekHide);
+  peek.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  window.addEventListener('resize', function () {
+    if (DG && DG.phase === 'draw') dgResizeCanvas();
+  });
+
+  dgRestoreSetup();
+  dgLoadBank().then(function () {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(DG_SESSION_KEY) || 'null'); } catch (e) {}
+    if (saved && saved.setup) {
+      document.getElementById('dgResumeInfo').textContent =
+        'الجولة: ' + saved.setup.rounds + ' أدوار · الدور الحالي: ' +
+        ((saved.turn || 0) + 1) + ' · النتيجة: ' +
+        (saved.scores ? saved.scores[0] + ' - ' + saved.scores[1] : '0 - 0');
+      document.getElementById('dgResumeModal').style.display = 'grid';
+    }
+  });
+});
 </script>
 {% endblock %}

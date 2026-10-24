@@ -254,6 +254,7 @@
 
     <div style="text-align:center;margin-top:.5rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;">
         <button class="fs-btn" onclick="switchTurn()" title="ينقل الدور إلى الفريق الآخر فوراً">🔁 تبديل الدور</button>
+        <button class="fs-btn" onclick="editScores()" title="تصحيح نقاط الفريقين يدوياً">✏️ تعديل النقاط</button>
         <button class="fs-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
         <button class="btn btn-secondary btn-sm" onclick="resetQuizGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة</button>
         <button class="btn btn-secondary btn-sm" onclick="window.location.href='/'">🏠 الرئيسية</button>
@@ -321,6 +322,21 @@
         <div class="modal-actions">
             <button class="btn btn-primary" onclick="resetQuizGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> العب مرة أخرى</button>
             <button class="btn btn-secondary" onclick="window.location.href='/'">🏠 الرئيسية</button>
+        </div>
+    </div>
+</div>
+
+<!-- تعديل النقاط يدوياً (للحكم) -->
+<div id="scoreModal" class="modal-overlay">
+    <div class="modal" style="max-width:440px">
+        <h2 style="text-align:center;margin-top:0">✏️ تعديل النقاط</h2>
+        <p style="text-align:center;color:var(--text-secondary);font-size:var(--font-size-sm);margin-top:0">
+            صحّح نقاط الفريقين يدوياً — يُطبَّق فور الحفظ.
+        </p>
+        <div id="scoreRows"></div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="scoreSave()">حفظ</button>
+            <button class="btn btn-secondary" onclick="scoreCancel()">إلغاء</button>
         </div>
     </div>
 </div>
@@ -934,6 +950,67 @@ function suddenDeath() {
             document.getElementById('questionModal').classList.add('active');
             startTimer(30);
         });
+}
+
+/* ===== تعديل النقاط يدوياً (للحكم) ===== */
+function editScores() {
+    if (!QS || QS.over) { showToast('لا توجد جولة جارية', 'error'); return; }
+    var rows = document.getElementById('scoreRows');
+    rows.innerHTML = '';
+    [1, 2].forEach(function (n) {
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;' +
+                             'padding:.6rem .8rem;border:1px solid var(--border-color);' +
+                             'border-radius:var(--radius);background:var(--bg-secondary)';
+        var name = document.createElement('span');
+        name.style.cssText = 'flex:1 1 auto;font-weight:800;font-size:var(--font-size-sm)';
+        name.textContent = n === 1 ? QS.team1 : QS.team2;
+        var minus = document.createElement('button');
+        minus.type = 'button';
+        minus.className = 'btn btn-secondary btn-sm';
+        minus.textContent = '−';
+        minus.setAttribute('aria-label', 'إنقاص نقاط ' + name.textContent);
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.step = '50';
+        input.value = n === 1 ? QS.s1 : QS.s2;
+        input.setAttribute('aria-label', 'نقاط ' + name.textContent);
+        input.style.cssText = 'width:6rem;padding:.5rem;border-radius:var(--radius-sm);text-align:center;' +
+                              'border:1px solid var(--border-color);background:var(--bg-inset);' +
+                              'color:var(--text-primary);font-family:inherit;font-weight:900';
+        var plus = document.createElement('button');
+        plus.type = 'button';
+        plus.className = 'btn btn-secondary btn-sm';
+        plus.textContent = '+';
+        plus.setAttribute('aria-label', 'زيادة نقاط ' + name.textContent);
+        minus.onclick = function () {
+            input.value = Math.max(0, (parseInt(input.value, 10) || 0) - 100);
+        };
+        plus.onclick = function () {
+            input.value = (parseInt(input.value, 10) || 0) + 100;
+        };
+        wrap.appendChild(name); wrap.appendChild(minus);
+        wrap.appendChild(input); wrap.appendChild(plus);
+        rows.appendChild(wrap);
+    });
+    document.getElementById('scoreModal').classList.add('active');
+}
+
+function scoreSave() {
+    if (!QS) return;
+    var inputs = document.querySelectorAll('#scoreRows input[type=number]');
+    if (inputs.length >= 2) {
+        QS.s1 = Math.max(0, parseInt(inputs[0].value, 10) || 0);
+        QS.s2 = Math.max(0, parseInt(inputs[1].value, 10) || 0);
+        updateHUD();
+        showToast('✏️ تم تحديث النقاط: ' + QS.s1 + ' - ' + QS.s2);
+    }
+    scoreCancel();
+}
+
+function scoreCancel() {
+    document.getElementById('scoreModal').classList.remove('active');
 }
 
 function resetQuizGame() {
