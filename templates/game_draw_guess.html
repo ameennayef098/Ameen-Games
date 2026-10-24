@@ -142,6 +142,28 @@
   .dg-board-row{flex-direction:column}
   .dg-side{width:100%;flex-direction:row;justify-content:center;flex-wrap:wrap}
 }
+
+/* --- مؤشر النصفين: النصف الأول للفريق صاحب الدور، الثاني للسرقة --- */
+.dg-phase{margin-top:.5rem;padding:.35rem .9rem;border-radius:var(--radius-pill);
+  font-weight:900;font-size:var(--font-size-xs);text-align:center;
+  border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-secondary);
+  transition:var(--transition-fast)}
+.dg-phase.half2{border-color:var(--accent-red);color:var(--accent-red);background:rgba(220,38,38,.13)}
+
+/* --- إظهار الإجابة للفريقين --- */
+.dg-shown-word{display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;
+  margin-bottom:var(--space-3);padding:.55rem .9rem;border-radius:var(--radius-sm);
+  background:var(--accent-gold);color:#231600;font-weight:900;font-size:var(--font-size-sm);text-align:center}
+.dg-shown-word b{font-size:var(--font-size-lg)}
+
+/* --- شاشة تسليم الجهاز للرسّام --- */
+.dg-handoff .modal{text-align:center}
+.dg-handoff-emoji{font-size:3.2rem;line-height:1;display:block;margin-bottom:var(--space-3)}
+.dg-handoff h2{margin:0 0 var(--space-2);font-size:var(--font-size-xl)}
+.dg-handoff p{margin:0 0 var(--space-4);color:var(--text-secondary);
+  font-size:var(--font-size-sm);line-height:var(--leading-normal)}
+.dg-handoff .btn{width:100%;justify-content:center;padding-block:.85rem}
+.dg-handoff-note{margin:var(--space-3) 0 0;font-size:var(--font-size-xs);color:var(--text-muted);font-weight:700}
 </style>
 
 <!-- ===================== شاشة الإعداد (1 من 3) ===================== -->
@@ -247,6 +269,10 @@
 
   <div class="dg-warn" id="dgWarn">ممنوع كتابة حروف أو أرقام! ⚠️</div>
 
+  <div class="dg-shown-word" id="dgShownWord" style="display:none">
+    <span>الإجابة للفريقين:</span><b id="dgShownWordText"></b>
+  </div>
+
   <div class="dg-board-row">
     <div class="dg-canvas-holder">
       <canvas id="dgCanvas" class="dg-canvas"></canvas>
@@ -272,6 +298,7 @@
     <div class="dg-side">
       <div class="dg-ring" id="dgRing"><span id="dgRingNum">60</span></div>
       <div class="dg-timer-label" id="dgTimerLabel">⏱️ المؤقّت</div>
+      <div class="dg-phase" id="dgPhase">🎨 اختر الكلمة السرية</div>
     </div>
   </div>
 
@@ -303,6 +330,7 @@
     <button class="btn btn-success btn-lg" onclick="dgCorrect()">✅ إجابة صحيحة</button>
     <button class="btn btn-secondary btn-lg" id="dgSkipBtn" onclick="dgSkip()">⏭️ تخطي</button>
     <button class="btn btn-danger btn-lg" id="dgStealBtn" onclick="dgSteal()" disabled>🔥 سرقة</button>
+    <button class="btn btn-secondary btn-lg" id="dgShowAllBtn" onclick="dgRevealForTeams()" disabled>👁️ أظهر الإجابة للفريقين</button>
   </div>
 
   <div class="dg-result" id="dgResult" style="display:none">
@@ -321,6 +349,19 @@
   </div>
 </div>
 
+<!-- ===================== شاشة تسليم الجهاز للرسّام ===================== -->
+<div class="modal-overlay dg-handoff" id="dgHandoff" style="display:none">
+  <div class="modal" style="max-width:440px">
+    <div class="dg-handoff">
+      <span class="dg-handoff-emoji" aria-hidden="true">📱</span>
+      <h2>أعطِ الجهاز للرسّام</h2>
+      <p>الفريقان يشاهدان الشاشة من بعيد.<br>عندما تكون مستعدًا، اضغط الزر بالأسفل.</p>
+      <button class="btn btn-primary btn-lg" onclick="dgIamDrawer()">✅ أنا الرسّام</button>
+      <p class="dg-handoff-note">الكلمة السرية تظهر لك وحدك — لا تُظهرها للفريق الآخر</p>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== شاشة الاستكمال ===================== -->
 <div class="modal-overlay" id="dgResumeModal" style="display:none">
   <div class="modal" style="max-width:440px">
@@ -334,7 +375,9 @@
 </div>
 
 <!-- ===================== شاشة النهاية (3 من 3) ===================== -->
-<div class="modal-overlay" id="dgEndModal" style="display:none">
+<!-- بلا display:none مضمّن: الكلاس .modal-overlay.active هو ما يُظهرها،
+     والنمط المضمّن كان يتغلّب عليه فتبقى النافذة مخفية رغم إضافة الكلاس. -->
+<div class="modal-overlay" id="dgEndModal">
   <div class="modal" style="max-width:560px">
     <h1 style="text-align:center;margin-top:0">🏁 انتهت الجولة</h1>
     <div class="dg-end-winner" id="dgEndWinner" style="text-align:center"></div>
@@ -528,6 +571,7 @@ function dgStart() {
 
   document.getElementById('dgSetup').style.display = 'none';
   document.getElementById('dgPlay').style.display = 'block';
+  document.getElementById('dgHandoff').style.display = 'none';
   dgSyncScorebar();
   try { localStorage.removeItem(DG_SESSION_KEY); } catch (e) {}
   dgBeginTurn();
@@ -551,6 +595,43 @@ function dgSyncScorebar() {
   document.getElementById('dgScoreCard2').classList.toggle('is-turn', dgTeamIdx() === 1 && !DG.over);
 }
 
+/* --- شاشة تسليم الجهاز للرسّام --- */
+function dgIamDrawer() {
+  document.getElementById('dgHandoff').style.display = 'none';
+  showToast('🎨 أنت الرسّام — جهّز إعدادات الجولة');
+  var setup = document.getElementById('dgSetup');
+  if (setup && setup.scrollIntoView) setup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function dgShowHandoff(text) {
+  var h = document.getElementById('dgHandoff');
+  if (!h) return;
+  if (text) {
+    var p = h.querySelector('.dg-handoff p');
+    if (p) p.innerHTML = text;
+  }
+  h.style.display = 'grid';
+}
+
+function dgSetPhase(text, secondHalf) {
+  var el = document.getElementById('dgPhase');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('half2', !!secondHalf);
+}
+
+/* --- إظهار الإجابة للفريقين --- */
+function dgRevealForTeams() {
+  if (!DG || DG.phase !== 'draw' || !DG.word) return;
+  DG.wordShown = true;
+  document.getElementById('dgShownWordText').textContent = DG.word.word;
+  document.getElementById('dgShownWord').style.display = 'flex';
+  var btn = document.getElementById('dgShowAllBtn');
+  btn.disabled = true;
+  btn.textContent = '👁️ الإجابة ظاهرة للفريقين';
+  showToast('👁️ أُظهرت الإجابة للفريقين');
+}
+
 /* --- بداية الدور --- */
 function dgBeginTurn() {
   DG.phase = 'pick';
@@ -558,6 +639,7 @@ function dgBeginTurn() {
   DG.stealUsed = false;
   DG.stealOpen = false;
   DG.word = null;
+  DG.wordShown = false;
 
   document.getElementById('dgResult').style.display = 'none';
   document.getElementById('dgControls').style.display = 'none';
@@ -565,11 +647,15 @@ function dgBeginTurn() {
   document.getElementById('dgStealBtn').disabled = true;
   document.getElementById('dgStealBtn').textContent = '🔥 سرقة';
   document.getElementById('dgSkipBtn').disabled = false;
+  document.getElementById('dgShowAllBtn').disabled = true;
+  document.getElementById('dgShowAllBtn').textContent = '👁️ أظهر الإجابة للفريقين';
+  document.getElementById('dgShownWord').style.display = 'none';
   document.getElementById('dgTurnPill').textContent =
     dgRoundLabel(DG.turn, DG.totalTurns) + ' — دور ' + DG.teams[dgTeamIdx()].name +
     ' · الرسّام: ' + dgDrawer(dgTeamIdx());
   document.getElementById('dgFlip').style.display = 'none';
   document.getElementById('dgTimerLabel').textContent = '⏱️ اختر الكلمة أولاً';
+  dgSetPhase('🎨 اختر الكلمة السرية', false);
   dgSetRing(100, DG.setup.duration);
   dgSaveSession();          // نحفظ من بداية الدور حتى يمكن الاستكمال حتى أثناء اختيار الكلمة
 
@@ -611,6 +697,7 @@ function dgChooseWord(i) {
   document.getElementById('dgPick').style.display = 'none';
   document.getElementById('dgControls').style.display = 'flex';
   document.getElementById('dgPeekBtn').disabled = false;
+  document.getElementById('dgShowAllBtn').disabled = false;
   document.getElementById('dgPeekWord').textContent = w.word;
 
   if (DG.setup.reveal === 'flip') {
@@ -625,6 +712,7 @@ function dgChooseWord(i) {
   dgResizeCanvas();
   dgStack = [];
   dgSetRing(100, DG.setup.duration);
+  dgPhaseLabel();
   dgStartTimer(DG.setup.duration);
   dgSaveSession();
 }
@@ -651,6 +739,7 @@ function dgStartTimer(seconds) {
   dgTimerId = setInterval(function () {
     var elapsed = total - dgRemaining;
     dgSetRing((dgRemaining / total) * 100, dgRemaining);
+    dgPhaseLabel();
 
     if (dgRemaining <= 5 && dgRemaining > 0 && dgRemaining !== lastTick) {
       dgSetRingColor('var(--accent-red)');
@@ -671,6 +760,22 @@ function dgStartTimer(seconds) {
   }, 1000);
 }
 
+/* --- مؤشر النصفين --- */
+function dgPhaseLabel() {
+  var total = DG.setup.duration;
+  var inSecondHalf = dgRemaining <= total * DG_STEAL_AFTER;
+  if (!DG.setup.steal) {
+    dgSetPhase('⏱️ الوقت كامل لفريق ' + DG.teams[dgTeamIdx()].name, false);
+    return inSecondHalf;
+  }
+  if (inSecondHalf) {
+    dgSetPhase('🔥 النصف الثاني — السرقة مفعّلة للفريق الآخر', true);
+  } else {
+    dgSetPhase('⏱️ النصف الأول — ' + DG.teams[dgTeamIdx()].name + ' يخمّن فقط', false);
+  }
+  return inSecondHalf;
+}
+
 function dgStopTimer() { clearInterval(dgTimerId); }
 
 function dgTimeUp() {
@@ -679,7 +784,9 @@ function dgTimeUp() {
   dgStopTimer();
   document.getElementById('dgStealBtn').disabled = true;
   document.getElementById('dgPeekBtn').disabled = true;
+  document.getElementById('dgShowAllBtn').disabled = true;
   document.getElementById('dgFlip').style.display = 'none';
+  dgSetPhase('انتهى الدور', false);
   dgShowResult('انتهى الوقت', 0, '⏰ انتهى الوقت دون إجابة');
 }
 
@@ -694,7 +801,9 @@ function dgCorrect() {
   DG.scores[dgTeamIdx()] += pts;
   document.getElementById('dgStealBtn').disabled = true;
   document.getElementById('dgPeekBtn').disabled = true;
+  document.getElementById('dgShowAllBtn').disabled = true;
   document.getElementById('dgFlip').style.display = 'none';
+  dgSetPhase('انتهى الدور', false);
   dgGoodSound();
   dgShowResult('إجابة صحيحة ✅', pts,
     (early ? 'قبل' : 'بعد') + ' نصف الوقت — فريق ' + DG.teams[dgTeamIdx()].name);
@@ -754,7 +863,9 @@ function dgStealResult(hit) {
     dgStopTimer();
     DG.scores[other] += DG_PTS_STEAL;
     document.getElementById('dgPeekBtn').disabled = true;
+    document.getElementById('dgShowAllBtn').disabled = true;
     document.getElementById('dgFlip').style.display = 'none';
+    dgSetPhase('انتهى الدور', false);
     dgGoodSound();
     dgShowResult('سرقة ناجحة 🔥', DG_PTS_STEAL, 'فريق ' + DG.teams[other].name + ' خطف النقاط');
     dgSyncScorebar();
@@ -825,6 +936,7 @@ function dgNewSession() {
   DG = null;
   dgStopTimer();
   clearInterval(dgPickTimerId);
+  dgShowHandoff('الفريقان يشاهدان الشاشة من بعيد.<br>أعطِ الجهاز للرسّام ثم اضغط «أنا الرسّام».');
 }
 
 /* --- حفظ/استكمال الجلسة --- */
@@ -1004,6 +1116,9 @@ document.addEventListener('DOMContentLoaded', function () {
         ((saved.turn || 0) + 1) + ' · النتيجة: ' +
         (saved.scores ? saved.scores[0] + ' - ' + saved.scores[1] : '0 - 0');
       document.getElementById('dgResumeModal').style.display = 'grid';
+    } else {
+      // أول شي: تسليم الجهاز للرسّام
+      dgShowHandoff();
     }
   });
 });

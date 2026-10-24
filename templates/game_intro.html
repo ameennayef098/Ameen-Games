@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.gi{max-width:760px;margin:0 auto;padding:var(--space-5) var(--space-3)}
+.gi-head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)}
+.gi-head .icon-chip{width:3.2rem;height:3.2rem;border-radius:var(--radius);display:grid;place-items:center;
+  color:#041022;flex:0 0 auto}
+.gi-head .icon-chip .ico{width:1.7rem;height:1.7rem}
+.gi-head h1{margin:0;font-size:var(--font-size-2xl);line-height:1.25}
+.gi-type{display:inline-block;margin:.2rem 0 0;font-size:var(--font-size-xs);font-weight:800;
+  color:var(--text-secondary);padding:.15rem .7rem;border-radius:var(--radius-pill);
+  background:var(--bg-inset);border:1px solid var(--border-color)}
+.gi-lead{font-size:var(--font-size-base);line-height:var(--leading-relaxed);color:var(--text-primary);
+  margin:0 0 var(--space-5);padding:var(--space-4);background:var(--bg-card);
+  border:1px solid var(--border-color);border-radius:var(--radius-lg)}
+.gi-steps{list-style:none;counter-reset:gi;margin:0 0 var(--space-5);padding:0;
+  display:flex;flex-direction:column;gap:var(--space-2)}
+.gi-steps li{counter-increment:gi;display:flex;align-items:flex-start;gap:var(--space-3);
+  padding:var(--space-3) var(--space-4);background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius);font-size:var(--font-size-sm);line-height:var(--leading-normal)}
+.gi-steps li::before{content:counter(gi);flex:0 0 auto;width:1.7rem;height:1.7rem;border-radius:50%;
+  display:grid;place-items:center;font-weight:900;font-size:var(--font-size-xs);
+  color:#041022;background:var(--gradient-brand)}
+.gi-tip{display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-5);
+  padding:var(--space-3) var(--space-4);background:var(--accent-blue-tint);
+  border:1px solid var(--accent-blue);border-radius:var(--radius);
+  color:var(--text-primary);font-size:var(--font-size-sm);line-height:var(--leading-normal)}
+.gi-tip .ico{flex:0 0 auto;margin-top:.1rem;color:var(--accent-blue)}
+.gi-actions{display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-3)}
+.gi-actions button{width:100%;justify-content:center;text-align:center}
+.gi-actions .btn-primary{font-size:var(--font-size-base)}
+.gi-note{font-size:var(--font-size-xs);color:var(--text-muted);text-align:center;margin:0 0 var(--space-3)}
+.gi-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);
+  flex-wrap:wrap;font-size:var(--font-size-xs);font-weight:700}
+.gi-foot a{color:var(--accent-blue)}
+.gi-foot a:hover{text-decoration:underline}
+@media (min-width:640px){
+  .gi-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-3)}
+  .gi-actions .btn-primary{grid-column:1/-1;padding-block:.85rem}
+}
+</style>
+
+<section class="gi">
+    <header class="gi-head">
+        <span class="icon-chip" style="background:{{ color }}"><svg class="ico" aria-hidden="true"><use href="#{{ icon }}"></use></svg></span>
+        <div>
+            <h1>{{ name }}</h1>
+            <span class="gi-type">{{ type }}</span>
+        </div>
+    </header>
+
+    <p class="gi-lead">{{ lead }}</p>
+
+    <ol class="gi-steps">
+        {% for step in steps %}<li>{{ step }}</li>{% endfor %}
+    </ol>
+
+    {% if tip %}
+    <div class="gi-tip">
+        <svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg>
+        <p style="margin:0">{{ tip }}</p>
+    </div>
+    {% endif %}
+
+    <div class="gi-actions">
+        <button class="btn btn-primary btn-lg" type="button" onclick="introNext()">التالي ←</button>
+        <button class="btn btn-secondary" type="button" onclick="introSkipOne()">لا تظهر الشرح لهذه اللعبة فقط</button>
+        <button class="btn btn-secondary" type="button" onclick="introSkipAll()">لا تظهر الشرح لجميع الألعاب</button>
+    </div>
+
+    <p class="gi-note">اختيارك يُحفظ على هذا الجهاز فقط.</p>
+
+    <div class="gi-foot">
+        <a href="/how-to-play">طريقة لعب كل الألعاب</a>
+        <a href="/games">→ العودة إلى الألعاب</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var GI_GAME = "{{ game }}";
+var GI_COOKIE = "ameen_intro";
+var GI_ALL_COOKIE = "ameen_intro_all";
+var GI_VISIT_COOKIE = "ameen_intro_visit";
+var GI_MAX_AGE = 60 * 60 * 24 * 365;
+
+function giReadCookie(name) {
+    var parts = String(document.cookie || "").split(";");
+    for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].trim();
+        if (p.indexOf(name + "=") === 0) return p.slice(name.length + 1);
+    }
+    return "";
+}
+
+function giWriteCookie(name, value, sessionOnly) {
+    document.cookie = name + "=" + encodeURIComponent(value) +
+        "; path=/" + (sessionOnly ? "" : "; max-age=" + GI_MAX_AGE) + "; SameSite=Lax";
+}
+
+// «التالي»: يتجاوز الشرح لهذه الجلسة فقط — بلا حفظ دائم، وبلا حلقة إعادة للشرح.
+function introNext() {
+    giWriteCookie(GI_VISIT_COOKIE, "1", true);
+    window.location.href = "/game/" + GI_GAME;
+}
+
+function introSkipOne() {
+    var raw = giReadCookie(GI_COOKIE);
+    var list = raw ? raw.split(",") : [];
+    if (list.indexOf(GI_GAME) < 0) list.push(GI_GAME);
+    giWriteCookie(GI_COOKIE, list.join(","));
+    window.location.href = "/game/" + GI_GAME;
+}
+
+function introSkipAll() {
+    giWriteCookie(GI_ALL_COOKIE, "1");
+    window.location.href = "/game/" + GI_GAME;
+}
+</script>
+{% endblock %}
