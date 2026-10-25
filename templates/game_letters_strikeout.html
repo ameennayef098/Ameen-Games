@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* =====================================================================
+   «شطب الحروف» — مسابقة حروف تقرأ من بنك «س.ج».
+   الأسئلة تأتي من /api/letters-strikeout/* ، والبنك هو نفسه بنك س.ج.
+   ===================================================================== */
+.st-wrap{max-width:940px;margin:0 auto;padding:var(--space-5) var(--space-4) var(--space-8)}
+.st-top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap}
+.st-top h1{margin:0;font-size:var(--font-size-xl);display:flex;align-items:center;gap:var(--space-2)}
+.st-badge{font-size:var(--font-size-xs);font-weight:700;padding:.2rem .7rem;border-radius:var(--radius-pill);
+  background:var(--accent-gold-tint);color:var(--accent-gold);border:1px solid rgba(246,167,20,.34)}
+.st-board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--space-2);margin:var(--space-4) 0}
+.st-cell{position:relative;display:grid;place-items:center;min-height:3.4rem;border-radius:var(--radius);
+  border:1px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;
+  font-family:var(--font-display);font-weight:800;font-size:1.15rem;color:var(--text-primary);
+  transition:var(--transition-fast);overflow:hidden}
+.st-cell:hover:not(:disabled){background:var(--bg-card-hover);transform:translateY(-2px);border-color:var(--accent-gold)}
+.st-cell:disabled{cursor:default;opacity:.42}
+.st-cell.done{background:var(--accent-gold-tint);border-color:rgba(246,167,20,.5);color:var(--accent-gold)}
+.st-cell.wrong{background:var(--accent-red-tint);border-color:rgba(240,82,79,.5);color:#ffa3a1}
+.st-cell .st-mark{position:absolute;inset-inline-start:.3rem;top:.2rem;font-size:.62rem;font-weight:800;opacity:.9}
+.st-teambar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-3);margin:var(--space-3) 0}
+.st-team{padding:var(--space-3);border-radius:var(--radius);border:1px solid var(--border-color);
+  background:var(--bg-card);text-align:center}
+.st-team.active{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-blue-tint)}
+.st-team b{display:block;font-size:var(--font-size-lg)}
+.st-team .st-score{font-family:var(--num-font);font-size:1.9rem;font-weight:900;color:var(--accent-gold);line-height:1.1}
+.st-q{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);
+  padding:var(--space-5);margin:var(--space-3) 0;text-align:center}
+.st-q .st-turn{font-size:var(--font-size-sm);color:var(--text-secondary)}
+.st-q .st-text{font-size:var(--font-size-lg);font-weight:800;line-height:1.9;margin:var(--space-3) 0;
+  background:var(--bg-inset);border-radius:var(--radius);padding:var(--space-4)}
+.st-timer{font-family:var(--num-font);font-size:2.6rem;font-weight:900;color:var(--accent-gold);line-height:1}
+.st-timer.low{color:var(--accent-red)}
+.st-actions{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-3)}
+.st-log{background:var(--bg-inset);border-radius:var(--radius);padding:var(--space-3);margin-top:var(--space-3);
+  max-height:11rem;overflow:auto;display:flex;flex-direction:column;gap:.35rem}
+.st-log div{font-size:var(--font-size-xs);padding:.3rem .6rem;border-radius:var(--radius-sm);
+  background:var(--bg-secondary);border-inline-start:2px solid var(--border-strong)}
+.st-log div.win{border-inline-start-color:var(--accent-green)}
+.st-log div.lose{border-inline-start-color:var(--accent-red)}
+.st-log div.skip{border-inline-start-color:var(--accent-gold)}
+.st-log b{font-family:var(--num-font)}
+.st-foot{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-4)}
+.st-empty{padding:var(--space-7) var(--space-5);text-align:center;color:var(--text-muted);
+  border:1px dashed var(--border-strong);border-radius:var(--radius-lg);background:var(--bg-inset)}
+@media (max-width:640px){
+  .st-board{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .st-cell{min-height:3rem;font-size:1rem}
+  .st-top h1{font-size:var(--font-size-lg)}
+}
+</style>
+
+<div class="st-wrap">
+    <div class="st-top">
+        <h1><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg> شطب الحروف</h1>
+        <span class="st-badge">من بنك «س.ج»</span>
+        <button class="fs-btn" id="fsBtn" onclick="toggleFullscreen()" type="button">⛶ ملء الشاشة</button>
+    </div>
+
+    <!-- ============ الإعداد ============ -->
+    <div id="stSetup" class="gsp">
+        <div class="gsp-head"><h3>⚙️ الإعدادات</h3><span class="gsp-sub">من بنك «س.ج»</span></div>
+        <div class="gsp-body">
+            <div class="setup-row">
+                <div class="gsp-field">
+                    <label for="stTeamA">الفريق الأول</label>
+                    <input type="text" id="stTeamA" value="الفريق الأزرق">
+                </div>
+                <div class="gsp-field">
+                    <label for="stTeamB">الفريق الثاني</label>
+                    <input type="text" id="stTeamB" value="الفريق الذهبي">
+                </div>
+            </div>
+            <div class="setup-row">
+                <div class="gsp-field">
+                    <label for="stTime">وقت الإجابة (ثانية)</label>
+                    <select id="stTime">
+                        <option value="15">15</option>
+                        <option value="20" selected>20</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select>
+                </div>
+                <div class="gsp-field">
+                    <label for="stPerLetter">أسئلة لكل حرف</label>
+                    <select id="stPerLetter">
+                        <option value="2">2</option>
+                        <option value="4">4</option>
+                        <option value="6" selected>6</option>
+                        <option value="8">8</option>
+                    </select>
+                </div>
+                <div class="gsp-field">
+                    <label for="stMode">طريقة التسجيل</label>
+                    <select id="stMode">
+                        <option value="host">المضيف يقرّر (صحيح / خطأ)</option>
+                        <option value="bank">مقارنة بالبنك تلقائيًا</option>
+                    </select>
+                </div>
+            </div>
+            <div class="gsp-actions">
+                <button class="btn btn-primary btn-lg" type="button" onclick="stStart()">ابدأ اللعبة</button>
+                <button class="btn btn-secondary" type="button" onclick="stRandomLetter()">🎲 حرف عشوائي</button>
+                <button class="btn btn-ghost" type="button" onclick="location.href='/games'">العودة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ اللعب ============ -->
+    <div id="stPlay" style="display:none">
+        <div class="st-teambar" id="stTeambar"></div>
+        <div class="st-board" id="stBoard"></div>
+
+        <div id="stQuestionWrap">
+            <div class="st-q">
+                <div class="st-turn" id="stTurn"></div>
+                <div class="st-timer" id="stTimer">20</div>
+                <div class="st-text" id="stText"></div>
+                <div id="stAnswerRow" style="display:none;margin:var(--space-3) 0">
+                    <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:.3rem">إجابة البنك</div>
+                    <div id="stAnswer" style="font-size:var(--font-size-md);font-weight:800;color:var(--accent-gold)"></div>
+                </div>
+                <div class="st-actions" id="stHostActions">
+                    <button class="btn btn-success" type="button" onclick="stJudge(true)">✅ صحيحة</button>
+                    <button class="btn btn-danger" type="button" onclick="stJudge(false)">❌ خاطئة</button>
+                    <button class="btn btn-secondary" type="button" onclick="stSkip()">تخطٍّ</button>
+                </div>
+                <div class="st-actions" id="stBankActions" style="display:none">
+                    <button class="btn btn-primary" type="button" onclick="stBankCheck()">🔍 تحقّق من الإجابة</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="st-log" id="stLog"></div>
+
+        <div class="st-foot">
+            <button class="btn btn-secondary" type="button" onclick="stEnd()">🏁 إنهاء اللعبة</button>
+            <button class="btn btn-ghost" type="button" onclick="stBack()">↩ تغيير الإعدادات</button>
+        </div>
+    </div>
+
+    <!-- ============ النتيجة ============ -->
+    <div id="stResult" class="st-empty" style="display:none">
+        <h2 style="color:var(--text-primary);margin:0 0 var(--space-3)">🏁 النتيجة النهائية</h2>
+        <div id="stResultBody"></div>
+        <div class="st-foot">
+            <button class="btn btn-primary" type="button" onclick="stBack()">لعبة جديدة</button>
+            <button class="btn btn-ghost" type="button" onclick="location.href='/games'">العودة للألعاب</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* =====================================================================
+   «شطب الحروف» — تقرأ أسئلتها من بنك «س.ج» نفسه.
+   كل خلية حرف. الفريق صاحب الدور يختار حرفًا، يُسحب له سؤال من البنك،
+   ومن يجيب صحيحًا يشطب الخلية بلونه. أول فريق يشطب 5 خلايا يفوز.
+   ===================================================================== */
+var ST = {
+    letters: [],          // [{letter, count}]
+    pool: {},             // letter -> [question]
+    cells: {},            // letter -> 'a' | 'b' | null
+    order: [],
+    teamA: '', teamB: '',
+    scores: {a: 0, b: 0},
+    claims: {a: 0, b: 0},
+    turn: 'a',
+    time: 20, perLetter: 6, mode: 'host',
+    current: null, currentLetter: '', answerShown: false,
+    timer: null, endsAt: 0, busy: false, over: false, log: [],
+    pendingAdvance: false, // يمنع جدولة تعادل الدور
+};
+
+var ST_LETTERS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
+
+/* ---------- أدوات ---------- */
+function stEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c];
+    });
+}
+
+function stNorm(s) {
+    return String(s || '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي')
+        .replace(/[ً-ْٰـ]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function stLog(html, cls) {
+    ST.log.push({html: html, cls: cls || ''});
+    var el = document.getElementById('stLog');
+    if (el) el.innerHTML = ST.log.slice(-12).map(function (x) {
+        return '<div class="' + x.cls + '">' + x.html + '</div>';
+    }).join('');
+}
+
+/* ---------- تحميل البنك ---------- */
+function stLoadLetters() {
+    return fetch('/api/letters-strikeout/letters')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            ST.letters = (d.letters || []);
+            return ST.letters;
+        });
+}
+
+function stLoadQuestions(letter) {
+    if (ST.pool[letter]) return Promise.resolve(ST.pool[letter]);
+    var url = '/api/letters-strikeout/questions?letter=' + encodeURIComponent(letter) +
+              '&limit=' + ST.perLetter;
+    return fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.error) return [];
+        ST.pool[letter] = d.questions || [];
+        return ST.pool[letter];
+    });
+}
+
+/* ---------- البدء ---------- */
+function stStart() {
+    ST.teamA = document.getElementById('stTeamA').value.trim() || 'الفريق الأول';
+    ST.teamB = document.getElementById('stTeamB').value.trim() || 'الفريق الثاني';
+    ST.time = parseInt(document.getElementById('stTime').value, 10) || 20;
+    ST.perLetter = parseInt(document.getElementById('stPerLetter').value, 10) || 6;
+    ST.mode = document.getElementById('stMode').value;
+    stBegin();
+}
+
+function stBegin() {
+    ST.scores = {a: 0, b: 0};
+    ST.claims = {a: 0, b: 0};
+    ST.turn = 'a';
+    ST.pool = {};
+    ST.cells = {};
+    ST.log = [];
+    ST.over = false;
+    ST_LETTERS.forEach(function (l) { ST.cells[l] = null; });
+
+    document.getElementById('stSetup').style.display = 'none';
+    document.getElementById('stResult').style.display = 'none';
+    document.getElementById('stPlay').style.display = 'block';
+    document.getElementById('stLog').innerHTML = '';
+
+    stRenderTeams();
+    stRenderBoard();
+    stPrompt();
+}
+
+function stRandomLetter() {
+    ST.teamA = document.getElementById('stTeamA').value.trim() || 'الفريق الأول';
+    ST.teamB = document.getElementById('stTeamB').value.trim() || 'الفريق الثاني';
+    ST.time = parseInt(document.getElementById('stTime').value, 10) || 20;
+    ST.perLetter = parseInt(document.getElementById('stPerLetter').value, 10) || 6;
+    ST.mode = document.getElementById('stMode').value;
+    stBegin();
+    fetch('/api/letters-strikeout/random').then(function (r) { return r.json(); })
+        .then(function (d) { if (d.letter) stPick(d.letter); });
+}
+
+function stBack() {
+    stStopTimer();
+    document.getElementById('stPlay').style.display = 'none';
+    document.getElementById('stResult').style.display = 'none';
+    document.getElementById('stSetup').style.display = 'block';
+}
+
+/* ---------- الواجهة ---------- */
+function stRenderTeams() {
+    document.getElementById('stTeambar').innerHTML =
+        stTeamCard('a', ST.teamA) + stTeamCard('b', ST.teamB);
+}
+
+function stTeamCard(k, name) {
+    return '<div class="st-team' + (ST.turn === k ? ' active' : '') + '">' +
+        '<b>' + stEsc(name) + '</b>' +
+        '<div class="st-score">' + ST.scores[k] + '</div>' +
+        '<div style="font-size:var(--font-size-xs);color:var(--text-secondary)">' +
+        ST.claims[k] + ' حرف مشطوب</div></div>';
+}
+
+function stRenderBoard() {
+    var html = '';
+    ST_LETTERS.forEach(function (l) {
+        var st = ST.cells[l];
+        var cls = 'st-cell' + (st ? ' done' : '');
+        var mark = st ? '<span class="st-mark">' + (st === 'a' ? stEsc(ST.teamA) : stEsc(ST.teamB)) + '</span>' : '';
+        html += '<button type="button" class="' + cls + '" data-letter="' + l + '"' +
+                (st ? ' disabled' : '') + ' onclick="stPick(\'' + l + '\')">' +
+                mark + '<span>' + l + '</span></button>';
+    });
+    document.getElementById('stBoard').innerHTML = html;
+}
+
+function stPrompt() {
+    stStopTimer();
+    document.getElementById('stQuestionWrap').style.display = 'none';
+    document.getElementById('stTurn').textContent = '';
+    ST.current = null;
+    stRenderTeams();
+    var left = ST_LETTERS.filter(function (l) { return !ST.cells[l]; });
+    // فوز بخمسة أحرف لأي فريق، أو انتهاء اللوحة كلها — بعد تبديل الدور
+    if (ST.claims.a >= 5 || ST.claims.b >= 5) { stFinish(); return; }
+    if (left.length === 0) { stFinish(); return; }
+}
+
+/* ---------- اختيار حرف ---------- */
+function stPick(letter) {
+    if (ST.over || ST.busy) return;
+    if (ST.cells[letter]) return;
+    ST.busy = true;
+    stStopTimer();
+    stLoadQuestions(letter).then(function (qs) {
+        if (!qs.length) {
+            ST.busy = false;
+            stLog('⚠️ لا توجد أسئلة للحرف «' + letter + '» في البنك', 'skip');
+            return;
+        }
+        var q = qs[Math.floor(Math.random() * qs.length)];
+        ST.current = q;
+        ST.currentLetter = letter;
+        ST.answerShown = false;
+        ST.busy = false;
+
+        document.getElementById('stQuestionWrap').style.display = 'block';
+        document.getElementById('stTurn').textContent =
+            'الدور: ' + (ST.turn === 'a' ? ST.teamA : ST.teamB) + ' — الحرف «' + letter + '»';
+        document.getElementById('stText').textContent = q.question;
+        document.getElementById('stAnswerRow').style.display = 'none';
+        document.getElementById('stAnswer').textContent = '';
+        document.getElementById('stHostActions').style.display = ST.mode === 'host' ? 'flex' : 'none';
+        document.getElementById('stBankActions').style.display = ST.mode === 'host' ? 'none' : 'flex';
+        stRenderTeams();
+        stStartTimer();
+    });
+}
+
+/* ---------- المؤقّت ---------- */
+function stStartTimer() {
+    stStopTimer();
+    ST.endsAt = Date.now() + ST.time * 1000;
+    var el = document.getElementById('stTimer');
+    el.textContent = ST.time;
+    el.classList.remove('low');
+    ST.timer = setInterval(function () {
+        var left = Math.max(0, Math.round((ST.endsAt - Date.now()) / 1000));
+        el.textContent = left;
+        if (left <= 5) el.classList.add('low');
+        if (left <= 0) { stStopTimer(); stTimeout(); }
+    }, 200);
+}
+
+function stStopTimer() {
+    if (ST.timer) { clearInterval(ST.timer); ST.timer = null; }
+}
+
+function stTimeout() {
+    if (ST.over) return;
+    stLog('⏰ انتهى الوقت — الحرف «' + ST.currentLetter + '» يبقى مفتوحًا', 'skip');
+    stAdvance();
+}
+
+function stJudge(correct) {
+    if (!ST.current || ST.busy) return;
+    ST.busy = true;
+    stStopTimer();
+    if (!ST.answerShown) {
+        ST.answerShown = true;
+        document.getElementById('stAnswerRow').style.display = 'block';
+        document.getElementById('stAnswer').textContent = ST.current.answer || '—';
+    }
+    if (correct) {
+        ST.scores[ST.turn] += 100;
+        ST.cells[ST.currentLetter] = ST.turn;
+        ST.claims[ST.turn] += 1;
+        stLog('✅ ' + (ST.turn === 'a' ? ST.teamA : ST.teamB) + ' شطب الحرف «' +
+              ST.currentLetter + '» (+100)', 'win');
+    } else {
+        stLog('❌ إجابة خاطئة من ' + (ST.turn === 'a' ? ST.teamA : ST.teamB) +
+              ' — إجابة البنك: ' + stEsc(ST.current.answer || '—'), 'lose');
+    }
+    ST.busy = false;
+    stRenderBoard();
+    stRenderTeams();
+    // تبديل الدور بعد قرار المضيف، مع حماية من النقر اللاحق.
+    if (!ST.pendingAdvance) {
+        ST.pendingAdvance = true;
+        setTimeout(function () {
+            ST.pendingAdvance = false;
+            stAdvance();
+        }, 900);
+    }
+}
+
+function stBankCheck() {
+    if (!ST.current || ST.busy) return;
+    ST.busy = true;
+    stStopTimer();
+    ST.answerShown = true;
+    document.getElementById('stAnswerRow').style.display = 'block';
+    document.getElementById('stAnswer').textContent = ST.current.answer || '—';
+    ST.busy = false;
+    document.getElementById('stBankActions').style.display = 'none';
+    document.getElementById('stHostActions').style.display = 'flex';
+}
+
+function stSkip() {
+    if (!ST.current) return;
+    ST.busy = false;
+    stStopTimer();
+    stLog('⏭ تخطٍّ للحرف «' + ST.currentLetter + '»', 'skip');
+    stAdvance();
+}
+
+function stAdvance() {
+    ST.turn = ST.turn === 'a' ? 'b' : 'a';
+    stPrompt();
+}
+
+/* ---------- النهاية ---------- */
+function stFinish() {
+    ST.over = true;
+    stStopTimer();
+    document.getElementById('stQuestionWrap').style.display = 'none';
+    document.getElementById('stPlay').style.display = 'none';
+
+    // لخص النتيجة من الحالة الحالية أوًلًا، قبل تفريغ اللوحة والسجل.
+    var body = document.getElementById('stResultBody');
+    var winner = ST.scores.a === ST.scores.b ? null :
+        (ST.scores.a > ST.scores.b ? ST.teamA : ST.teamB);
+    body.innerHTML =
+        '<p style="font-size:var(--font-size-lg);margin:0 0 var(--space-3)">' +
+        (winner ? '🏆 الفائز: <b style="color:var(--accent-gold)">' + stEsc(winner) + '</b>'
+               : '🤝 تعادل الفريقين') + '</p>' +
+        '<div class="st-teambar">' + stTeamCard('a', ST.teamA) + stTeamCard('b', ST.teamB) + '</div>';
+
+    // تفريغ اللوحة والسجل لأن اللعبة التالية تبدأ نظيفة.
+    ST_LETTERS.forEach(function (l) { ST.cells[l] = null; });
+    ST.log = [];
+    stRenderBoard();
+    stRenderTeams();
+    document.getElementById('stLog').innerHTML = '';
+    document.getElementById('stResult').style.display = 'block';
+}
+
+function stEnd() {
+    if (ST.over) return;
+    ST.over = true;
+    stStopTimer();
+    stFinish();
+}
+
+function toggleFullscreen() {
+    var b = document.getElementById('fsBtn');
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function () {});
+    } else {
+        document.exitFullscreen().catch(function () {});
+    }
+    if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+}
+
+/* ---------- الإقلاع ---------- */
+stLoadLetters().then(function (letters) {
+    var withQ = (letters || []).filter(function (x) { return x.count > 0; });
+    if (!withQ.length) {
+        var el = document.getElementById('stSetup');
+        if (el) el.innerHTML = '<div class="gsp-head"><h3>لا توجد أسئلة</h3></div>' +
+            '<div class="gsp-body"><p style="margin:0;color:var(--text-secondary)">' +
+            'بنك «س.ج» فارغ — أضف أسئلة من لوحة الإدارة أولًا.</p></div>';
+    }
+    // إن كان البنك لم يُوسم بعد نوسمه تلقائيًا (idempotent)
+    fetch('/api/letters-strikeout/seed').catch(function () {});
+});
+</script>
+{% endblock %}

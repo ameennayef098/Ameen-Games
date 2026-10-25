@@ -7,3 +7,5 @@ backup-*
 backup-templates/
 data/questions/import_history.json
 data/questions/import_draft.json
+run.log
+*.log

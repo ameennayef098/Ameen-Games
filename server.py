@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ألعاب أمين | AMEEN GAMES - Main Server"""
 import os, json, uuid, re, tempfile, hashlib, time, csv, io
+import random as _rnd
 import qimport as qi
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, redirect
@@ -94,6 +95,65 @@ def norm_ar(t):
 def q_key(q):
     """Duplicates are per-game: the same wording may legitimately exist in two games."""
     return str(q.get('game', '')) + '|' + norm_ar(q.get('question', ''))
+
+
+# ============ حروف مع أمين / شطب الحروف — شكل موحّد للحرف ============
+# لا نوحّد الهمزة هنا إلى «أ»: حروف مع أمين يستخدم «أ» على اللوحة بينما س.ج
+# يخزّن الإجابة بصيغتها الأصلية، فالتوحيد إلى «ا» يكسر مطابقة الحروف في س.ج.
+# الشكل الموحّد للمقارنة: همزة فوق نقيّة (0623) أو همزة على نبرة (0625) أو
+# همزة ممدودة (0622) أو ألف (0627) ← «أ»، وتاء مربوطة (0629) ← «ه».
+# تعمدنا عدم طيّ الألف المقصورة والياء والتاء المفتوحة حتى لا تندمج لوحة
+# الـ28 خلية إلى 24: اللوحة تُبنى في الواجهة من هذه المصفوفة مباشرة.
+L_CANON = {
+    '\u0623': '\u0627',   # أ
+    '\u0624': '\u0628',   # ؤ
+    '\u0625': '\u0623',   # إ
+    '\u0626': '\u062a',   # ئ
+    '\u0622': '\u0623',   # آ
+    '\u0627': '\u0623',   # ا
+    '\u0649': '\u064a',   # ى
+    '\u0629': '\u0647',   # ة
+}
+
+
+def letter_canon(ch):
+    """الشكل الموحّد للحرف العربي الواحد (يُستخدم في مطابقة الحروف)."""
+    return L_CANON.get(str(ch or ''), ch)
+
+
+def canon_letter_match(v):
+    """يعيد حرف اللوحة الموحّد: «أ» لكل أشكال الألف، و«ه» للتاء المربوطة.
+
+    يُقارَن ناتج هذه الدالة بـ AR_LETTERS (لوحتا حروف مع أمين وشطب الحروف)،
+    لذلك يجب أن يطابق شكل اللوحة حرفيًّا — «أ» وليس «ا».
+    """
+    a = re.sub('[\u064B-\u0652\u0670\u0640]', '', str(v or '').strip())
+    if not a:
+        return ''
+    a = re.sub('[\u0623\u0625\u0622\u0671]', '\u0627', a)   # طيّ الألف
+    c = a[0]
+    if c == '\u0627':
+        return '\u0623'                       # كل أشكال الألف ← «أ»
+    if c == '\u0629':
+        return '\u0647'                       # تاء مربوطة ← «ه»
+    return c
+
+
+def letter_of(answer):
+    """أول حرف من الإجابة بعد تجاهل «ال» التعريف، بنفس أشكال canon_letter_match.
+
+    أمثلة: «الفواكه» ← «ف»، «أبو بكر» ← «أ»، «ألكسندر» ← «ك»، «الهرم» ← «ه».
+    هذه النسخة هي مرجع اللعبتين الجديدتين؛ نسخة حروف مع أمين أقدم وتُترك كما هي.
+    """
+    a = re.sub('[\u064B-\u0652\u0670\u0640]', '', str(answer or '').strip())
+    if not a:
+        return ''
+    a = re.sub('[\u0623\u0625\u0622\u0671]', '\u0627', a)   # 1. طيّ الألف
+    if a.startswith('\u0627\u0644') and len(a) > 2:
+        a = a[2:]                                                # 2. إسقاط أل التعريف
+    if not a:
+        return ''
+    return 'أ' if a[0] == 'ا' else a[0]              # 3. حرف اللوحة الموحّد
 
 
 # Anything outside Arabic letters / digits / basic punctuation means the model
@@ -545,6 +605,76 @@ def reject_pending():
                     'remaining': len([q for q in all_qs if q.get('status') == 'pending_review'])})
 
 
+# ============ بنك اللعبتين الجديدتين ============
+# «شطب الحروف» و«سباق النرد» يقرآن نفس بنك «س.ج». التوسم يتم عند الطلب
+# (GET /api/letters-strikeout/seed) ويكون إضافيًا فقط: كل سؤال موسوم يبقى
+# ظاهرًا في س.ج ولا يُحذف منها أبدًا. التوسم عملية idempotent — لا صفوف مكررة.
+STRIKEOUT_MARKS = {
+    'dice_race': 'dice_race_ok',
+    'letters_strikeout': 'letters_strikeout_ok',
+}
+
+
+def bank_letters_index():
+    """الحرف الموحّد لكل سؤال في البنك — يُبنى مرة واحدة عند الطلب."""
+    idx = {}
+    for q in load_json(Q_FILE, []):
+        if q.get('status') == 'archived':
+            continue
+        ans = str(q.get('answer', '') or '').strip()
+        L = letter_of(ans)
+        if not L or L not in AR_LETTERS:
+            continue
+        idx.setdefault(L, []).append(q['id'])
+    return idx
+
+
+def letters_strikeout_pool(letter, limit=6):
+    """أسئلة «شطب الحروف» لحرف معيّن — تُختار من البنك مباشرة."""
+    idx = bank_letters_index().get(letter, [])
+    if not idx:
+        return []
+    known = {q['id']: q for q in load_json(Q_FILE, []) if q.get('id') in idx}
+    return [known[i] for i in idx if i in known][:int(limit or 6)]
+
+
+def seed_new_game_banks():
+    """توسم أسئلة البنك للعبتين الجديدتين. يعيد عدّادات ما أُضيف.
+
+    «سباق النرد» يحتاج سؤالًا واحدًا لكل حرف من الـ28 — إن قلّ عدد أسئلة حرف
+    ما يُوسم من أسئلته الموجودة (لا يُخترع سؤال أبدًا)، وإن لم يبقَ حرف مكتملًا
+    تُسجَّل الثغرة في 'letters_missing' لتظهر في الواجهة بدل لعبة ناقصة.
+    """
+    all_qs = load_json(Q_FILE, [])
+    counts = {k: 0 for k in STRIKEOUT_MARKS.values()}
+    per_letter = {}
+
+    for q in all_qs:
+        if q.get('game') != 'quiz':
+            continue
+        ans = str(q.get('answer', '') or '').strip()
+        L = letter_of(ans)
+        # سباق النرد: حرف واحد لكل حرف من الـ28 — وسم فقط، بلا أسئلة جديدة.
+        if L in AR_LETTERS:
+            mark = STRIKEOUT_MARKS['dice_race']
+            if not q.get(mark):
+                q[mark] = True
+                counts[mark] += 1
+            if len(per_letter.get(L, [])) < 1:
+                per_letter.setdefault(L, []).append(q['id'])
+        # شطب الحروف: كل سؤال مخزّن مسبقًا في البنك موسوم — بلا حد أقصى.
+        mark = STRIKEOUT_MARKS['letters_strikeout']
+        if not q.get(mark):
+            q[mark] = True
+            counts[mark] += 1
+
+    save_json(Q_FILE, all_qs)
+    missing = [l for l in AR_LETTERS if not per_letter.get(l)]
+    return {'dice_race_marked': counts[STRIKEOUT_MARKS['dice_race']],
+            'letters_strikeout_marked': counts[STRIKEOUT_MARKS['letters_strikeout']],
+            'letters_missing': missing}
+
+
 # ============ BATCH IMPORT (manual paste — local parsing, no AI) ============
 # إضافة مئة سؤال أو أكثر دفعة واحدة. التحليل يتم في qimport.py بمنطق برمجي
 # محض، والخادم هنا مسؤول عن التحقق من المخطط والحفظ الآمن.
@@ -627,6 +757,92 @@ def _import_difficulties(game):
                 {'id': 'medium', 'name': 'متوسط'}, {'id': 'hard', 'name': 'صعب'}]
     return [{'id': 'easy', 'name': 'سهل'}, {'id': 'medium', 'name': 'متوسط'},
             {'id': 'hard', 'name': 'صعب'}]
+
+
+# ============ اللعبتان الجديدتان — يقرآن بنك «س.ج» ============
+@app.route('/api/letters-strikeout/seed', methods=['GET'])
+def letters_strikeout_seed():
+    """يبني نسخة اللعبة من بنك س.ج عند أول تشغيل — وسم إضافي فقط."""
+    return jsonify(seed_new_game_banks())
+
+
+@app.route('/api/letters-strikeout/letters', methods=['GET'])
+def letters_strikeout_letters():
+    """الحروف المتاحة مع عدد الأسئلة الفعلي لكل حرف في بنك س.ج."""
+    idx = bank_letters_index()
+    return jsonify({'letters': [{'letter': l, 'count': len(idx.get(l, []))}
+                                for l in AR_LETTERS]})
+
+
+@app.route('/api/letters-strikeout/questions', methods=['GET'])
+def letters_strikeout_questions():
+    letter = canon_letter_match(request.args.get('letter', ''))
+    if letter not in AR_LETTERS:
+        return jsonify({'error': 'الحرف غير صحيح'}), 400
+    limit = min(20, max(1, int(request.args.get('limit', 6))))
+    qs = letters_strikeout_pool(letter, limit)
+    if not qs:
+        return jsonify({'error': 'لا توجد أسئلة لهذا الحرف في بنك س.ج'}), 404
+    return jsonify({'letter': letter, 'questions': qs})
+
+
+@app.route('/api/letters-strikeout/random', methods=['GET'])
+def letters_strikeout_random():
+    """حرف عشوائي له أسئلة فعلًا في البنك + أسئلته (لا حرف فارغ أبدًا)."""
+    idx = bank_letters_index()
+    avail = [l for l in AR_LETTERS if idx.get(l)]
+    if not avail:
+        return jsonify({'error': 'البنك فارغ'}), 404
+    letter = avail[_rnd.randrange(len(avail))]
+    qs = letters_strikeout_pool(letter, 6)
+    return jsonify({'letter': letter, 'questions': qs})
+
+
+@app.route('/api/dice-race/seed', methods=['GET'])
+def dice_race_seed():
+    """نفس التوسم — نقطة دخول مستقلة حتى لا تعتمد اللعبتان على بعضهما."""
+    return jsonify(seed_new_game_banks())
+
+
+@app.route('/api/dice-race/questions', methods=['GET'])
+def dice_race_questions():
+    """سؤال واحد لكل حرف مطلوب — يقرأ من بنك س.ج مباشرة."""
+    letters = [l for l in (request.args.get('letters') or '').split(',') if l]
+    if not letters:
+        letters = list(AR_LETTERS)
+    out = {}
+    missing = []
+    for raw in letters:
+        L = canon_letter_match(raw)
+        if L not in AR_LETTERS:
+            continue
+        pool = letters_strikeout_pool(L, 1)
+        if pool:
+            out[L] = pool[0]
+        else:
+            missing.append(L)
+    if not out:
+        return jsonify({'error': 'لا توجد أسئلة للأحرف المطلوبة'}), 404
+    return jsonify({'questions': out, 'letters': list(out.keys()), 'missing': missing})
+
+
+@app.route('/api/dice-race/questions/random', methods=['GET'])
+def dice_race_random():
+    """مسار سباق عشوائي كامل: 28 سؤالًا (واحد لكل حرف) بلا حرف فارغ."""
+    idx = bank_letters_index()
+    avail = [l for l in AR_LETTERS if idx.get(l)]
+    if not avail:
+        return jsonify({'error': 'البنك فارغ'}), 404
+    import random as _rnd
+    picks = []
+    for L in AR_LETTERS:
+        if not idx.get(L):
+            continue
+        qid = idx[L][int(_rnd.random() * len(idx[L]))]
+        q = next((x for x in load_json(Q_FILE, []) if x.get('id') == qid), None)
+        if q:
+            picks.append(q)
+    return jsonify({'questions': picks, 'letters': [letter_of(q.get('answer', '')) for q in picks]})
 
 
 @app.route('/api/import/games', methods=['GET'])
@@ -3276,6 +3492,34 @@ GAME_INTROS = {
         ],
         'tip': 'اسأل عن الصفات العامّة أولًا (حقيقية/خيالية، ذكر/أنثى، مجال العمل) ثم ضيّق.',
     },
+    'letters_strikeout': {
+        'name': 'شطب الحروف',
+        'type': 'مسابقات',
+        'icon': 'i-target', 'color': 'var(--accent-gold)',
+        'lead': 'مسابقة حروف سريعة تقرأ من بنك «س.ج»: كل حرف له مجموعة أسئلة، ومن يجيب أكثر يشطب الحروف.',
+        'steps': [
+            'اختر الحروف التي تريدها (حتى 28 حرفًا) وعدد الأسئلة لكل حرف.',
+            'اضغط «🎲 حرف عشوائي» لبدء الجولة على حرف يُسحب من البنك.',
+            'يظهر السؤال ويبدأ المؤقّت — الفريق صاحب الدور يجيب قبل انتهائه.',
+            'اضغط «✅ صحيحة» أو «❌ خاطئة» ليُحسب النقاط فورًا.',
+            'عند نفاد الأسئلة تُعلن النتيجة، ويمكن بدء جولة جديدة بحرف آخر.',
+        ],
+        'tip': 'الأسئلة تُسحب من بنك «س.ج» الموجود أصلًا — كل حرف يعرض أسئلته الحقيقية.',
+    },
+    'dice_race': {
+        'name': 'سباق النرد',
+        'type': 'لعبة لوحة',
+        'icon': 'i-dice', 'color': 'var(--accent-green)',
+        'lead': 'سباق على لوحة مسار: أجب إجابة صحيحة تبدأ بالحرف المطلوب لترمي النرد وتتقدم.',
+        'steps': [
+            'اضبط عدد اللاعبين (2-4) واسم كل لاعب.',
+            'اللاعب صاحب الدور يضغط الخلية التي تحمل حرفه أو يرمي النرد.',
+            'يظهر سؤال من بنك «س.ج» — الجواب الصحيح يبدأ بالحرف المطلوب.',
+            'الإجابة الصحيحة ترمي النرد (1-6) وتحرّك قطعتك على المسار.',
+            'أول لاعب يصل إلى خط النهاية يفوز بالسباق.',
+        ],
+        'tip': 'الجواب يجب أن يبدأ بالحرف الظاهر على الخلية — إن أخطأت ينتقل الدور.',
+    },
     'lastone': {
         'name': 'آخر واحد!',
         'type': 'مسابقات',
@@ -3324,6 +3568,16 @@ def serve_game(game, template):
 def games():
     return render_template('games.html')
 
+@app.route('/game/letters_strikeout')
+def game_letters_strikeout():
+    return serve_game('letters_strikeout', 'game_letters_strikeout.html')
+
+
+@app.route('/game/dice_race')
+def game_dice_race():
+    return serve_game('dice_race', 'game_dice_race.html')
+
+
 @app.route('/game/letters')
 def game_letters():
     return serve_game('letters', 'game_letters.html')
@@ -3357,7 +3611,8 @@ def game_intro(game):
 
 @app.route('/game/<game>')
 def game(game):
-    valid = ['codenames','detective','culprit','spy','debate','whoplayer','link','draw_guess']
+    valid = ['codenames','detective','culprit','spy','debate','whoplayer','link','draw_guess',
+             'letters_strikeout','dice_race']
     if game not in valid:
         return redirect('/games')
     return serve_game(game, 'game_' + game + '.html')

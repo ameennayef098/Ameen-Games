@@ -1,0 +1,504 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* =====================================================================
+   «سباق النرد» — لوحة مسار تقرأ أسئلتها من بنك «س.ج».
+   كل خطوة تحتاج إجابة صحيحة تبدأ بالحرف المكتوب على الخلية، والإجابة
+   الصحيحة ترمي النرد وتحرّك القطعة.
+   ===================================================================== */
+.dr-wrap{max-width:980px;margin:0 auto;padding:var(--space-5) var(--space-4) var(--space-8)}
+.dr-top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap}
+.dr-top h1{margin:0;font-size:var(--font-size-xl);display:flex;align-items:center;gap:var(--space-2)}
+.dr-badge{font-size:var(--font-size-xs);font-weight:700;padding:.2rem .7rem;border-radius:var(--radius-pill);
+  background:var(--accent-green-tint);color:#7ee6c4;border:1px solid rgba(23,195,143,.32)}
+.dr-teambar{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-2);margin:var(--space-4) 0}
+.dr-team{padding:var(--space-3);border-radius:var(--radius);border:1px solid var(--border-color);
+  background:var(--bg-card);text-align:center;position:relative}
+.dr-team.active{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-blue-tint)}
+.dr-team b{display:block;font-size:var(--font-size-sm);line-height:1.4;min-height:2.6em;
+  display:flex;align-items:center;justify-content:center}
+.dr-team .dr-pos{font-family:var(--num-font);font-size:1.6rem;font-weight:900;color:var(--accent-gold);line-height:1.1}
+.dr-team .dr-chip{position:absolute;top:-.5rem;inset-inline-start:-.5rem;width:1.7rem;height:1.7rem;
+  border-radius:50%;display:grid;place-items:center;font-size:.95rem;font-weight:900;color:#041022;
+  background:var(--accent-gold);box-shadow:0 0 0 3px var(--bg-primary)}
+.dr-team.done{border-color:var(--accent-green)}
+.dr-board{display:flex;flex-wrap:wrap;gap:var(--space-2);justify-content:center;margin:var(--space-4) 0}
+.dr-cell{position:relative;width:4.6rem;min-height:4.2rem;border-radius:var(--radius);
+  border:1px solid var(--border-color);background:var(--bg-secondary);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;
+  padding:.35rem .2rem;transition:var(--background);transition:var(--transition-fast)}
+.dr-cell .dr-l{font-family:var(--font-display);font-weight:800;font-size:1.15rem;line-height:1.1}
+.dr-cell .dr-pieces{display:flex;gap:.15rem;flex-wrap:wrap;justify-content:center;min-height:1.1rem}
+.dr-cell .dr-p{width:1.05rem;height:1.05rem;border-radius:50%;display:grid;place-items:center;
+  font-size:.62rem;font-weight:900;color:#041022}
+.dr-cell.goal{background:var(--accent-green-tint);border-color:rgba(23,195,143,.45)}
+.dr-cell .dr-goal-tag{font-size:.58rem;color:#7ee6c4;font-weight:800}
+.dr-dice{display:flex;align-items:center;gap:var(--space-3);justify-content:center;margin:var(--space-3) 0}
+.dr-die{width:4.4rem;height:4.4rem;border-radius:var(--radius);background:var(--bg-card);
+  border:1px solid var(--border-strong);display:grid;place-items:center;
+  font-family:var(--num-font);font-size:2.3rem;font-weight:900;color:var(--accent-gold);
+  box-shadow:var(--shadow-sm),var(--shadow-inset);transition:transform .12s ease}
+.dr-die.rolling{transform:rotate(-14deg) scale(1.08)}
+.dr-q{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);
+  padding:var(--space-5);margin:var(--space-3) 0;text-align:center}
+.dr-q .dr-turn{font-size:var(--font-size-sm);color:var(--text-secondary)}
+.dr-q .dr-text{font-size:var(--font-size-lg);font-weight:800;line-height:1.9;margin:var(--space-3) 0;
+  background:var(--bg-inset);border-radius:var(--radius);padding:var(--space-4)}
+.dr-answer-row{margin:var(--space-3) 0}
+.dr-answer-row input{width:100%;padding:.8rem 1rem;border-radius:var(--radius);
+  border:1px solid var(--border-color);background:var(--bg-inset);color:var(--text-primary);
+  font-family:inherit;font-size:1.05rem;text-align:center}
+.dr-answer-row input:focus{outline:none;border-color:var(--accent-blue);
+  box-shadow:0 0 0 3px var(--accent-blue-tint)}
+.dr-hint{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:.35rem}
+.dr-actions{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-3)}
+.dr-log{background:var(--bg-inset);border-radius:var(--radius);padding:var(--space-3);margin-top:var(--space-3);
+  max-height:11rem;overflow:auto;display:flex;flex-direction:column;gap:.35rem}
+.dr-log div{font-size:var(--font-size-xs);padding:.3rem .6rem;border-radius:var(--radius-sm);
+  background:var(--bg-secondary);border-inline-start:2px solid var(--border-strong)}
+.dr-log div.win{border-inline-start-color:var(--accent-green)}
+.dr-log div.lose{border-inline-start-color:var(--accent-red)}
+.dr-log div.dice{border-inline-start-color:var(--accent-gold)}
+.dr-foot{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-4)}
+.dr-empty{padding:var(--space-7) var(--space-5);text-align:center;color:var(--text-muted);
+  border:1px dashed var(--border-strong);border-radius:var(--radius-lg);background:var(--bg-inset)}
+.dr-playerlist{display:grid;gap:var(--space-2)}
+@media (max-width:640px){
+  .dr-cell{width:3.9rem;min-height:3.6rem}
+  .dr-die{width:3.6rem;height:3.6rem;font-size:1.8rem}
+  .dr-top h1{font-size:var(--font-size-lg)}
+}
+</style>
+
+<div class="dr-wrap">
+    <div class="dr-top">
+        <h1><svg class="ico" aria-hidden="true"><use href="#i-dice"></use></svg> سباق النرد</h1>
+        <span class="dr-badge">من بنك «س.ج»</span>
+        <button class="fs-btn" id="fsBtn" onclick="drFullscreen()" type="button">⛶ ملء الشاشة</button>
+    </div>
+
+    <!-- ============ الإعداد ============ -->
+    <div id="drSetup" class="gsp">
+        <div class="gsp-head"><h3>⚙️ الإعدادات</h3><span class="gsp-sub">2-4 لاعبين</span></div>
+        <div class="gsp-body">
+            <div class="setup-row">
+                <div class="gsp-field">
+                    <label for="drCount">عدد اللاعبين</label>
+                    <select id="drCount" onchange="drRenderNames()">
+                        <option value="2">لاعبان</option>
+                        <option value="3">3 لاعبين</option>
+                        <option value="4">4 لاعبين</option>
+                    </select>
+                </div>
+                <div class="gsp-field">
+                    <label for="drLen">طول المسار (عدد الخلايا)</label>
+                    <select id="drLen">
+                        <option value="12">12 خلية — سباق سريع</option>
+                        <option value="18" selected>18 خلية</option>
+                        <option value="28">28 خلية — سباق طويل</option>
+                    </select>
+                </div>
+            </div>
+            <div id="drNames" class="dr-playerlist"></div>
+            <div class="gsp-actions">
+                <button class="btn btn-primary btn-lg" type="button" onclick="drStart()">🎲 ابدأ السباق</button>
+                <button class="btn btn-ghost" type="button" onclick="location.href='/games'">العودة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ اللعب ============ -->
+    <div id="drPlay" style="display:none">
+        <div class="dr-teambar" id="drTeambar"></div>
+
+        <div class="dr-board" id="drBoard"></div>
+
+        <div class="dr-dice">
+            <div class="dr-die" id="drDie">?</div>
+            <button class="btn btn-gold" type="button" id="drRollBtn" onclick="drRoll()">🎲 ارمِ النرد</button>
+        </div>
+
+        <div id="drQuestionWrap" style="display:none">
+            <div class="dr-q">
+                <div class="dr-turn" id="drTurn"></div>
+                <div class="dr-text" id="drText"></div>
+                <div class="dr-answer-row">
+                    <input type="text" id="drAnswer" placeholder="اكتب إجابتك هنا…"
+                           autocomplete="off" onkeydown="if(event.key==='Enter')drSubmit()">
+                    <div class="dr-hint">يجب أن تبدأ إجابتك بالحرف «<b id="drNeed">-</b>»</div>
+                </div>
+                <div id="drBankAnswer" style="display:none;margin:var(--space-3) 0">
+                    <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:.3rem">إجابة البنك</div>
+                    <div id="drBankAnswerText" style="font-size:var(--font-size-md);font-weight:800;color:var(--accent-gold)"></div>
+                </div>
+                <div class="dr-actions">
+                    <button class="btn btn-primary" type="button" onclick="drSubmit()">إرسال الإجابة</button>
+                    <button class="btn btn-success" type="button" id="drHostOk" onclick="drJudge(true)" style="display:none">✅ صحيحة</button>
+                    <button class="btn btn-danger" type="button" id="drHostNo" onclick="drJudge(false)" style="display:none">❌ خاطئة</button>
+                    <button class="btn btn-secondary" type="button" onclick="drPass()">تخطٍّ</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dr-log" id="drLog"></div>
+
+        <div class="dr-foot">
+            <button class="btn btn-secondary" type="button" onclick="drEnd()">🏁 إنهاء السباق</button>
+            <button class="btn btn-ghost" type="button" onclick="drBack()">↩ تغيير الإعدادات</button>
+        </div>
+    </div>
+
+    <!-- ============ النتيجة ============ -->
+    <div id="drResult" class="dr-empty" style="display:none">
+        <h2 style="color:var(--text-primary);margin:0 0 var(--space-3)">🏁 انتهى السباق</h2>
+        <div id="drResultBody"></div>
+        <div class="dr-foot">
+            <button class="btn btn-primary" type="button" onclick="drBack()">سباق جديد</button>
+            <button class="btn btn-ghost" type="button" onclick="location.href='/games'">العودة للألعاب</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* =====================================================================
+   «سباق النرد» — أسئلته من بنك «س.ج» نفسه.
+   اللاعب يرمي النرد، يظهر رقم = عدد الخطوات المطلوبة. يُسحب له سؤال من
+   البنك تكون إجابته الصحيحة تبدأ بالحرف المكتوب على الخلية المستهدفة،
+   وإجابته تقبل فقط إذا بدأت بذلك الحرف — عندها يتقدّم فعلًا.
+   ===================================================================== */
+var DR = {
+    players: [],        // [{name, pos, done}]
+    track: [],          // [{letter, goal}]
+    turn: 0,
+    len: 18,
+    pending: null,      // {steps, cell}
+    current: null,
+    hostDecision: '',   // آخر إجابة بانتظار قرار المضيف
+    answers: {},        // letter -> question
+    over: false, busy: false, log: []
+};
+
+var DR_COLORS = ['#f6a714', '#4f8cff', '#17c38f', '#a16bff'];
+var DR_CHIP = ['🥇', '🔵', '🟢', '🟣'];
+
+function drEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c];
+    });
+}
+
+function drLog(html, cls) {
+    DR.log.push({html: html, cls: cls || ''});
+    var el = document.getElementById('drLog');
+    if (el) el.innerHTML = DR.log.slice(-12).map(function (x) {
+        return '<div class="' + x.cls + '">' + x.html + '</div>';
+    }).join('');
+}
+
+/* ---------- أسماء اللاعبين ---------- */
+function drRenderNames() {
+    var n = parseInt(document.getElementById('drCount').value, 10) || 2;
+    var box = document.getElementById('drNames');
+    var cur = [];
+    for (var i = 0; i < 4; i++) {
+        var el = document.getElementById('drName' + i);
+        cur.push(el ? el.value : '');
+    }
+    var html = '';
+    for (var k = 0; k < n; k++) {
+        html += '<div class="gsp-field"><label for="drName' + k + '">اللاعب ' + (k + 1) +
+                ' <span style="color:' + DR_COLORS[k] + '">●</span></label>' +
+                '<input type="text" id="drName' + k + '" value="' +
+                drEsc(cur[k] || ('لاعب ' + (k + 1))) + '"></div>';
+    }
+    box.innerHTML = html;
+}
+
+/* ---------- بناء المسار ---------- */
+function drBuildTrack(letters) {
+    var n = DR.len;
+    var track = [];
+    for (var i = 0; i < n; i++) {
+        var L = letters[i % letters.length];
+        track.push({letter: L, goal: i === n - 1});
+    }
+    return track;
+}
+
+/* ---------- البدء ---------- */
+function drStart() {
+    var n = parseInt(document.getElementById('drCount').value, 10) || 2;
+    DR.len = parseInt(document.getElementById('drLen').value, 10) || 18;
+    DR.players = [];
+    for (var i = 0; i < n; i++) {
+        var v = (document.getElementById('drName' + i) || {}).value || '';
+        DR.players.push({name: v.trim() || ('لاعب ' + (i + 1)), pos: 0, done: false});
+    }
+    DR.turn = 0;
+    DR.over = false;
+    DR.busy = false;
+    DR.log = [];
+    DR.answers = {};
+    DR.pending = null;
+    DR.current = null;
+
+    document.getElementById('drSetup').style.display = 'none';
+    document.getElementById('drResult').style.display = 'none';
+    document.getElementById('drPlay').style.display = 'block';
+    document.getElementById('drLog').innerHTML = '';
+    document.getElementById('drQuestionWrap').style.display = 'none';
+    document.getElementById('drDie').textContent = '?';
+
+    // سحب حروف عشوائية من البنك لكل خلية — بلا خلية بلا سؤال
+    fetch('/api/dice-race/questions/random')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var qs = d.questions || [];
+            var letters = [];
+            var byLetter = {};
+            var ls = d.letters || [];
+            // فهرس صريح بدل indexOf الموضعي
+            for (var i = 0; i < qs.length; i++) {
+                var L = ls[i];
+                if (!L || byLetter[L]) continue;
+                byLetter[L] = qs[i];
+                letters.push(L);
+            }
+            if (!letters.length) {
+                drLog('⚠️ تعذّر سحب أسئلة من البنك — أعد المحاولة', 'lose');
+                return;
+            }
+            DR.answers = byLetter;
+            DR.track = drBuildTrack(letters);
+            drRender();
+            drPrompt();
+        });
+}
+
+function drBack() {
+    document.getElementById('drPlay').style.display = 'none';
+    document.getElementById('drResult').style.display = 'none';
+    document.getElementById('drSetup').style.display = 'block';
+    // تفريغ اللوحة والحالة؛ إلّا تظهر خلايا المباراة السابقة وراء الإعداد.
+    document.getElementById('drBoard').innerHTML = '';
+    document.getElementById('drTeambar').innerHTML = '';
+    document.getElementById('drLog').innerHTML = '';
+    document.getElementById('drQuestionWrap').style.display = 'none';
+    document.getElementById('drDie').textContent = '?';
+    DR.track = [];
+    DR.answers = {};
+    DR.pending = null;
+    DR.current = null;
+    DR.over = true;
+}
+
+
+/* ---------- الواجهة ---------- */
+function drRender() {
+    var tb = document.getElementById('drTeambar');
+    tb.innerHTML = DR.players.map(function (p, i) {
+        return '<div class="dr-team' + (i === DR.turn && !DR.over ? ' active' : '') +
+               (p.done ? ' done' : '') + '">' +
+               '<span class="dr-chip" style="background:' + DR_COLORS[i] + '">' + DR_CHIP[i] + '</span>' +
+               '<b>' + drEsc(p.name) + '</b>' +
+               '<div class="dr-pos">' + p.pos + '</div>' +
+               '<div style="font-size:var(--font-size-xs);color:var(--text-secondary)">من ' +
+               DR.track.length + '</div></div>';
+    }).join('');
+
+    var bd = document.getElementById('drBoard');
+    bd.innerHTML = DR.track.map(function (cell, idx) {
+        var pieces = [];
+        DR.players.forEach(function (p, pi) {
+            if (p.pos === idx) {
+                pieces.push('<span class="dr-p" style="background:' + DR_COLORS[pi] + '">' +
+                            DR_CHIP[pi] + '</span>');
+            }
+        });
+        return '<div class="dr-cell' + (cell.goal ? ' goal' : '') + '">' +
+               '<span class="dr-l">' + cell.letter + '</span>' +
+               '<span class="dr-pieces">' + pieces.join('') + '</span>' +
+               (cell.goal ? '<span class="dr-goal-tag">🏁 النهاية</span>' : '') +
+               '</div>';
+    }).join('');
+}
+
+function drPrompt() {
+    document.getElementById('drQuestionWrap').style.display = 'none';
+    document.getElementById('drRollBtn').style.display = '';
+    DR.pending = null;
+    DR.current = null;
+    drRender();
+}
+
+/* ---------- النرد ---------- */
+function drRoll() {
+    if (DR.over || DR.busy) return;
+    var p = DR.players[DR.turn];
+    var die = document.getElementById('drDie');
+    var btn = document.getElementById('drRollBtn');
+    btn.style.display = 'none';
+    die.classList.add('rolling');
+    var steps = 1 + Math.floor(Math.random() * 6);
+    var ticks = 0;
+    var spin = setInterval(function () {
+        die.textContent = 1 + Math.floor(Math.random() * 6);
+        if (++ticks > 7) {
+            clearInterval(spin);
+            die.classList.remove('rolling');
+            die.textContent = steps;
+            drLog('🎲 ' + drEsc(p.name) + ' رمى النرد: <b>' + steps + '</b>', 'dice');
+            drShowQuestion(p, steps);
+        }
+    }, 70);
+}
+
+/* ---------- السؤال ---------- */
+function drShowQuestion(p, steps) {
+    var target = Math.min(p.pos + steps, DR.track.length - 1);
+    var cell = DR.track[target];
+    var q = DR.answers[cell.letter];
+    if (!q) {
+        // احتياط: خلية بلا سؤال تُخطّى بدل تجميد اللعبة
+        drLog('⚠️ لا سؤال للحرف «' + cell.letter + '» — يتقدّم ' + drEsc(p.name) +
+              ' ' + steps + ' خطوات', 'dice');
+        drMove(p, steps);
+        return;
+    }
+    DR.pending = {steps: steps, cell: target, goal: cell.goal};
+    DR.current = q;
+
+    document.getElementById('drQuestionWrap').style.display = 'block';
+    document.getElementById('drTurn').textContent = drEsc(p.name) +
+        ' — الهدف: الخلية ' + (target + 1) + ' والحرف «' + cell.letter + '»';
+    document.getElementById('drText').textContent = q.question;
+    document.getElementById('drNeed').textContent = cell.letter;
+    document.getElementById('drAnswer').value = '';
+    document.getElementById('drBankAnswer').style.display = 'none';
+    document.getElementById('drBankAnswerText').textContent = '';
+    document.getElementById('drHostOk').style.display = 'none';
+    document.getElementById('drHostNo').style.display = 'none';
+}
+
+function drSubmit() {
+    if (DR.over || DR.busy || !DR.current) return;
+    DR.busy = true;
+    var v = document.getElementById('drAnswer').value.trim();
+    if (!v) { DR.busy = false; return; }
+    document.getElementById('drBankAnswer').style.display = 'block';
+    document.getElementById('drBankAnswerText').textContent = DR.current.answer || '—';
+    // التحقق من الحرف ثم يبقى القرار للمضيف إن كانت الإجابة خلافية
+    var need = DR.pending.cell !== undefined ? DR.track[DR.pending.cell].letter : '';
+    var head = drFirstLetter(v);
+    if (head !== need) {
+        drLog('❌ إجابتك تبدأ بـ«' + head + '» والمطلوب «' + need + '»', 'lose');
+        DR.busy = false;
+        drNextTurn();
+        return;
+    }
+    DR.hostDecision = v;
+    document.getElementById('drHostOk').style.display = '';
+    document.getElementById('drHostNo').style.display = '';
+    DR.busy = false;
+}
+
+function drJudge(ok) {
+    var p = DR.players[DR.turn];
+    if (ok) {
+        drLog('✅ إجابة صحيحة من ' + drEsc(p.name) + ' — «' +
+              drEsc(DR.current.answer || '') + '»', 'win');
+        drMove(p, DR.pending.steps);
+    } else {
+        drLog('❌ إجابة غير مقبولة من ' + drEsc(p.name), 'lose');
+        drNextTurn();
+    }
+}
+
+function drPass() {
+    var p = DR.players[DR.turn];
+    drLog('⏭ تخطّى ' + drEsc(p.name) + ' الدور', 'lose');
+    drNextTurn();
+}
+
+/* ---------- الحركة ---------- */
+function drMove(p, steps) {
+    var before = p.pos;
+    p.pos = Math.min(p.pos + steps, DR.track.length - 1);
+    drLog('➡ ' + drEsc(p.name) + ': ' + before + ' ← ' + p.pos +
+          (p.pos >= DR.track.length - 1 ? ' 🏁' : ''), 'dice');
+    if (p.pos >= DR.track.length - 1) {
+        p.done = true;
+        drFinish(p);
+        return;
+    }
+    drNextTurn();
+}
+
+function drNextTurn() {
+    DR.turn = (DR.turn + 1) % DR.players.length;
+    drPrompt();
+}
+
+/* ---------- النهاية ---------- */
+function drFinish(winner) {
+    DR.over = true;
+    document.getElementById('drPlay').style.display = 'none';
+    document.getElementById('drResult').style.display = 'block';
+    var sorted = DR.players.slice().sort(function (a, b) { return b.pos - a.pos; });
+    var body = document.getElementById('drResultBody');
+    body.innerHTML =
+        '<p style="font-size:var(--font-size-lg);margin:0 0 var(--space-3)">' +
+        '🏆 الفائز: <b style="color:var(--accent-gold)">' + drEsc(winner.name) + '</b></p>' +
+        '<div class="dr-teambar">' + sorted.map(function (p, i) {
+            return '<div class="dr-team' + (p.done ? ' done' : '') + '">' +
+                   '<span class="dr-chip" style="background:' + DR_COLORS[DR.players.indexOf(p)] +
+                   '">' + (i + 1) + '</span>' +
+                   '<b>' + drEsc(p.name) + '</b>' +
+                   '<div class="dr-pos">' + p.pos + '</div></div>';
+        }).join('') + '</div>';
+}
+
+function drEnd() {
+    if (DR.over) return;
+    DR.over = true;
+    var sorted = DR.players.slice().sort(function (a, b) { return b.pos - a.pos; });
+    var body = document.getElementById('drResultBody');
+    document.getElementById('drPlay').style.display = 'none';
+    document.getElementById('drResult').style.display = 'block';
+    body.innerHTML =
+        '<p style="font-size:var(--font-size-lg);margin:0 0 var(--space-3)">' +
+        'الترتيب الحالي:</p>' +
+        '<div class="dr-teambar">' + sorted.map(function (p, i) {
+            return '<div class="dr-team">' +
+                   '<span class="dr-chip" style="background:' + DR_COLORS[DR.players.indexOf(p)] +
+                   '">' + (i + 1) + '</span>' +
+                   '<b>' + drEsc(p.name) + '</b>' +
+                   '<div class="dr-pos">' + p.pos + '</div></div>';
+        }).join('') + '</div>';
+}
+
+
+function drFirstLetter(s) {
+    var a = String(s || '').replace(/[ً-ْٰـ]/g, '').trim();
+    if (!a) return '';
+    a = a.replace(/[أإآٱ]/g, 'ا');
+    if (a.indexOf('ال') === 0 && a.length > 2) a = a.slice(2);
+    return a.charAt(0) === 'ا' ? 'أ' : a.charAt(0);
+}
+
+function drFullscreen() {
+    var b = document.getElementById('fsBtn');
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function () {});
+    } else {
+        document.exitFullscreen().catch(function () {});
+    }
+    if (b) b.textContent = document.fullscreenElement ? '⛶ خروج من ملء الشاشة' : '⛶ ملء الشاشة';
+}
+
+/* ---------- الإقلاع ---------- */
+drRenderNames();
+</script>
+{% endblock %}

@@ -114,7 +114,7 @@
     <div id="tab-q">
         <div class="filters">
             <select id="fGame" onchange="loadQ(1)"><option value="">كل الألعاب</option>
-                <option value="letters">حروف مع أمين</option><option value="quiz">س.ج</option><option value="million">من سيربح المليون</option></select>
+<option value="letters">حروف مع أمين</option><option value="quiz">س.ج</option><option value="million">من سيربح المليون</option></select>
             <select id="fLetter" onchange="loadQ(1)"><option value="">كل الحروف</option></select>
             <select id="fCat" onchange="loadQ(1)"><option value="">كل الفئات</option></select>
             <select id="fDiff" onchange="loadQ(1)"><option value="">كل الصعوبات</option>
@@ -489,6 +489,7 @@
                     <option value="link">الرابط المشترك (ألغاز)</option>
                     <option value="draw_guess">ارسم وخمّن (لوحة رسم)</option>
                 </select>
+                <span class="hint" style="align-self:center">شطب الحروف وسباق النرد يقرآن بنك «س.ج» مباشرة — لا مكتبة محتوى منفصلة لهما.</span>
                 <select id="ctStatus" onchange="loadContent()">
                     <option value="approved">المعتمدة</option>
                     <option value="pending_review">بانتظار المراجعة</option>
@@ -540,7 +541,7 @@
     <div class="modal" style="max-width:640px;">
         <h2 id="qFormTitle">سؤال جديد</h2>
         <input type="hidden" id="qfId">
-        <div class="form-group"><label for="qfGame">اللعبة</label><select id="qfGame" onchange="qfGameChanged()"><option value="letters">حروف مع أمين</option><option value="quiz">س.ج</option><option value="million">من سيربح المليون</option></select></div>
+<div class="form-group"><label for="qfGame">اللعبة</label><select id="qfGame" onchange="qfGameChanged()"><option value="letters">حروف مع أمين</option><option value="quiz">س.ج</option><option value="million">من سيربح المليون</option></select></div>
         <div class="form-group" id="qfLetterWrap"><label for="qfLetter">الحرف</label><select id="qfLetter"></select></div>
         <div class="form-group" id="qfCatWrap"><label for="qfCat">الفئة</label><select id="qfCat"></select></div>
         <div class="form-group"><label for="qfQuestion">نص السؤال</label><textarea id="qfQuestion" rows="3"></textarea></div>
@@ -799,7 +800,7 @@ function loadQ(p) {
             var stCls = q.status === 'approved' ? 'badge-green' : (q.status === 'archived' ? 'badge-blue' : 'badge-gold');
             return '<tr><td><input type="checkbox" class="chk" data-id="' + q.id + '" onchange="toggleSel(this)" aria-label="تحديد السؤال"></td>' +
                 '<td style="max-width:280px">' + esc(q.question) + '</td><td>' + esc(q.answer) + '</td>' +
-                '<td>' + (q.game === 'letters' ? 'حروف' : (q.game === 'million' ? 'المليون' : 'س.ج')) + '</td>' +
+                '<td>' + GAME_AR[q.game] + '</td>' +
                 '<td>' + esc(q.letter || q.category_name || '-') + '</td><td>' + (q.points || '-') + '</td>' +
                 '<td>' + diffAr + '</td><td><span class="badge ' + stCls + '">' + stAr + '</span></td><td>' + srcAr + '</td>' +
                 '<td style="white-space:nowrap">' +
@@ -861,6 +862,7 @@ function qfGameChanged() {
     document.getElementById('qfLetterWrap').style.display = (g === 'letters') ? 'block' : 'none';
     document.getElementById('qfCatWrap').style.display = (g === 'letters') ? 'none' : 'block';
     document.getElementById('qfOptionsWrap').style.display = (g === 'million') ? 'block' : 'none';
+    document.getElementById('qfCatWrap').style.display = (g === 'letters') ? 'none' : 'block';
 }
 function aiGameChanged() {
     var g = document.getElementById('aiGame').value;
@@ -2361,6 +2363,8 @@ function impShowResult(d) {
     el.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 }
 
+var GAME_AR = {letters:'حروف', quiz:'س.ج', million:'المليون',
+};
 var IMP_GAME_URLS = {
     letters: '/game/letters', quiz: '/game/quiz', million: '/game/million',
     lastone: '/game/lastone', auction: '/game/auction', codenames: '/game/codenames',
