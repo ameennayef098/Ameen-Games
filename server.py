@@ -4,7 +4,8 @@ import os, json, uuid, re, tempfile, hashlib, time, csv, io
 import random as _rnd
 import qimport as qi
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, redirect
+from flask import (Flask, render_template, request, jsonify, send_from_directory,
+                   send_file, redirect, make_response)
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -3635,10 +3636,460 @@ def offline_page():
 def about():
     return render_template('about.html')
 
+@app.route('/login')
+def login_page():
+    """لوحة تسجيل الدخول وإنشاء الحساب."""
+    return render_template('login.html', title='تسجيل الدخول')
+
+
+@app.route('/account')
+def account_page():
+    """الملف الشخصي — صفحة ترحب بالزائر وتطلب تسجيل الدخول إن لم يكن مسجلًا."""
+    return render_template('account.html', title='حسابي')
+
+
+@app.route('/tournament')
+def tournament_page():
+    """وضع البطولة: اختر اللعبة وعدد الفرق وابدأ شجرة المباريات."""
+    return render_template('tournament.html', title='وضع البطولة')
+
 @app.route('/admin')
 def admin():
     return render_template('admin.html')
 
+
+
+# ==========================================================================
+#   الحسابات (تسجيل الدخول) + البطولات
+#   Accounts live in their own file, separate from the football-player bank
+#   (/api/players) — that one is the auction game's catalogue, not users.
+# ==========================================================================
+ACC_FILE = os.path.join(DATA, 'accounts.json')
+TOURN_FILE = os.path.join(DATA, 'tournaments.json')
+ACCOUNT_COOKIE = 'ameen_account'
+ACCOUNT_TOKENS = {}          # token -> account id (process-local, like ADMIN_TOKENS)
+
+AVATARS = ['🦊', '🐺', '🦁', '🐯', '🦅', '🐉', '🦈', '🐋',
+           '🦉', '🐆', '🦄', '🐙', '🦖', '🐢', '🦜', '🐬', '🦩', '🐨']
+TEAM_COLORS = ['#4f8cff', '#17c38f', '#f6a714', '#f0524f', '#a16bff', '#18c8e6',
+               '#ec4899', '#84cc16', '#f97316', '#06b6d4', '#e11d48', '#a855f7',
+               '#eab308', '#14b8a6', '#6366f1', '#d946ef']
+
+# The three games that can host a bracket. Kept server-side so the client never
+# hardcodes ids that the question banks could disagree with.
+TOURNAMENT_GAMES = {
+    'quiz': {
+        'name': 'س.ج', 'full': 'س.ج — المسابقة الثقافية', 'icon': 'i-question',
+        'color': '#a16bff', 'type': 'مسابقات',
+        'desc': 'أسئلة من بنك س.ج بفئاته الحقيقية. كل إجابة صحيحة تمنح فريقك نقاط سؤالها.',
+        'duel': 'سؤال لكل فريق وبالدور، مع المؤقّت والسرقة — الأعلى نقاطًا يتأهّل.',
+    },
+    'letters': {
+        'name': 'حروف مع أمين', 'full': 'حروف مع أمين — سباق الحروف', 'icon': 'i-shield',
+        'color': '#17c38f', 'type': 'مسابقات',
+        'desc': 'تحدي الحروف: حرف وسؤال، والإجابة الصحيحة تمنح فريقك نقطة في المباراة.',
+        'duel': 'تحدّي حرف لكل فريق وبالدور من بنك «حروف مع أمين» — الأكثر إصابة يتأهّل.',
+    },
+    'draw_guess': {
+        'name': 'ارسم وخمّن', 'full': 'ارسم وخمّن — لوحة وتخمين', 'icon': 'i-draw',
+        'color': '#4f8cff', 'type': 'كلمات ومهارات',
+        'desc': 'ارسم الكلمة السرية على اللوحة وفريقك يخمّن قبل انتهاء الوقت.',
+        'duel': 'جولة رسم لكل فريق وبالدور — إصابة أبكر تمنح نقاطًا أكثر.',
+    },
+}
+
+
+def _hash_pw(password, salt=None):
+    """PBKDF2-HMAC-SHA256. The plain password is never stored, not even reversed."""
+    if not salt:
+        salt = uuid.uuid4().hex[:16]
+    digest = hashlib.pbkdf2_hmac('sha256', str(password).encode('utf-8'),
+                                 salt.encode('utf-8'), 120000).hex()
+    return salt, digest
+
+
+def _verify_pw(password, salt, digest):
+    if not salt or not digest:
+        return False
+    try:
+        return _hash_pw(password, salt)[1] == digest
+    except Exception:
+        return False
+
+
+def load_accounts():
+    return load_json(ACC_FILE, [])
+
+
+def save_accounts(accounts):
+    save_json(ACC_FILE, accounts)
+
+
+def find_account(username):
+    key = norm_ar(username).strip().lower()
+    if not key:
+        return None
+    for a in load_accounts():
+        if norm_ar(a.get('username', '')).strip().lower() == key:
+            return a
+    return None
+
+
+def public_account(a):
+    """Only the fields a browser may see — never the salt or the digest."""
+    if not a:
+        return None
+    return {
+        'id': a.get('id'),
+        'username': a.get('username', ''),
+        'name': a.get('name', ''),
+        'avatar': a.get('avatar', '🎮'),
+        'color': a.get('color', TEAM_COLORS[0]),
+        'createdAt': a.get('createdAt', ''),
+        'stats': a.get('stats', {}),
+        'trophies': a.get('trophies', []),
+    }
+
+
+def current_account():
+    token = request.cookies.get(ACCOUNT_COOKIE) or request.headers.get('X-Account-Token', '')
+    if not token:
+        return None
+    acc_id = ACCOUNT_TOKENS.get(token)
+    if not acc_id:
+        return None
+    for a in load_accounts():
+        if a.get('id') == acc_id:
+            return a
+    return None
+
+
+@app.context_processor
+def inject_account():
+    """Every template can read the signed-in account without a fetch."""
+    return {'current_account': public_account(current_account())}
+
+
+def _account_stats(acc):
+    return acc.setdefault('stats', {
+        'tournamentsPlayed': 0, 'tournamentsWon': 0,
+        'matchesPlayed': 0, 'matchesWon': 0, 'points': 0,
+    })
+
+
+def _bump_account(acc_id, **kw):
+    accounts = load_accounts()
+    for a in accounts:
+        if a.get('id') == acc_id:
+            st = _account_stats(a)
+            for k, v in kw.items():
+                st[k] = int(st.get(k, 0)) + int(v)
+            a['stats'] = st
+            save_accounts(accounts)
+            return a
+    return None
+
+
+@app.route('/api/accounts/register', methods=['POST'])
+def account_register():
+    body = request.get_json(silent=True) or {}
+    username = str(body.get('username', '')).strip()
+    name = str(body.get('name', '')).strip()
+    password = str(body.get('password', ''))
+
+    if len(username) < 3 or len(username) > 24:
+        return jsonify({'error': 'اسم المستخدم لازم يكون بين 3 و 24 حرفًا'}), 400
+    # \w in Python 3 already covers Arabic letters, so this admits Arabic and
+    # Latin usernames alike while still rejecting spaces and punctuation.
+    if not re.fullmatch(r'\w{3,24}', username):
+        return jsonify({'error': 'اسم المستخدم يقبل الحروف والأرقام والشرطة السفلية فقط'}), 400
+    if find_account(username):
+        return jsonify({'error': 'اسم المستخدم هذا محجوز — جرّب اسمًا آخر'}), 409
+    if len(password) < 4:
+        return jsonify({'error': 'كلمة المرور لازم تكون 4 أحرف على الأقل'}), 400
+    if not name:
+        name = username
+
+    accounts = load_accounts()
+    salt, digest = _hash_pw(password)
+    acc = {
+        'id': gen_id(),
+        'username': username,
+        'name': name,
+        'salt': salt,
+        'pass': digest,
+        'avatar': AVATARS[len(accounts) % len(AVATARS)],
+        'color': TEAM_COLORS[len(accounts) % len(TEAM_COLORS)],
+        'createdAt': now(),
+        'stats': {'tournamentsPlayed': 0, 'tournamentsWon': 0,
+                  'matchesPlayed': 0, 'matchesWon': 0, 'points': 0},
+        'trophies': [],
+    }
+    accounts.append(acc)
+    save_accounts(accounts)
+
+    token = uuid.uuid4().hex
+    ACCOUNT_TOKENS[token] = acc['id']
+    resp = make_response(jsonify({'ok': True, 'account': public_account(acc)}), 201)
+    resp.set_cookie(ACCOUNT_COOKIE, token, max_age=60 * 60 * 24 * 365,
+                    samesite='Lax', httponly=True)
+    return resp
+
+
+@app.route('/api/accounts/login', methods=['POST'])
+def account_login():
+    body = request.get_json(silent=True) or {}
+    username = str(body.get('username', '')).strip()
+    password = str(body.get('password', ''))
+    acc = find_account(username)
+    # Same message either way: never reveal which of the two was wrong.
+    if not acc or not _verify_pw(password, acc.get('salt'), acc.get('pass')):
+        return jsonify({'error': 'اسم المستخدم أو كلمة المرور غير صحيحة'}), 401
+    token = uuid.uuid4().hex
+    ACCOUNT_TOKENS[token] = acc['id']
+    resp = make_response(jsonify({'ok': True, 'account': public_account(acc)}))
+    resp.set_cookie(ACCOUNT_COOKIE, token, max_age=60 * 60 * 24 * 365,
+                    samesite='Lax', httponly=True)
+    return resp
+
+
+@app.route('/api/accounts/logout', methods=['POST'])
+def account_logout():
+    token = request.cookies.get(ACCOUNT_COOKIE) or ''
+    ACCOUNT_TOKENS.pop(token, None)
+    resp = make_response(jsonify({'ok': True}))
+    resp.delete_cookie(ACCOUNT_COOKIE, path='/')
+    return resp
+
+
+@app.route('/api/accounts/me', methods=['GET'])
+def account_me():
+    return jsonify({'account': public_account(current_account())})
+
+
+@app.route('/api/accounts', methods=['GET'])
+def account_list():
+    """Public directory: safe fields only, so the tournament can credit a win."""
+    out = [public_account(a) for a in load_accounts()]
+    out.sort(key=lambda a: (a.get('stats', {}).get('tournamentsWon', 0),
+                            a.get('stats', {}).get('points', 0)), reverse=True)
+    return jsonify({'accounts': out, 'total': len(out)})
+
+
+@app.route('/api/accounts/me', methods=['PUT'])
+def account_update():
+    acc = current_account()
+    if not acc:
+        return jsonify({'error': 'سجّل الدخول أولًا'}), 401
+    body = request.get_json(silent=True) or {}
+    accounts = load_accounts()
+    target = None
+    for a in accounts:
+        if a.get('id') == acc['id']:
+            target = a
+            break
+    if target is None:
+        return jsonify({'error': 'الحساب غير موجود'}), 404
+
+    if body.get('name'):
+        target['name'] = str(body['name']).strip()[:40]
+    if body.get('avatar') in AVATARS:
+        target['avatar'] = body['avatar']
+    if body.get('color') in TEAM_COLORS:
+        target['color'] = body['color']
+
+    new_pw = str(body.get('password', '') or '')
+    if new_pw:
+        cur = str(body.get('currentPassword', '') or '')
+        if not _verify_pw(cur, target.get('salt'), target.get('pass')):
+            return jsonify({'error': 'كلمة المرور الحالية غير صحيحة'}), 400
+        if len(new_pw) < 4:
+            return jsonify({'error': 'كلمة المرور الجديدة لازم تكون 4 أحرف على الأقل'}), 400
+        target['salt'], target['pass'] = _hash_pw(new_pw)
+
+    save_accounts(accounts)
+    return jsonify({'ok': True, 'account': public_account(target)})
+
+
+@app.route('/api/accounts/<aid>', methods=['DELETE'])
+def account_delete(aid):
+    """Only an admin may delete an account — players cannot wipe each other."""
+    if not is_admin(request):
+        return jsonify({'error': 'غير مصرّح'}), 401
+    accounts = load_accounts()
+    target = next((a for a in accounts if a.get('id') == aid), None)
+    if not target:
+        return jsonify({'error': 'الحساب غير موجود'}), 404
+    save_accounts([a for a in accounts if a.get('id') != aid])
+    for tok, owner in list(ACCOUNT_TOKENS.items()):
+        if owner == aid:
+            ACCOUNT_TOKENS.pop(tok, None)
+    return jsonify({'ok': True})
+
+
+# ============ TOURNAMENTS ============
+@app.route('/api/tournament/config', methods=['GET'])
+def tournament_config():
+    return jsonify({
+        'games': TOURNAMENT_GAMES,
+        'sizes': [4, 8, 16],
+        'defaultSize': 8,
+        'perTeamRounds': 3,
+        'avatars': AVATARS,
+        'colors': TEAM_COLORS,
+    })
+
+
+@app.route('/api/tournament/pool', methods=['GET'])
+def tournament_pool():
+    """عينة عشوائية جاهزة لمباريات البطولة.
+
+    تُختار جهة الخادم عن قصد: تنزيل بنك الأسئلة كاملًا إلى المتصفح عند كل
+    بطولة كان سيعيد إرسال عشرات الآلاف من الأسئلة لشيء يحتاج أقل من عشرين.
+    """
+    game = request.args.get('game', '')
+    if game not in TOURNAMENT_GAMES:
+        return jsonify({'error': 'اللعبة غير مدعومة في وضع البطولة'}), 400
+    try:
+        count = int(request.args.get('count', 24) or 24)
+    except (TypeError, ValueError):
+        count = 24
+    count = max(6, min(60, count))
+
+    if game == 'quiz':
+        bank = [q for q in load_json(Q_FILE, [])
+                if q.get('game') == 'quiz'
+                and q.get('status') == 'approved'
+                and norm_ar(q.get('answer'))]
+        _rnd.shuffle(bank)
+        qs = [{
+            'id': q.get('id'),
+            'question': q.get('question', ''),
+            'answer': q.get('answer', ''),
+            'points': int(q.get('points') or 200),
+            'difficulty': q.get('difficulty') or 'medium',
+            'category': q.get('category_name') or '',
+            'explanation': q.get('explanation') or '',
+            'image': q.get('image') or '',
+            'alternatives': q.get('alternatives') or [],
+        } for q in bank[:count]]
+        if not qs:
+            return jsonify({'error': 'بنك أسئلة س.ج فاضي — أضف أسئلة أولًا'}), 404
+        return jsonify({'game': game, 'challenges': qs, 'total': len(qs)})
+
+    if game == 'letters':
+        # نفس الدالة التي تستخدمها لعبة «شطب الحروف» حتى لا تختلف البطولة عن اللعبة.
+        idx = bank_letters_index()
+        avail = [l for l in AR_LETTERS if idx.get(l)]
+        if not avail:
+            return jsonify({'error': 'ما فيه أسئلة حروف متاحة في البنك'}), 404
+        _rnd.shuffle(avail)
+        # نوزّع الطلب على أكبر عدد ممكن من الحروف المختلفة بدل ملء كل المقاعد
+        # من الحرف الأول — وإلا صارت كل التحديات حرفًا واحدًا مكررًا.
+        per_letter = max(1, count // max(1, len(avail)))
+        out = []
+        for letter in avail:
+            if len(out) >= count:
+                break
+            for q in letters_strikeout_pool(letter, per_letter):
+                if len(out) >= count:
+                    break
+                out.append({
+                    'letter': letter,
+                    'id': q.get('id'),
+                    'question': q.get('question', ''),
+                    'answer': q.get('answer', ''),
+                    'difficulty': q.get('difficulty') or 'medium',
+                    'explanation': q.get('explanation') or '',
+                })
+        if not out:
+            return jsonify({'error': 'ما فيه أسئلة حروف متاحة في البنك'}), 404
+        return jsonify({'game': game, 'challenges': out, 'total': len(out)})
+
+    # draw_guess
+    items = load_json(content_file('draw_guess'), [])
+    items = [x for x in items if x.get('status') == 'approved' and norm_ar(x.get('word'))]
+    _rnd.shuffle(items)
+    words = [{
+        'id': x.get('id'),
+        'word': x.get('word', ''),
+        'altAccepted': x.get('altAccepted') or [],
+        'category': x.get('category') or '',
+        'difficulty': x.get('difficulty') or 'easy',
+    } for x in items[:count]]
+    if not words:
+        return jsonify({'error': 'بنك كلمات الرسم فاضي — أضف كلمات أولًا'}), 404
+    return jsonify({'game': game, 'challenges': words, 'total': len(words)})
+
+@app.route('/api/tournaments', methods=['GET'])
+def tournament_list():
+    rows = load_json(TOURN_FILE, [])
+    rows.sort(key=lambda r: r.get('createdAt', ''), reverse=True)
+    return jsonify({'tournaments': rows[:40], 'total': len(rows)})
+
+
+@app.route('/api/tournaments', methods=['POST'])
+def tournament_save():
+    body = request.get_json(silent=True) or {}
+    game = body.get('game')
+    if game not in TOURNAMENT_GAMES:
+        return jsonify({'error': 'اللعبة غير مدعومة في وضع البطولة'}), 400
+    teams = body.get('teams') or []
+    if not isinstance(teams, list) or len(teams) < 2:
+        return jsonify({'error': 'البطولة تحتاج فريقين على الأقل'}), 400
+    champion = body.get('champion') or {}
+    if not champion.get('name'):
+        return jsonify({'error': 'لا يمكن حفظ بطولة بلا فائز'}), 400
+
+    host = current_account()
+    record = {
+        'id': gen_id(),
+        'game': game,
+        'size': int(body.get('size') or len(teams)),
+        'champion': {'id': champion.get('id'), 'name': champion.get('name')},
+        'teams': [{'id': t.get('id'), 'name': t.get('name'),
+                   'accountId': t.get('accountId')} for t in teams],
+        'matches': body.get('matches') or [],
+        'roundsPlayed': int(body.get('roundsPlayed') or 0),
+        'host': {'id': host.get('id'), 'name': host.get('name')} if host else None,
+        'createdAt': now(),
+    }
+    rows = load_json(TOURN_FILE, [])
+    rows.append(record)
+    # Keep the file bounded: history beyond the newest 200 is not useful.
+    save_json(TOURN_FILE, rows[-200:])
+
+    # Credit every account that took part, and the champion's win.
+    credited = set()
+    for t in record['teams']:
+        aid = t.get('accountId')
+        if not aid or aid in credited:
+            continue
+        credited.add(aid)
+        won = 1 if (champion.get('accountId') and champion['accountId'] == aid) else 0
+        _bump_account(aid, tournamentsPlayed=1, tournamentsWon=won)
+
+    for m in record.get('matches', []):
+        for key, delta in (('winner', 'matchesWon'),):
+            w = m.get(key) or {}
+            wid = w.get('accountId')
+            if wid:
+                _bump_account(wid, **{delta: 1})
+        for side in ('a', 'b'):
+            t = m.get(side) or {}
+            if t.get('accountId'):
+                _bump_account(t['accountId'], matchesPlayed=1, points=int(m.get('score' + side.upper()) or 0))
+
+    return jsonify({'ok': True, 'tournament': record})
+
+
+@app.route('/api/tournaments/leaderboard', methods=['GET'])
+def tournament_leaderboard():
+    accounts = [public_account(a) for a in load_accounts()]
+    accounts = [a for a in accounts if a.get('stats')]
+    accounts.sort(key=lambda a: (a['stats'].get('tournamentsWon', 0),
+                                 a['stats'].get('points', 0)), reverse=True)
+    return jsonify({'leaderboard': accounts[:20]})
 
 # ============ STATIC / UPLOADS ============
 @app.route('/static/<path:path>')

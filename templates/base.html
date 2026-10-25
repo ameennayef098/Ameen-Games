@@ -215,11 +215,17 @@
         <div class="nav-links">
             <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
             <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
+            <a href="/tournament" class="nav-link {{ 'active' if request.path.startswith('/tournament') }}"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>وضع البطولة</a>
             <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
             <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
         </div>
         <div class="nav-actions">
             <a href="/games" class="btn btn-primary btn-sm"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
+            {% if current_account %}
+            <a href="/account" class="nav-link" title="حسابك"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg><span>{{ current_account.name }}</span></a>
+            {% else %}
+            <a href="/login" class="nav-link" title="تسجيل الدخول"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg><span>تسجيل الدخول</span></a>
+            {% endif %}
             <a href="/admin" class="nav-link" title="لوحة الإدارة" aria-label="لوحة الإدارة"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg><span>الإدارة</span></a>
         </div>
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-expanded="false" aria-controls="mobileMenu" aria-label="فتح القائمة">
@@ -236,6 +242,11 @@
         <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
         <a href="/games" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
         <a href="/admin" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>لوحة الإدارة</a>
+        {% if current_account %}
+        <a href="/account" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>حسابي</a>
+        {% else %}
+        <a href="/login" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>تسجيل الدخول</a>
+        {% endif %}
     </div>
 
     <main class="main-content" id="main">
@@ -256,6 +267,7 @@
                 <span class="footer-col-title">الأقسام</span>
                 <a href="/">الرئيسية</a>
                 <a href="/games">الألعاب</a>
+                <a href="/tournament">وضع البطولة</a>
                 <a href="/library">مكتبة الأسئلة</a>
                 <a href="/how-to-play">طريقة اللعب</a>
             </div>

@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ══════════════════════════════════════════════════════════════
+   Apple-design: سطح زجاجي واحد + حركة زنبركية + استجابة فورية
+   ══════════════════════════════════════════════════════════════ */
+.auth {
+    min-height: calc(100vh - 9rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6) var(--space-4) var(--space-8);
+    position: relative;
+}
+/* هالة ضوء خلف البطاقة — تمنح السطح عمقًا بدل ظلّ مسطّح */
+.auth::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(46% 34% at 76% 18%, rgba(161, 107, 255, 0.24), transparent 70%),
+        radial-gradient(40% 30% at 18% 82%, rgba(79, 140, 255, 0.20), transparent 70%);
+    pointer-events: none;
+}
+
+/* السطح الزجاجي: مادة نصف شفافة، لا طبقة فوق طبقة */
+.auth-card {
+    position: relative;
+    width: min(26.5rem, 100%);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    background: rgba(22, 27, 58, 0.72);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    /* حافة عليا مضيئة = الضوء يلتقط حافة المادة */
+    box-shadow: var(--shadow-lg), var(--shadow-inset), 0 1px 0 rgba(255, 255, 255, 0.10) inset;
+    /* الدخول من الأسفل وبقياس مصغّر: إحساس بالظهور المادي لا مجرّد تلاشي */
+    animation: auth-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes auth-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+}
+.auth-brand .logo-icon {
+    width: 2.9rem; height: 2.9rem;
+    display: grid; place-items: center;
+    border-radius: var(--radius);
+    background: var(--gradient-brand);
+    color: var(--text-on-brand);
+    box-shadow: var(--shadow-glow-blue);
+}
+.auth-brand .logo-icon .ico { width: 1.6rem; height: 1.6rem; }
+.auth-brand h1 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    line-height: 1.15;
+    letter-spacing: -0.01em;   /* عنوان كبير يُشدّ قليلًا */
+}
+.auth-brand p { margin: 0.15rem 0 0; font-size: var(--font-size-sm); color: var(--text-muted); }
+
+/* مفتاح التبويبات: إبهام ينزلق بحركة زنبركية (مبدأ 7: نفس المسار ذهابًا وإيابًا) */
+.auth-tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 3px;
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+}
+.auth-tab {
+    position: relative;
+    z-index: 1;
+    padding: 0.6rem 0.5rem;
+    border: 0;
+    background: none;
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    font: inherit;
+    font-weight: 700;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: color 180ms ease-out;
+}
+/* الاستجابة الفورية: يتغير المظهر لحظة الضغط لا عند الإفلات */
+.auth-tab:active { transform: scale(0.97); transition: transform 100ms ease-out; }
+.auth-tab[aria-selected="true"] { color: var(--text-on-brand); }
+.auth-tab-thumb {
+    position: absolute;
+    top: 3px; bottom: 3px;
+    width: calc(50% - 3px);
+    inset-inline-start: 3px;
+    border-radius: var(--radius-pill);
+    background: var(--gradient-brand);
+    box-shadow: var(--shadow-sm);
+    /* منحنى يقترب من الزنبرك الحرج: بلا تجاوز، بلا ارتداد مشتت */
+    transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+.auth-tabs[data-active="register"] .auth-tab-thumb { transform: translateX(-100%); }
+
+/* لوحة كل تبويب: تنزلق من جهتها وتعود من نفس الجهة */
+.auth-panel { display: none; }
+.auth-panel.active { display: block; animation: panel-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.auth-panel.active.exit { animation: panel-out 180ms cubic-bezier(0.4, 0, 1, 1) both; }
+@keyframes panel-in  { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+@keyframes panel-out { from { opacity: 1; } to { opacity: 0; transform: translateX(-8px); } }
+
+.field { display: grid; gap: 0.4rem; margin-bottom: var(--space-4); }
+.field label { font-size: var(--font-size-sm); font-weight: 700; color: var(--text-secondary); }
+.input-wrap { position: relative; }
+.input-wrap .ico {
+    position: absolute;
+    inset-inline-start: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.1rem; height: 1.1rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+.input-wrap input {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+    padding-inline-start: 2.6rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: var(--font-size-base);
+    transition: border-color 160ms ease-out, background 160ms ease-out, box-shadow 160ms ease-out;
+}
+.input-wrap input::placeholder { color: var(--text-muted); }
+.input-wrap input:hover { border-color: var(--border-strong); }
+.input-wrap input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: rgba(79, 140, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.16);
+}
+.field.invalid input { border-color: var(--accent-red); background: rgba(240, 82, 79, 0.07); }
+.field.invalid input:focus { box-shadow: 0 0 0 4px rgba(240, 82, 79, 0.16); }
+.hint { font-size: var(--font-size-xs); color: var(--text-muted); line-height: var(--leading-normal); }
+.error-text {
+    display: none;
+    font-size: var(--font-size-xs);
+    color: #ffa3a1;
+    align-items: center;
+    gap: 0.3rem;
+}
+.field.invalid .error-text { display: flex; }
+
+/* رسالة الخطأ العامة: تهتزّ عند الوصول — تغذية راجعة واضحة السبب */
+.auth-alert {
+    display: none;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: var(--space-4);
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--radius);
+    background: var(--accent-red-tint);
+    border: 1px solid rgba(240, 82, 79, 0.45);
+    color: #ffd7d6;
+    font-size: var(--font-size-sm);
+    line-height: var(--leading-normal);
+}
+.auth-alert.show { display: flex; }
+.auth-alert .ico { flex: 0 0 auto; width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; }
+.auth-alert.shake { animation: auth-shake 340ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes auth-shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-3px); }
+    40%, 60% { transform: translateX(3px); }
+}
+
+.auth-submit { width: 100%; justify-content: center; margin-top: var(--space-2); }
+.auth-foot {
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+.auth-foot a { color: var(--accent-blue); font-weight: 700; }
+.auth-foot a:hover { text-decoration: underline; }
+.auth-home {
+    position: absolute;
+    top: var(--space-4);
+    inset-inline-start: var(--space-4);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+.auth-home:hover { color: var(--accent-blue); }
+.auth-home .ico { width: 1rem; height: 1rem; }
+
+/* مبدأ 14: الحركة المخفّضة = تلاشٍ قصير، لا انزلاق ولا زنبرك */
+@media (prefers-reduced-motion: reduce) {
+    .auth-card, .auth-panel.active { animation: reduced-fade 180ms ease-out both; }
+    .auth-tab-thumb { transition: none; }
+    .auth-alert.shake { animation: none; }
+    @keyframes reduced-fade { from { opacity: 0; } to { opacity: 1; } }
+}
+/* مبدأ 14: تقليل الشفافية = سطح أكثر متانة ووضوحًا */
+@media (prefers-reduced-transparency: reduce) {
+    .auth-card { background: var(--bg-card); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+    .auth-card { border-color: var(--border-strong); background: var(--bg-card); }
+}
+@media (max-width: 420px) {
+    .auth { padding-inline: var(--space-3); }
+    .auth-card { padding: var(--space-5); border-radius: var(--radius-lg); }
+    .auth-brand h1 { font-size: var(--font-size-lg); }
+}
+</style>
+
+<section class="auth">
+    <a class="auth-home" href="/"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg>الرئيسية</a>
+
+    <div class="auth-card">
+        <div class="auth-brand">
+            <span class="logo-icon" aria-hidden="true"><svg class="ico"><use href="#i-gamepad"></use></svg></span>
+            <div>
+                <h1>حسابك في ألعاب أمين</h1>
+                <p>سجّل دخولك لتُحفظ بطولاتك ونقاطك باسمك.</p>
+            </div>
+        </div>
+
+        <div class="auth-tabs" id="authTabs" data-active="login" role="tablist" aria-label="نوع الدخول">
+            <span class="auth-tab-thumb" aria-hidden="true"></span>
+            <button class="auth-tab" type="button" role="tab" id="tabLogin" aria-selected="true" aria-controls="panelLogin">تسجيل الدخول</button>
+            <button class="auth-tab" type="button" role="tab" id="tabRegister" aria-selected="false" aria-controls="panelRegister">حساب جديد</button>
+        </div>
+
+        <div class="auth-alert" id="authAlert" role="alert">
+            <svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>
+            <span id="authAlertText"></span>
+        </div>
+
+        <!-- ─────────── تسجيل الدخول ─────────── -->
+        <form class="auth-panel active" id="panelLogin" role="tabpanel" aria-labelledby="tabLogin" novalidate>
+            <div class="field" data-field="username">
+                <label for="loginUser">اسم المستخدم</label>
+                <div class="input-wrap">
+                    <svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>
+                    <input type="text" id="loginUser" name="username" autocomplete="username"
+                           placeholder="مثال: ameen" required>
+                </div>
+                <span class="error-text">اكتب اسم المستخدم</span>
+            </div>
+            <div class="field" data-field="password">
+                <label for="loginPass">كلمة المرور</label>
+                <div class="input-wrap">
+                    <svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>
+                    <input type="password" id="loginPass" name="password" autocomplete="current-password"
+                           placeholder="••••••" required>
+                </div>
+                <span class="error-text">اكتب كلمة المرور</span>
+            </div>
+            <button class="btn btn-primary btn-lg auth-submit" type="submit" id="loginBtn">
+                <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>دخول
+            </button>
+        </form>
+
+        <!-- ─────────── حساب جديد ─────────── -->
+        <form class="auth-panel" id="panelRegister" role="tabpanel" aria-labelledby="tabRegister" novalidate>
+            <div class="field" data-field="name">
+                <label for="regName">الاسم الذي يظهر للاعبين</label>
+                <div class="input-wrap">
+                    <svg class="ico" aria-hidden="true"><use href="#i-star"></use></svg>
+                    <input type="text" id="regName" name="name" autocomplete="nickname"
+                           placeholder="مثال: أمين" maxlength="40">
+                </div>
+                <span class="hint">اختياري — يظهر في النتائج والبطولات بدل اسم المستخدم.</span>
+            </div>
+            <div class="field" data-field="username">
+                <label for="regUser">اسم المستخدم</label>
+                <div class="input-wrap">
+                    <svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>
+                    <input type="text" id="regUser" name="username" autocomplete="username"
+                           placeholder="حروف وأرقام، 3 إلى 24" minlength="3" maxlength="24" required>
+                </div>
+                <span class="error-text">اسم المستخدم لازم يكون 3 أحرف على الأقل</span>
+            </div>
+            <div class="field" data-field="password">
+                <label for="regPass">كلمة المرور</label>
+                <div class="input-wrap">
+                    <svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>
+                    <input type="password" id="regPass" name="password" autocomplete="new-password"
+                           placeholder="4 أحرف على الأقل" minlength="4" required>
+                </div>
+                <span class="error-text">كلمة المرور لازم تكون 4 أحرف على الأقل</span>
+            </div>
+            <button class="btn btn-primary btn-lg auth-submit" type="submit" id="registerBtn">
+                <svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>إنشاء الحساب ودخول
+            </button>
+        </form>
+
+        <div class="auth-foot">
+            بدك تلعب بدون حساب؟ <a href="/games">تابع إلى الألعاب مباشرة</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    'use strict';
+
+    var tabs = document.getElementById('authTabs');
+    var tabLogin = document.getElementById('tabLogin');
+    var tabRegister = document.getElementById('tabRegister');
+    var panelLogin = document.getElementById('panelLogin');
+    var panelRegister = document.getElementById('panelRegister');
+    var alertBox = document.getElementById('authAlert');
+    var alertText = document.getElementById('authAlertText');
+
+    function showAlert(msg) {
+        alertText.textContent = msg;
+        alertBox.classList.add('show');
+        // إعادة تشغيل الاهتزاز حتى يظهر السبب بوضوح في كل خطأ
+        alertBox.classList.remove('shake');
+        void alertBox.offsetWidth;
+        alertBox.classList.add('shake');
+    }
+    function hideAlert() { alertBox.classList.remove('show'); }
+
+    // التبديل بين التبويبات: نفس المسار ذهابًا وإيابًا (مبدأ 7)
+    function select(mode) {
+        if (tabs.dataset.active === mode) return;
+        var show = mode === 'register' ? panelRegister : panelLogin;
+        var hide = mode === 'register' ? panelLogin : panelRegister;
+        tabs.dataset.active = mode;
+        tabLogin.setAttribute('aria-selected', String(mode === 'login'));
+        tabRegister.setAttribute('aria-selected', String(mode === 'register'));
+        tabLogin.tabIndex = mode === 'login' ? 0 : -1;
+        tabRegister.tabIndex = mode === 'register' ? 0 : -1;
+        hide.classList.remove('active');
+        hide.classList.add('exit');
+        window.setTimeout(function () { hide.classList.remove('exit'); }, 190);
+        show.classList.add('active');
+        hideAlert();
+        var first = show.querySelector('input');
+        if (first) window.setTimeout(function () { first.focus(); }, 300);
+    }
+    tabLogin.addEventListener('click', function () { select('login'); });
+    tabRegister.addEventListener('click', function () { select('register'); });
+
+    // تحقق فوري داخل الحقل (مبدأ 17: تحقق مباشر لا عند الإرسال)
+    function fieldOf(input) { return input.closest('.field'); }
+    function mark(input, ok) {
+        var f = fieldOf(input);
+        if (f) f.classList.toggle('invalid', !ok);
+        return ok;
+    }
+    function bindLive(input, test) {
+        if (!input) return;
+        input.addEventListener('input', function () { mark(input, test(input.value)); });
+        input.addEventListener('blur', function () { mark(input, test(input.value.trim())); });
+    }
+    bindLive(document.getElementById('loginUser'), function (v) { return v.trim().length >= 3; });
+    bindLive(document.getElementById('loginPass'), function (v) { return v.length >= 4; });
+    bindLive(document.getElementById('regUser'), function (v) { return v.trim().length >= 3; });
+    bindLive(document.getElementById('regPass'), function (v) { return v.length >= 4; });
+
+    function setBusy(btn, on, label) {
+        btn.disabled = on;
+        btn.setAttribute('aria-busy', String(on));
+        if (on) { btn.dataset.label = btn.innerHTML; btn.innerHTML = label; }
+        else if (btn.dataset.label) { btn.innerHTML = btn.dataset.label; }
+    }
+
+    function post(url, body) {
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        }).then(function (r) {
+            return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+        });
+    }
+
+    // ─────────── دخول ───────────
+    panelLogin.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var user = document.getElementById('loginUser');
+        var pass = document.getElementById('loginPass');
+        var ok = mark(user, user.value.trim().length >= 3);
+        ok = mark(pass, pass.value.length >= 4) && ok;
+        if (!ok) { showAlert('كمّل الحقول الناقصة بالأول.'); return; }
+
+        var btn = document.getElementById('loginBtn');
+        setBusy(btn, true, 'جارٍ الدخول…');
+        post('/api/accounts/login', { username: user.value.trim(), password: pass.value })
+            .then(function (res) {
+                if (!res.ok) { showAlert(res.data.error || 'تعذّر الدخول'); setBusy(btn, false); return; }
+                window.location.href = '/account';
+            })
+            .catch(function () { showAlert('ما فيه اتصال بالسيرفر'); setBusy(btn, false); });
+    });
+
+    // ─────────── حساب جديد ───────────
+    panelRegister.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = document.getElementById('regName');
+        var user = document.getElementById('regUser');
+        var pass = document.getElementById('regPass');
+        var ok = mark(user, /^\w{3,24}$/.test(user.value.trim()));
+        ok = mark(pass, pass.value.length >= 4) && ok;
+        if (!name.value.trim()) { name.value = user.value.trim(); }
+        if (!ok) { showAlert('كمّل الحقول الناقصة بالأول.'); return; }
+
+        var btn = document.getElementById('registerBtn');
+        setBusy(btn, true, 'جارٍ إنشاء الحساب…');
+        post('/api/accounts/register', {
+            username: user.value.trim(), password: pass.value, name: name.value.trim()
+        })
+            .then(function (res) {
+                if (!res.ok) { showAlert(res.data.error || 'تعذّر إنشاء الحساب'); setBusy(btn, false); return; }
+                window.location.href = '/account';
+            })
+            .catch(function () { showAlert('ما فيه اتصال بالسيرفر'); setBusy(btn, false); });
+    });
+
+    // إذا كان المستخدم مسجلًا دخوله بالفعل، لا معنى لصفحة الدخول
+    fetch('/api/accounts/me').then(function (r) { return r.json(); }).then(function (d) {
+        if (d && d.account) window.location.replace('/account');
+    }).catch(function () {});
+})();
+</script>
+{% endblock %}

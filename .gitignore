@@ -9,3 +9,7 @@ data/questions/import_history.json
 data/questions/import_draft.json
 run.log
 *.log
+
+# بيانات المستخدمين تُولَّد عند التشغيل — لا تُرفع إلى المستودع
+data/accounts.json
+data/tournaments.json

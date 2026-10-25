@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.acct { max-width: 60rem; margin-inline: auto; padding: var(--space-7) var(--space-4) var(--space-8); }
+
+/* بطاقة الملف: سطح زجاجي واحد */
+.acct-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    padding: var(--space-6);
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-xl);
+    background: rgba(22, 27, 58, 0.72);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: var(--shadow-lg), var(--shadow-inset);
+}
+.acct-avatar {
+    flex: 0 0 auto;
+    width: 5rem; height: 5rem;
+    display: grid; place-items: center;
+    border-radius: var(--radius-lg);
+    font-size: 2.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px solid var(--accent-blue);
+}
+.acct-hero h1 { margin: 0; font-size: var(--font-size-2xl); line-height: 1.2; }
+.acct-hero .handle { margin: 0.2rem 0 0; color: var(--text-muted); font-size: var(--font-size-sm); font-weight: 600; }
+.acct-hero .since { margin: 0.35rem 0 0; font-size: var(--font-size-xs); color: var(--text-muted); }
+
+/* شبكة الإحصائيات */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+}
+.stat {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    transition: transform 160ms ease-out, border-color 160ms ease-out;
+}
+.stat:hover { transform: translateY(-3px); border-color: var(--border-strong); }
+.stat .num { font-family: var(--num-font); font-size: var(--font-size-2xl); font-weight: 800; line-height: 1.1; }
+.stat .lbl { margin-top: 0.2rem; font-size: var(--font-size-xs); color: var(--text-muted); font-weight: 700; }
+
+.panel {
+    padding: var(--space-5);
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+.panel > h2 {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin: 0 0 var(--space-4);
+    font-size: var(--font-size-lg);
+}
+.panel > h2 .ico { width: 1.2rem; height: 1.2rem; color: var(--accent-blue); }
+
+.avatar-row, .color-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+.pick {
+    width: 2.6rem; height: 2.6rem;
+    display: grid; place-items: center;
+    font-size: 1.3rem;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 120ms ease-out, border-color 120ms ease-out, background 120ms ease-out;
+}
+.pick:hover { background: rgba(255, 255, 255, 0.10); }
+.pick:active { transform: scale(0.94); }
+.pick[aria-pressed="true"] { border-color: var(--accent-blue); background: var(--accent-blue-tint); }
+.pick.color { font-size: 0; }
+.pick.color[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 5px var(--accent-blue); }
+
+.row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; }
+.row .field { flex: 1 1 12rem; margin-bottom: 0; }
+.inline-form { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+.hist { display: grid; gap: var(--space-2); }
+.hist-item {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+.hist-item .ico { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; color: var(--accent-gold); }
+.hist-item .when { margin-inline-start: auto; color: var(--text-muted); font-size: var(--font-size-xs); font-weight: 600; }
+.hist-empty, .empty-note { color: var(--text-muted); font-size: var(--font-size-sm); margin: 0; }
+
+.lb { display: grid; gap: var(--space-2); counter-reset: lb; }
+.lb-row {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+.lb-row.is-me { border-color: var(--accent-blue); background: var(--accent-blue-tint); }
+.lb-row .rank {
+    flex: 0 0 auto; width: 1.8rem; height: 1.8rem;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    font-family: var(--num-font); font-weight: 800; font-size: var(--font-size-xs);
+    background: rgba(255, 255, 255, 0.08);
+}
+.lb-row:nth-child(1) .rank { background: var(--gradient-gold); color: var(--text-on-brand); }
+.lb-row .ava { font-size: 1.25rem; }
+.lb-row .pts { margin-inline-start: auto; font-family: var(--num-font); font-weight: 800; }
+
+.acct-alert {
+    display: none;
+    align-items: flex-start; gap: 0.5rem;
+    margin-bottom: var(--space-4);
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--radius);
+    font-size: var(--font-size-sm);
+}
+.acct-alert.show { display: flex; }
+.acct-alert.ok  { background: var(--accent-green-tint); border: 1px solid rgba(23, 195, 143, 0.45); color: #c8f5e4; }
+.acct-alert.err { background: var(--accent-red-tint); border: 1px solid rgba(240, 82, 79, 0.45); color: #ffd7d6; }
+.acct-alert .ico { flex: 0 0 auto; width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; }
+
+@media (prefers-reduced-transparency: reduce) {
+    .acct-hero { background: var(--bg-card); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (max-width: 560px) {
+    .acct-hero { flex-direction: column; text-align: center; gap: var(--space-3); }
+    .acct-avatar { width: 4rem; height: 4rem; font-size: 2rem; }
+    .acct-hero h1 { font-size: var(--font-size-xl); }
+}
+</style>
+
+<section class="acct">
+    <!-- ─────────── لا حساب: دعوة للدخول ─────────── -->
+    <div id="gate" class="acct-hero" hidden>
+        <span class="acct-avatar" aria-hidden="true">👤</span>
+        <div>
+            <h1>لسا ما سجّلت دخول</h1>
+            <p class="handle">انسخة من الحساب بتخلّي بطولاتك ونقاطك تُحفظ باسمك.</p>
+        </div>
+        <div style="margin-inline-start:auto;display:flex;gap:.5rem;flex-wrap:wrap">
+            <a class="btn btn-primary" href="/login"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>تسجيل الدخول</a>
+            <a class="btn btn-secondary" href="/games"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
+        </div>
+    </div>
+
+    <!-- ─────────── الملف ─────────── -->
+    <div id="profile" hidden>
+        <div class="acct-hero">
+            <span class="acct-avatar" id="meAvatar" aria-hidden="true">🎮</span>
+            <div>
+                <h1 id="meName">—</h1>
+                <p class="handle" id="meHandle">—</p>
+                <p class="since" id="meSince"></p>
+            </div>
+            <div style="margin-inline-start:auto;display:flex;gap:.5rem;flex-wrap:wrap">
+                <a class="btn btn-primary" href="/tournament"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>وضع البطولة</a>
+                <button class="btn btn-secondary" type="button" id="logoutBtn"><svg class="ico" aria-hidden="true"><use href="#i-close"></use></svg>خروج</button>
+            </div>
+        </div>
+
+        <div class="stat-grid" id="statGrid"></div>
+
+        <div class="panel">
+            <h2><svg class="ico" aria-hidden="true"><use href="#i-star"></use></svg>المظهر</h2>
+            <p class="hint" style="margin:0 0 var(--space-3)">اختر الشكل واللون اللي يظهران باسمك في الألعاب والبطولات.</p>
+            <div class="avatar-row" id="avatarRow" role="group" aria-label="اختر الشكل"></div>
+            <div class="color-row" id="colorRow" role="group" aria-label="اختر اللون"></div>
+            <div class="row">
+                <div class="field" style="flex:1 1 14rem">
+                    <label for="meNameInput">الاسم الظاهر</label>
+                    <input type="text" id="meNameInput" maxlength="40" style="padding-inline-start:.9rem">
+                </div>
+                <button class="btn btn-primary" type="button" id="saveLook">حفظ المظهر</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>كلمة المرور</h2>
+            <div class="acct-alert" id="pwAlert" role="alert"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg><span></span></div>
+            <div class="row">
+                <div class="field" style="flex:1 1 11rem"><label for="curPw">الحالية</label><input type="password" id="curPw" autocomplete="current-password" style="padding-inline-start:.9rem"></div>
+                <div class="field" style="flex:1 1 11rem"><label for="newPw">الجديدة</label><input type="password" id="newPw" autocomplete="new-password" style="padding-inline-start:.9rem"></div>
+                <button class="btn btn-secondary" type="button" id="savePw">تغيير</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>سجلّ البطولات</h2>
+            <div class="hist" id="histList"></div>
+        </div>
+
+        <div class="panel">
+            <h2><svg class="ico" aria-hidden="true"><use href="#i-medal"></use></svg>ترتيب اللاعبين</h2>
+            <div class="lb" id="lbList"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    'use strict';
+
+    var ME = null;          // الحساب الحالي
+    var AVATARS = [], COLORS = [];
+    var picked = { avatar: '', color: '' };
+
+    var gate = document.getElementById('gate');
+    var profile = document.getElementById('profile');
+
+    function api(url, opts) {
+        return fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {}))
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
+    }
+    function alertBox(el, kind, msg) {
+        var s = el.querySelector('span');
+        s.textContent = msg;
+        el.className = 'acct-alert show ' + kind;
+    }
+
+    // ─────────── تحميل ───────────
+    api('/api/tournament/config').then(function (res) {
+        if (res.ok) { AVATARS = res.data.avatars; COLORS = res.data.colors; }
+    });
+
+    api('/api/accounts/me').then(function (res) {
+        ME = res.data && res.data.account;
+        if (!ME) { gate.hidden = false; return; }
+        renderProfile();
+    });
+
+    function renderProfile() {
+        profile.hidden = false;
+        document.getElementById('meAvatar').textContent = ME.avatar;
+        document.getElementById('meName').textContent = ME.name;
+        document.getElementById('meHandle').textContent = '@' + ME.username;
+        document.getElementById('meSince').textContent = 'عضو منذ ' + (ME.createdAt || '').slice(0, 10);
+        picked.avatar = ME.avatar; picked.color = ME.color;
+        document.getElementById('meNameInput').value = ME.name;
+
+        var st = ME.stats || {};
+        var stats = [
+            [st.tournamentsPlayed || 0, 'بطولة لعبتها'],
+            [st.tournamentsWon || 0, 'بطولة فزتها'],
+            [st.matchesPlayed || 0, 'مباراة'],
+            [st.matchesWon || 0, 'مباراة فائزة'],
+            [st.points || 0, 'نقطة']
+        ];
+        document.getElementById('statGrid').innerHTML = stats.map(function (s) {
+            return '<div class="stat"><div class="num">' + s[0] + '</div><div class="lbl">' + s[1] + '</div></div>';
+        }).join('');
+
+        buildPicks();
+        loadHistory();
+        loadLeaderboard();
+    }
+
+    function buildPicks() {
+        var ar = document.getElementById('avatarRow');
+        ar.innerHTML = AVATARS.map(function (a) {
+            return '<button class="pick" type="button" data-avatar="' + a + '" aria-pressed="false" aria-label="شكل ' + a + '">' + a + '</button>';
+        }).join('');
+        var cr = document.getElementById('colorRow');
+        cr.innerHTML = COLORS.map(function (c) {
+            return '<button class="pick color" type="button" data-color="' + c + '" aria-pressed="false" style="background:' + c + '" aria-label="لون"></button>';
+        }).join('');
+
+        ar.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-avatar]'); if (!b) return;
+            picked.avatar = b.dataset.avatar;
+            ar.querySelectorAll('.pick').forEach(function (p) { p.setAttribute('aria-pressed', String(p === b)); });
+        });
+        cr.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-color]'); if (!b) return;
+            picked.color = b.dataset.color;
+            cr.querySelectorAll('.pick').forEach(function (p) { p.setAttribute('aria-pressed', String(p === b)); });
+        });
+        syncPicks();
+    }
+    function syncPicks() {
+        document.querySelectorAll('[data-avatar]').forEach(function (p) {
+            p.setAttribute('aria-pressed', String(p.dataset.avatar === picked.avatar));
+        });
+        document.querySelectorAll('[data-color]').forEach(function (p) {
+            p.setAttribute('aria-pressed', String(p.dataset.color === picked.color));
+        });
+        var av = document.getElementById('meAvatar');
+        if (av) av.textContent = picked.avatar || '🎮';
+        if (av && picked.color) av.style.borderColor = picked.color;
+    }
+
+    // ─────────── حفظ المظهر ───────────
+    document.getElementById('saveLook').addEventListener('click', function () {
+        api('/api/accounts/me', {
+            method: 'PUT',
+            body: JSON.stringify({
+                name: document.getElementById('meNameInput').value.trim(),
+                avatar: picked.avatar, color: picked.color
+            })
+        }).then(function (res) {
+            if (!res.ok) { showToast(res.data.error || 'ما تمكنناش نحفظ', 'error'); return; }
+            ME = res.data.account;
+            document.getElementById('meName').textContent = ME.name;
+            syncPicks();
+            showToast('تم الحفظ');
+        });
+    });
+
+    // ─────────── كلمة المرور ───────────
+    document.getElementById('savePw').addEventListener('click', function () {
+        var box = document.getElementById('pwAlert');
+        var cur = document.getElementById('curPw').value;
+        var nw = document.getElementById('newPw').value;
+        if (!cur || nw.length < 4) { alertBox(box, 'err', 'كتب الحالية والجديدة (4 أحرف على الأقل).'); return; }
+        api('/api/accounts/me', {
+            method: 'PUT', body: JSON.stringify({ currentPassword: cur, password: nw })
+        }).then(function (res) {
+            if (!res.ok) { alertBox(box, 'err', res.data.error || 'ما تمكنناش نغيّرها'); return; }
+            alertBox(box, 'ok', 'تم تغيير كلمة المرور.');
+            document.getElementById('curPw').value = '';
+            document.getElementById('newPw').value = '';
+        });
+    });
+
+    // ─────────── خروج ───────────
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+        api('/api/accounts/logout', { method: 'POST' }).then(function () {
+            window.location.href = '/';
+        });
+    });
+
+    // ─────────── السجلّ والترتيب ───────────
+    function loadHistory() {
+        api('/api/tournaments').then(function (res) {
+            var box = document.getElementById('histList');
+            if (!res.ok) return;
+            var mine = (res.data.tournaments || []).filter(function (t) {
+                return t.host && t.host.id === (ME && ME.id);
+            });
+            if (!mine.length) {
+                box.innerHTML = '<p class="hist-empty">ما استضفت بطولة بعد — ابدأ واحدة من وضع البطولة.</p>';
+                return;
+            }
+            box.innerHTML = mine.map(function (t) {
+                var g = t.game;
+                var name = g === 'quiz' ? 'س.ج' : (g === 'letters' ? 'حروف مع أمين' : 'ارسم وخمّن');
+                return '<div class="hist-item">' +
+                    '<svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>' +
+                    '<span>بطولة ' + name + ' — ' + t.size + ' فرق</span>' +
+                    '<strong style="color:var(--accent-gold)">' + t.champion.name + '</strong>' +
+                    '<span class="when">' + (t.createdAt || '').slice(0, 10) + '</span>' +
+                    '</div>';
+            }).join('');
+        });
+    }
+
+    function loadLeaderboard() {
+        api('/api/tournaments/leaderboard').then(function (res) {
+            var box = document.getElementById('lbList');
+            if (!res.ok) return;
+            var rows = res.data.leaderboard || [];
+            if (!rows.length) { box.innerHTML = '<p class="empty-note">لا يوجد لاعبون بعد.</p>'; return; }
+            box.innerHTML = rows.map(function (a, i) {
+                var st = a.stats || {};
+                return '<div class="lb-row' + (ME && a.id === ME.id ? ' is-me' : '') + '">' +
+                    '<span class="rank">' + (i + 1) + '</span>' +
+                    '<span class="ava" aria-hidden="true">' + a.avatar + '</span>' +
+                    '<span>' + a.name + '</span>' +
+                    '<span class="pts">' + (st.tournamentsWon || 0) + ' 🏆 · ' + (st.points || 0) + ' نقطة</span>' +
+                    '</div>';
+            }).join('');
+        });
+    }
+})();
+</script>
+{% endblock %}
