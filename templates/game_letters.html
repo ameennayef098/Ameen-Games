@@ -958,4 +958,59 @@ document.addEventListener('fullscreenchange', function () {
     }
 });
 </script>
+
+<script>
+/* ============================================================
+   وضع البطولة — نفس اللعبة ونفس الأسئلة، تُفتح داخل إطار
+   تقرأ ?tourn=1 وأسماء الفريقين، تبدأ المباراة مباشرة، وتُبلغ
+   صفحة البطولة بالفائز عند النهاية لتتقدم الشجرة من نفسها.
+   ============================================================ */
+(function () {
+  var q = new URLSearchParams(location.search);
+  if (q.get('tourn') !== '1') return;
+
+  var ta = q.get('ta') || 'الفريق الأول';
+  var tb = q.get('tb') || 'الفريق الثاني';
+  var ca = q.get('ca') || '';
+  var cb = q.get('cb') || '';
+
+  // ننتظر شرطًا ثم ننفّذ — تستخدمه الألعاب التي تجهّز واجهتها بشكل غير متزامن
+  function when(cond, run, timeout) {
+    var t0 = Date.now();
+    (function loop() {
+      var ok = false;
+      try { ok = cond(); } catch (e) { ok = false; }
+      if (ok) return run();
+      if (Date.now() - t0 > (timeout || 15000)) return;
+      setTimeout(loop, 120);
+    })();
+  }
+
+  when(function () { return typeof startLettersGame === 'function'; }, function () {
+      document.getElementById('team1Name').value = ta;
+      document.getElementById('team2Name').value = tb;
+      if (ca) document.getElementById('team1Color').value = ca;
+      if (cb) document.getElementById('team2Color').value = cb;
+      document.getElementById('letters-setup').style.display = 'none';
+      startLettersGame();
+  });
+
+  // endGame(team): 1 أو 2 = فائز، و 0 = تعادل (امتلأت اللوحة دون مسار مكتمل)
+  var _endLetters = endGame;
+  endGame = function (team) {
+      _endLetters(team);
+      if (!LS) return;
+      setTimeout(function () {
+          if (team === 0) {
+              AmeenTournament.report(null, LS.s1, LS.s2, 'امتلأت اللوحة دون فائز');
+          } else {
+              var win = team - 1;
+              AmeenTournament.report(win, LS.s1, LS.s2,
+                  (win === 0 ? LS.t1 : LS.t2) + ' يفوز');
+          }
+      }, 1500);
+  };
+})();
+</script>
+
 {% endblock %}

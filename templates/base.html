@@ -13,10 +13,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Changa:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+    /* وضع البطولة: اللعبة تفتح داخل إطار، فنخفي أغلفة الموقع ويبقى اللعب فقط */
+    body.tourn .footer,
+    body.tourn .to-top,
+    body.tourn .zoom-ctl,
+    body.tourn .mobile-menu { display: none !important; }
+    body.tourn .main-content { min-height: auto; }
+    </style>
     <script>document.documentElement.classList.add('js');</script>
     <noscript><style>.reveal,.reveal-stagger>*{opacity:1!important;transform:none!important}</style></noscript>
 </head>
-<body>
+<body class="{{ 'tourn' if request.args.get('tourn') == '1' else '' }}">
     <!-- ================= SVG ICON SPRITE (decorative only) ================= -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
         <defs>

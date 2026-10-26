@@ -36,6 +36,29 @@ function showToast(message, type = 'success') {
 // ============ MODAL ============
 let _lastFocused = null;
 
+// ============ جسر وضع البطولة ============
+// تستدعيه اللعبة الحقيقية (س.ج / حروف / ارسم) عند انتهاء مباراتها لتُبلغ
+// صفحة البطولة بالنتيجة، فتتقدم الشجرة من نفسها. يعمل فقط داخل إطار.
+window.AmeenTournament = {
+    report: function (winnerIndex, scoreA, scoreB, detail) {
+        var payload = {
+            ameenTournament: true,
+            winner: winnerIndex,      // 0 = الفريق الأول، 1 = الثاني، null = تعادل
+            scoreA: scoreA || 0,
+            scoreB: scoreB || 0,
+            detail: detail || ''
+        };
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage(payload, '*');
+            }
+        } catch (e) {
+            console.warn('[tournament] تعذّر إرسال النتيجة', e);
+        }
+        return payload;
+    }
+};
+
 function openModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;

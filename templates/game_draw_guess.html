@@ -1110,17 +1110,79 @@ document.addEventListener('DOMContentLoaded', function () {
   dgLoadBank().then(function () {
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem(DG_SESSION_KEY) || 'null'); } catch (e) {}
-    if (saved && saved.setup) {
+    // في وضع البطولة بدأنا مباراة جديدة عن قصد، فلا نعرض «استكمال الجولة السابقة»
+    // فوقها — وإلا غطّت اللعبة الجارية بعد أن حفظت جلستها للتو.
+    var TOURNI = new URLSearchParams(location.search).get('tourn') === '1';
+    if (saved && saved.setup && !TOURNI) {
       document.getElementById('dgResumeInfo').textContent =
         'الجولة: ' + saved.setup.rounds + ' أدوار · الدور الحالي: ' +
         ((saved.turn || 0) + 1) + ' · النتيجة: ' +
         (saved.scores ? saved.scores[0] + ' - ' + saved.scores[1] : '0 - 0');
       document.getElementById('dgResumeModal').style.display = 'grid';
-    } else {
+    } else if (!TOURNI) {
       // أول شي: تسليم الجهاز للرسّام
       dgShowHandoff();
     }
   });
 });
 </script>
+
+<script>
+/* ============================================================
+   وضع البطولة — نفس اللعبة ونفس الأسئلة، تُفتح داخل إطار
+   تقرأ ?tourn=1 وأسماء الفريقين، تبدأ المباراة مباشرة، وتُبلغ
+   صفحة البطولة بالفائز عند النهاية لتتقدم الشجرة من نفسها.
+   ============================================================ */
+(function () {
+  var q = new URLSearchParams(location.search);
+  if (q.get('tourn') !== '1') return;
+
+  var ta = q.get('ta') || 'الفريق الأول';
+  var tb = q.get('tb') || 'الفريق الثاني';
+  var ca = q.get('ca') || '';
+  var cb = q.get('cb') || '';
+
+  // ننتظر شرطًا ثم ننفّذ — تستخدمه الألعاب التي تجهّز واجهتها بشكل غير متزامن
+  function when(cond, run, timeout) {
+    var t0 = Date.now();
+    (function loop() {
+      var ok = false;
+      try { ok = cond(); } catch (e) { ok = false; }
+      if (ok) return run();
+      if (Date.now() - t0 > (timeout || 15000)) return;
+      setTimeout(loop, 120);
+    })();
+  }
+
+  // نمسح جلسة الرسم المحفوظة أولًا حتى لا تظهر نافذة «استكمال الجولة السابقة»
+  try { localStorage.removeItem('ameen_dg_session'); } catch (e) {}
+
+  when(function () { return typeof dgStart === 'function'; }, function () {
+      document.getElementById('dgName1').value = ta;
+      document.getElementById('dgName2').value = tb;
+      if (ca) document.getElementById('dgColor1').value = ca;
+      if (cb) document.getElementById('dgColor2').value = cb;
+      document.getElementById('dgSetup').style.display = 'none';
+      dgStart();
+      // شبكة أمان: قد تصلنا نافذة الاستكمال من تهيئة اللعبة بعد dgStart
+      try {
+        document.getElementById('dgResumeModal').style.display = 'none';
+        document.getElementById('dgHandoff').style.display = 'none';
+      } catch (e) {}
+  });
+
+  var _dgEnd = dgEnd;
+  dgEnd = function () {
+      _dgEnd();
+      if (!DG) return;
+      var s = DG.scores;
+      var win = s[0] > s[1] ? 0 : (s[1] > s[0] ? 1 : null);
+      setTimeout(function () {
+          AmeenTournament.report(win, s[0], s[1],
+              win === null ? 'تعادل' : (win === 0 ? DG.teams[0].name : DG.teams[1].name) + ' يفوز');
+      }, 1500);
+  };
+})();
+</script>
+
 {% endblock %}

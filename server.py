@@ -78,6 +78,45 @@ def gen_id():
     return uuid.uuid4().hex[:8]
 
 
+# ============ مخبأ بنك الأسئلة ============
+# البنك 14,895 سطرًا، وقراءته وتحليله تكلف ~2.5 ثانية. كان كل طلب يعيد قراءته،
+# وبعض المسارات (حروف) كانت تعيد قراءته لكل حرف = 28 قراءة = ~29 ثانية.
+# المفتاح (mtime, size) لأن تغيير المحتوى يغيّرهما معًا، فأي كتابة تبطل المخبأ.
+_BANK_CACHE = {'key': None, 'data': None}
+
+
+def load_bank():
+    # بنك الأسئلة من الذاكرة عند عدم تغيّر الملف — بدل إعادة تحليله كل طلب.
+    try:
+        st = os.stat(Q_FILE)
+        key = (int(st.st_mtime), st.st_size)
+    except OSError:
+        _BANK_CACHE['key'] = None
+        _BANK_CACHE['data'] = None
+        return []
+    if _BANK_CACHE['key'] != key or _BANK_CACHE['data'] is None:
+        _BANK_CACHE['data'] = load_json(Q_FILE, [])
+        _BANK_CACHE['key'] = key
+    return _BANK_CACHE['data']
+
+
+# فهرس الحروف وخريطة id يشتقان من البنك فقط، فهما يُخزَّنان على نفس
+# مفتاح البنك — بدونهما كانت كل استدعاءات الحروف تعيد بناءهما من 14,895 سطر.
+_LETTERS_CACHE = {'key': None, 'idx': None}
+_BYID_CACHE = {'key': None, 'm': None}
+
+
+def _bank_by_id():
+    # خريطة id ← سؤال؛ تُبنى مرة واحدة لكل نسخة من البنك.
+    key = _BANK_CACHE['key']
+    if _BYID_CACHE['key'] == key and _BYID_CACHE['m'] is not None:
+        return _BYID_CACHE['m']
+    m = {q.get('id'): q for q in load_bank() if q.get('id')}
+    _BYID_CACHE['m'] = m
+    _BYID_CACHE['key'] = key
+    return m
+
+
 def now():
     return datetime.now().isoformat(timespec='seconds')
 
@@ -309,7 +348,7 @@ def list_questions():
     per_page = min(5000, max(1, int(request.args.get('per_page', 50))))
     include_archived = request.args.get('include_archived', '0') == '1'
 
-    out = load_json(Q_FILE, [])
+    out = load_bank()
     if game:
         out = [q for q in out if q.get('game') == game]
     if letter:
@@ -345,7 +384,7 @@ def list_questions():
 
 @app.route('/api/questions/<qid>', methods=['GET'])
 def get_question(qid):
-    q = next((x for x in load_json(Q_FILE, []) if x['id'] == qid), None)
+    q = next((x for x in load_bank() if x['id'] == qid), None)
     if q:
         return jsonify(q)
     return jsonify({'error': 'not found'}), 404
@@ -366,7 +405,7 @@ def add_question():
     data.setdefault('hint', '')
     data.setdefault('explanation', '')
     data.setdefault('image', '')
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     all_qs.append(data)
     save_json(Q_FILE, all_qs)
     return jsonify(data), 201
@@ -375,7 +414,7 @@ def add_question():
 @app.route('/api/questions/<qid>', methods=['PUT'])
 def update_question(qid):
     data = request.get_json(silent=True) or {}
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     for i, q in enumerate(all_qs):
         if q['id'] == qid:
             merged = dict(q)
@@ -393,13 +432,13 @@ def update_question(qid):
 
 @app.route('/api/questions/<qid>', methods=['DELETE'])
 def delete_question(qid):
-    save_json(Q_FILE, [q for q in load_json(Q_FILE, []) if q['id'] != qid])
+    save_json(Q_FILE, [q for q in load_bank() if q['id'] != qid])
     return jsonify({'ok': True})
 
 
 @app.route('/api/questions/<qid>/archive', methods=['POST'])
 def archive_question(qid):
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     for q in all_qs:
         if q['id'] == qid:
             q['status'] = 'archived'
@@ -411,7 +450,7 @@ def archive_question(qid):
 
 @app.route('/api/questions/<qid>/duplicate', methods=['POST'])
 def duplicate_question(qid):
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     src = next((q for q in all_qs if q['id'] == qid), None)
     if not src:
         return jsonify({'error': 'not found'}), 404
@@ -429,7 +468,7 @@ def duplicate_question(qid):
 @app.route('/api/questions/export', methods=['GET'])
 def export_questions():
     game = request.args.get('game', '')
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     if game:
         all_qs = [q for q in all_qs if q.get('game') == game]
     path = os.path.join(tempfile.gettempdir(), 'ameen-questions-export.json')
@@ -447,7 +486,7 @@ def import_questions():
     if not isinstance(incoming, list):
         return jsonify({'error': 'صيغة الملف غير صحيحة'}), 400
 
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     existing_ids = {q['id'] for q in all_qs}
     existing_keys = {q_key(q) for q in all_qs}
 
@@ -501,7 +540,7 @@ def import_questions():
 @app.route('/api/questions/duplicates', methods=['GET'])
 def find_duplicates():
     seen, dups = {}, []
-    for q in load_json(Q_FILE, []):
+    for q in load_bank():
         k = q_key(q)
         if not k:
             continue
@@ -515,7 +554,7 @@ def find_duplicates():
 @app.route('/api/questions/bulk-delete', methods=['POST'])
 def bulk_delete():
     ids = set((request.get_json(silent=True) or {}).get('ids', []))
-    save_json(Q_FILE, [q for q in load_json(Q_FILE, []) if q['id'] not in ids])
+    save_json(Q_FILE, [q for q in load_bank() if q['id'] not in ids])
     return jsonify({'ok': True, 'deleted': len(ids)})
 
 
@@ -524,7 +563,7 @@ def bulk_status():
     body = request.get_json(silent=True) or {}
     ids = set(body.get('ids', []))
     status = body.get('status', 'approved')
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     n = 0
     for q in all_qs:
         if q['id'] in ids:
@@ -539,7 +578,7 @@ def bulk_status():
 # Generated questions live in the SAME store as everything else, only flagged
 # status='pending_review'. A separate file meant the library never saw them.
 def pending_items():
-    return [q for q in load_json(Q_FILE, []) if q.get('status') == 'pending_review']
+    return [q for q in load_bank() if q.get('status') == 'pending_review']
 
 
 @app.route('/api/pending', methods=['GET'])
@@ -551,7 +590,7 @@ def list_pending():
 def purge_bad_pending():
     """Drop queued questions that are malformed (foreign characters, wrong letter,
     missing options). Useful after a model misbehaves."""
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     keep, dropped = [], []
     for q in all_qs:
         if q.get('status') != 'pending_review':
@@ -572,7 +611,7 @@ def purge_bad_pending():
 def approve_pending():
     body = request.get_json(silent=True) or {}
     ids = body.get('ids')
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     existing = {q_key(q) for q in all_qs if q.get('status') == 'approved'}
     approved, seen = 0, set()
     for q in all_qs:
@@ -599,7 +638,7 @@ def approve_pending():
 @app.route('/api/pending/reject', methods=['POST'])
 def reject_pending():
     ids = set((request.get_json(silent=True) or {}).get('ids', []))
-    all_qs = [q for q in load_json(Q_FILE, [])
+    all_qs = [q for q in load_bank()
               if not (q.get('status') == 'pending_review' and q.get('id') in ids)]
     save_json(Q_FILE, all_qs)
     return jsonify({'ok': True,
@@ -617,9 +656,12 @@ STRIKEOUT_MARKS = {
 
 
 def bank_letters_index():
-    """الحرف الموحّد لكل سؤال في البنك — يُبنى مرة واحدة عند الطلب."""
+    """الحرف الموحّد لكل سؤال في البنك — يُبنى مرة واحدة ثم يُخزَّن."""
+    key = _BANK_CACHE['key']
+    if _LETTERS_CACHE['key'] == key and _LETTERS_CACHE['idx'] is not None:
+        return _LETTERS_CACHE['idx']
     idx = {}
-    for q in load_json(Q_FILE, []):
+    for q in load_bank():
         if q.get('status') == 'archived':
             continue
         ans = str(q.get('answer', '') or '').strip()
@@ -627,16 +669,20 @@ def bank_letters_index():
         if not L or L not in AR_LETTERS:
             continue
         idx.setdefault(L, []).append(q['id'])
+    _LETTERS_CACHE['idx'] = idx
+    _LETTERS_CACHE['key'] = key
     return idx
 
 
 def letters_strikeout_pool(letter, limit=6):
     """أسئلة «شطب الحروف» لحرف معيّن — تُختار من البنك مباشرة."""
-    idx = bank_letters_index().get(letter, [])
-    if not idx:
+    ids = bank_letters_index().get(letter, [])
+    if not ids:
         return []
-    known = {q['id']: q for q in load_json(Q_FILE, []) if q.get('id') in idx}
-    return [known[i] for i in idx if i in known][:int(limit or 6)]
+    # خريطة id تأتي من المخبأ — بناء قاموس 14,895 عنصرًا لكل حرف كان السبب
+    # في أن حمّال الحروف استغرق ~14 ثانية.
+    by_id = _bank_by_id()
+    return [by_id[i] for i in ids if i in by_id][:int(limit or 6)]
 
 
 def seed_new_game_banks():
@@ -646,7 +692,7 @@ def seed_new_game_banks():
     ما يُوسم من أسئلته الموجودة (لا يُخترع سؤال أبدًا)، وإن لم يبقَ حرف مكتملًا
     تُسجَّل الثغرة في 'letters_missing' لتظهر في الواجهة بدل لعبة ناقصة.
     """
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     counts = {k: 0 for k in STRIKEOUT_MARKS.values()}
     per_letter = {}
 
@@ -708,7 +754,7 @@ def _import_existing_keys(game, target=None):
     if gdef['storage'] == 'questions':
         letter = str(tgt.get('letter') or '').strip()
         cat = str(tgt.get('category_id') or tgt.get('category') or '').strip()
-        for q in load_json(Q_FILE, []):
+        for q in load_bank():
             if q.get('game') != game:
                 continue
             if game == 'letters' and letter and q.get('letter') != letter:
@@ -840,7 +886,7 @@ def dice_race_random():
         if not idx.get(L):
             continue
         qid = idx[L][int(_rnd.random() * len(idx[L]))]
-        q = next((x for x in load_json(Q_FILE, []) if x.get('id') == qid), None)
+        q = next((x for x in load_bank() if x.get('id') == qid), None)
         if q:
             picks.append(q)
     return jsonify({'questions': picks, 'letters': [letter_of(q.get('answer', '')) for q in picks]})
@@ -851,7 +897,7 @@ def import_games():
     """كل لعبة موجودة فعلاً في المشروع، مع محدداتها وعدّاداتها الحقيقية."""
     cats = load_json(CAT_FILE, [])
     cat_counts, letter_counts = {}, {}
-    for q in load_json(Q_FILE, []):
+    for q in load_bank():
         if q.get('game') == 'quiz':
             cid = q.get('category_id')
             cat_counts[cid] = cat_counts.get(cid, 0) + 1
@@ -981,7 +1027,7 @@ def _import_store_items(game):
     """عناصر مخزن اللعبة الواحدة (دون عناصر الألعاب الأخرى)."""
     gdef = qi.GAME_IMPORT_DEFS.get(game) or {}
     if gdef.get('storage') == 'questions':
-        return [q for q in load_json(Q_FILE, []) if q.get('game') == game]
+        return [q for q in load_bank() if q.get('game') == game]
     if gdef.get('storage') == 'content':
         return load_json(content_file(game), [])
     if gdef.get('storage') == 'players':
@@ -1019,7 +1065,7 @@ def _import_write(game, target, items, mode='append', scope='game'):
     replacing = mode == 'replace'
 
     if gdef['storage'] == 'questions':
-        store = load_json(Q_FILE, [])
+        store = load_bank()
         if replacing:
             pred = _import_scope_pred(game, target, scope)
             kept = [q for q in store if not pred(q)]
@@ -1273,7 +1319,7 @@ def import_export():
 @app.route('/api/categories', methods=['GET'])
 def list_categories():
     cats = load_json(CAT_FILE, [])
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     for cat in cats:
         qs = [q for q in all_qs if q.get('category_id') == cat['id']]
         cat['question_count'] = len(qs)
@@ -2442,7 +2488,7 @@ def ai_generate():
         ai_progress_finish('الفئة غير موجودة')
         return jsonify({'error': 'الفئة غير موجودة — اختر فئة صحيحة'}), 400
 
-    existing_all = load_json(Q_FILE, [])
+    existing_all = load_bank()
     if game == 'letters':
         prior = [q for q in existing_all if q.get('letter') == letter]
     elif game == 'million':
@@ -2536,7 +2582,7 @@ def ai_generate():
             validated.append(q)
             ai_progress_add(q, True)
 
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     all_qs.extend(validated)
     save_json(Q_FILE, all_qs)
 
@@ -2787,7 +2833,7 @@ def ai_games():
             data = load_json(os.path.join(BASE_DIR, 'static', 'lastone_categories.json'), {})
             entry['current_count'] = sum(len(v) for v in data.values()) if isinstance(data, dict) else 0
         else:
-            entry['current_count'] = len(load_json(Q_FILE, []))
+            entry['current_count'] = len(load_bank())
         out.append(entry)
     return jsonify({'games': out, 'categories': cats,
                     'category_groups': [{'name': k, 'count': len(v)} for k, v in groups.items()]})
@@ -2880,7 +2926,7 @@ def _ai_gen_questions(game, letter, category_id, want, difficulty, points=None,
     if not cat_name:
         raise ValueError('الفئة غير موجودة — اختر فئة صحيحة')
 
-    existing_all = load_json(Q_FILE, [])
+    existing_all = load_bank()
     if game == 'letters':
         prior = [q for q in existing_all if q.get('letter') == letter]
     elif game == 'million':
@@ -2968,7 +3014,7 @@ def _ai_gen_questions(game, letter, category_id, want, difficulty, points=None,
             if job:
                 ai_job_push(job, q, True)
 
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     all_qs.extend(validated)
     save_json(Q_FILE, all_qs)
     return {'items': validated, 'count': len(validated), 'requested': want,
@@ -3269,7 +3315,7 @@ def ai_generation_progress():
 # ============ STATS ============
 @app.route('/api/stats', methods=['GET'])
 def stats():
-    all_qs = load_json(Q_FILE, [])
+    all_qs = load_bank()
     per_letter = {l: len([q for q in all_qs if q.get('letter') == l]) for l in AR_LETTERS}
     return jsonify({
         'total': len(all_qs),
@@ -3542,6 +3588,9 @@ INTRO_KEYS = ('name', 'type', 'icon', 'color', 'lead', 'steps', 'tip')
 
 def intro_skipped(game):
     """هل الشرح مُعفى لهذه اللعبة؟ (كوكيز دائم / جلسة / لكل الألعاب)"""
+    # في وضع البطولة تفتح اللعبة داخل إطار، وشاشة الشرح ستفسد تدفق المباراة
+    if request.args.get('tourn') == '1':
+        return True
     if request.cookies.get(INTRO_ALL_COOKIE) == '1':
         return True
     if request.cookies.get(INTRO_VISIT_COOKIE) == '1':
@@ -3957,7 +4006,7 @@ def tournament_pool():
     count = max(6, min(60, count))
 
     if game == 'quiz':
-        bank = [q for q in load_json(Q_FILE, [])
+        bank = [q for q in load_bank()
                 if q.get('game') == 'quiz'
                 and q.get('status') == 'approved'
                 and norm_ar(q.get('answer'))]

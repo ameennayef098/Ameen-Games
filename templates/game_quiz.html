@@ -1023,4 +1023,63 @@ function resetQuizGame() {
 
 loadCategories();
 </script>
+
+<script>
+/* ============================================================
+   وضع البطولة — نفس اللعبة ونفس الأسئلة، تُفتح داخل إطار
+   تقرأ ?tourn=1 وأسماء الفريقين، تبدأ المباراة مباشرة، وتُبلغ
+   صفحة البطولة بالفائز عند النهاية لتتقدم الشجرة من نفسها.
+   ============================================================ */
+(function () {
+  var q = new URLSearchParams(location.search);
+  if (q.get('tourn') !== '1') return;
+
+  var ta = q.get('ta') || 'الفريق الأول';
+  var tb = q.get('tb') || 'الفريق الثاني';
+  var ca = q.get('ca') || '';
+  var cb = q.get('cb') || '';
+
+  // ننتظر شرطًا ثم ننفّذ — تستخدمه الألعاب التي تجهّز واجهتها بشكل غير متزامن
+  function when(cond, run, timeout) {
+    var t0 = Date.now();
+    (function loop() {
+      var ok = false;
+      try { ok = cond(); } catch (e) { ok = false; }
+      if (ok) return run();
+      if (Date.now() - t0 > (timeout || 15000)) return;
+      setTimeout(loop, 120);
+    })();
+  }
+
+  // س.ج تتطلب 6 فئات مختارة — نختارها تلقائيًا من القائمة الحقيقية
+  when(function () {
+      return document.querySelectorAll('#categorySelection input').length >= 6;
+  }, function () {
+      var boxes = Array.prototype.slice.call(document.querySelectorAll('#categorySelection input'));
+      boxes.forEach(function (b, i) {
+          var on = i < 6;
+          if (b.checked !== on) { b.checked = on; toggleCat(b); }
+      });
+      document.getElementById('team1Name').value = ta;
+      document.getElementById('team2Name').value = tb;
+      if (ca) document.getElementById('team1Color').value = ca;
+      if (cb) document.getElementById('team2Color').value = cb;
+      document.getElementById('quiz-setup').style.display = 'none';
+      startQuizGame();
+  });
+
+  // نُبلغ عند وجود فائز؛ التعادل يُحسم داخل اللعبة بجولة فاصلة
+  var _endQuiz = endQuizGame;
+  endQuizGame = function () {
+      _endQuiz();
+      if (!QS || QS.s1 === QS.s2) return;
+      var win = QS.s1 > QS.s2 ? 0 : 1;
+      setTimeout(function () {
+          AmeenTournament.report(win, QS.s1, QS.s2,
+              (win === 0 ? QS.team1 : QS.team2) + ' يفوز');
+      }, 1600);
+  };
+})();
+</script>
+
 {% endblock %}
