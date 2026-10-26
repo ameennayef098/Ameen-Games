@@ -6,6 +6,18 @@
     <meta name="theme-color" content="#0a0c1a">
     <meta name="color-scheme" content="dark">
     <meta name="description" content="ألعاب أمين — منصة ألعاب جماعية وأسئلة ومزايدات عربية: حروف مع أمين، س.ج، مزاد اللاعبين، ومن سيربح المليون.">
+    <script>
+    /* يُطبَّق قبل أول رسم حتى لا يومض الموقع بوضع مختلف عن المحفوظ */
+    (function () {
+        try {
+            var stored = localStorage.getItem('ameen_theme');
+            var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+            var cs = document.querySelector('meta[name="color-scheme"]');
+            if (cs) cs.setAttribute('content', theme);
+        } catch (e) {}
+    })();
+    </script>
     <title>{{ title or 'الرئيسية' }} | ألعاب أمين</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234f8cff'/%3E%3Cpath d='M7 7.5h10a4.5 4.5 0 0 1 4.5 4.5v.6a2.9 2.9 0 0 1-5.1 2L15 12.2H9l-1.5 2.4a2.9 2.9 0 0 1-5.1-2V12A4.5 4.5 0 0 1 7 7.5Z' fill='%230a0c1a'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="/static/css/style.css">
@@ -210,6 +222,13 @@
                 <path d="M7 14.2l3.1-3.6 2.2 2.4 2.6-3.2 3.1 3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 <circle cx="8.6" cy="9.2" r="1.25" fill="currentColor"/>
             </symbol>
+            <symbol id="i-sun" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="1.9"/>
+                <path d="M12 2.7v3M12 18.3v3M2.7 12h3M18.3 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-moon" viewBox="0 0 24 24">
+                <path d="M20.3 14.7A8.6 8.6 0 0 1 9.3 3.7a8.6 8.6 0 1 0 11 11Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            </symbol>
         </defs>
     </svg>
 
@@ -235,6 +254,9 @@
             <a href="/login" class="nav-link" title="تسجيل الدخول"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg><span>تسجيل الدخول</span></a>
             {% endif %}
             <a href="/admin" class="nav-link" title="لوحة الإدارة" aria-label="لوحة الإدارة"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg><span>الإدارة</span></a>
+            <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false" aria-label="التبديل إلى الوضع الفاتح" title="الوضع الفاتح">
+                <svg class="ico" aria-hidden="true"><use href="#i-moon"></use></svg>
+            </button>
         </div>
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-expanded="false" aria-controls="mobileMenu" aria-label="فتح القائمة">
             <span class="mm-line" aria-hidden="true"></span>
@@ -250,6 +272,9 @@
         <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
         <a href="/games" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
         <a href="/admin" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>لوحة الإدارة</a>
+        <button class="theme-btn" id="themeBtnMobile" type="button" aria-pressed="false" aria-label="التبديل إلى الوضع الفاتح" title="الوضع الفاتح">
+            <svg class="ico" aria-hidden="true"><use href="#i-moon"></use></svg><span>الوضع الليلي</span>
+        </button>
         {% if current_account %}
         <a href="/account" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>حسابي</a>
         {% else %}

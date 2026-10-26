@@ -17,7 +17,7 @@
 .dr-team.active{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-blue-tint)}
 .dr-team b{display:block;font-size:var(--font-size-sm);line-height:1.4;min-height:2.6em;
   display:flex;align-items:center;justify-content:center}
-.dr-team .dr-pos{font-family:var(--num-font);font-size:1.6rem;font-weight:900;color:var(--accent-gold);line-height:1.1}
+.dr-team .dr-pos{font-family:var(--num-font);font-size:1.6rem;font-weight:900;color:var(--accent-gold-ink);line-height:1.1}
 .dr-team .dr-chip{position:absolute;top:-.5rem;inset-inline-start:-.5rem;width:1.7rem;height:1.7rem;
   border-radius:50%;display:grid;place-items:center;font-size:.95rem;font-weight:900;color:#041022;
   background:var(--accent-gold);box-shadow:0 0 0 3px var(--bg-primary)}
@@ -36,7 +36,7 @@
 .dr-dice{display:flex;align-items:center;gap:var(--space-3);justify-content:center;margin:var(--space-3) 0}
 .dr-die{width:4.4rem;height:4.4rem;border-radius:var(--radius);background:var(--bg-card);
   border:1px solid var(--border-strong);display:grid;place-items:center;
-  font-family:var(--num-font);font-size:2.3rem;font-weight:900;color:var(--accent-gold);
+  font-family:var(--num-font);font-size:2.3rem;font-weight:900;color:var(--accent-gold-ink);
   box-shadow:var(--shadow-sm),var(--shadow-inset);transition:transform .12s ease}
 .dr-die.rolling{transform:rotate(-14deg) scale(1.08)}
 .dr-q{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);
@@ -129,7 +129,7 @@
                 </div>
                 <div id="drBankAnswer" style="display:none;margin:var(--space-3) 0">
                     <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:.3rem">إجابة البنك</div>
-                    <div id="drBankAnswerText" style="font-size:var(--font-size-md);font-weight:800;color:var(--accent-gold)"></div>
+                    <div id="drBankAnswerText" style="font-size:var(--font-size-md);font-weight:800;color:var(--accent-gold-ink)"></div>
                 </div>
                 <div class="dr-actions">
                     <button class="btn btn-primary" type="button" onclick="drSubmit()">إرسال الإجابة</button>
@@ -450,7 +450,7 @@ function drFinish(winner) {
     var body = document.getElementById('drResultBody');
     body.innerHTML =
         '<p style="font-size:var(--font-size-lg);margin:0 0 var(--space-3)">' +
-        '🏆 الفائز: <b style="color:var(--accent-gold)">' + drEsc(winner.name) + '</b></p>' +
+        '🏆 الفائز: <b style="color:var(--accent-gold-ink)">' + drEsc(winner.name) + '</b></p>' +
         '<div class="dr-teambar">' + sorted.map(function (p, i) {
             return '<div class="dr-team' + (p.done ? ' done' : '') + '">' +
                    '<span class="dr-chip" style="background:' + DR_COLORS[DR.players.indexOf(p)] +

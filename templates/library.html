@@ -107,7 +107,7 @@
 }
 .lib-table .col-check { width: 2.5rem; }
 .lib-table .col-q { min-width: 240px; }
-.lib-table .col-a { min-width: 110px; color: var(--accent-gold); font-weight: 700; }
+.lib-table .col-a { min-width: 110px; color: var(--accent-gold-ink); font-weight: 700; }
 .lib-table .col-num { width: 4rem; text-align: center; font-variant-numeric: tabular-nums; }
 .lib-table .col-actions { white-space: nowrap; }
 .lib-empty { text-align: center; padding: var(--space-7) !important; color: var(--text-muted); }
@@ -149,7 +149,7 @@
     border-radius: var(--radius);
 }
 .rev-body b { display: block; }
-.rev-answer { display: block; margin-top: 0.2rem; color: var(--accent-gold); font-weight: 700; }
+.rev-answer { display: block; margin-top: 0.2rem; color: var(--accent-gold-ink); font-weight: 700; }
 .rev-meta { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 0.35rem; }
 .rev-actions { display: flex; flex: 0 0 auto; gap: var(--space-2); }
 
@@ -855,15 +855,15 @@ function testAI() {
     el.innerHTML = 'جاري الفحص…';
     fetch('/api/ai/test').then(function (r) { return r.json(); }).then(function (d) {
         if (d.status === 'ok') {
-            el.innerHTML = '<span style="color:var(--accent-green)">✓ الاتصال ناجح</span><br>' +
+            el.innerHTML = '<span style="color:var(--accent-green-ink)">✓ الاتصال ناجح</span><br>' +
                 '<span class="ai-sub">النموذج: ' + d.model + '</span>';
         } else if (d.status === 'no_key') {
-            el.innerHTML = '<span style="color:var(--accent-red)">✗ لا يوجد مفتاح</span><br>' +
+            el.innerHTML = '<span style="color:var(--accent-red-ink)">✗ لا يوجد مفتاح</span><br>' +
                 '<span class="ai-sub">أضف <code>NVIDIA_API_KEY</code> كمتغير بيئة ثم أعد تشغيل الخادم.</span>';
         } else {
-            el.innerHTML = '<span style="color:var(--accent-red)">✗ خطأ: ' + (d.message || '') + '</span>';
+            el.innerHTML = '<span style="color:var(--accent-red-ink)">✗ خطأ: ' + (d.message || '') + '</span>';
         }
-    }).catch(function () { el.innerHTML = '<span style="color:var(--accent-red)">تعذّر الاتصال بالخادم</span>'; });
+    }).catch(function () { el.innerHTML = '<span style="color:var(--accent-red-ink)">تعذّر الاتصال بالخادم</span>'; });
 }
 
 function runAI() {
@@ -881,15 +881,15 @@ function runAI() {
     fetch('/api/ai/generate', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify(payload)})
         .then(function (r) { return r.json(); })
         .then(function (d) {
-            if (d.error) { box.innerHTML = '<span style="color:var(--accent-red)">' + d.error + '</span>'; return; }
-            box.innerHTML = '<div style="color:var(--accent-green)">✓ تم توليد ' + d.count +
+            if (d.error) { box.innerHTML = '<span style="color:var(--accent-red-ink)">' + d.error + '</span>'; return; }
+            box.innerHTML = '<div style="color:var(--accent-green-ink)">✓ تم توليد ' + d.count +
                 ' سؤال وأُرسلت إلى قائمة المراجعة' + (d.rejected_count ? ' (رُفض ' + d.rejected_count + ')' : '') + '</div>' +
                 d.questions.slice(0, 5).map(function (q) {
                     return '<div class="ai-sample"><b>' + esc(q.question) + '</b><br><span class="rev-answer">' + esc(q.answer) + '</span></div>';
                 }).join('');
             loadStats(); loadPending();
         })
-        .catch(function (e) { box.innerHTML = '<span style="color:var(--accent-red)">تعذّر الاتصال: ' + e + '</span>'; });
+        .catch(function (e) { box.innerHTML = '<span style="color:var(--accent-red-ink)">تعذّر الاتصال: ' + e + '</span>'; });
 }
 
 loadStats();

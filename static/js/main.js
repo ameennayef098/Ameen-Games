@@ -33,6 +33,64 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 3000);
 }
 
+// ============ الوضع الفاتح / الداكن ============
+// يُحفظ الاختيار في localStorage، ويُتزامن معه زرّا الشريط والقائمة الجوالة.
+var ThemeCtl = (function () {
+    var KEY = 'ameen_theme';
+
+    function current() {
+        return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    }
+
+    // يحدّث الأيقونة والنص لكل أزرار التبديل الموجودة في الصفحة
+    function sync(theme) {
+        var light = theme === 'light';
+        var label = light ? 'التبديل إلى الوضع الداكن' : 'التبديل إلى الوضع الفاتح';
+        document.querySelectorAll('.theme-btn').forEach(function (btn) {
+            btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+            btn.setAttribute('aria-label', label);
+            btn.title = light ? 'الوضع الداكن' : 'الوضع الفاتح';
+            var use = btn.querySelector('use');
+            if (use) use.setAttribute('href', light ? '#i-sun' : '#i-moon');
+            var txt = btn.querySelector('span');
+            if (txt) txt.textContent = light ? 'الوضع الليلي' : 'الوضع النهاري';
+        });
+        // لون شريط المتصفح في الجوال يتبع السطح لا قيمة ثابتة
+        var tc = document.querySelector('meta[name="theme-color"]');
+        if (tc) tc.setAttribute('content', light ? '#f4f6fc' : '#0a0c1a');
+    }
+
+    function apply(theme, persist) {
+        document.documentElement.setAttribute('data-theme', theme);
+        var cs = document.querySelector('meta[name="color-scheme"]');
+        if (cs) cs.setAttribute('content', theme);
+        if (persist) { try { localStorage.setItem(KEY, theme); } catch (e) {} }
+        sync(theme);
+    }
+
+    function init() {
+        document.querySelectorAll('.theme-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                apply(current() === 'light' ? 'dark' : 'light', true);
+            });
+        });
+        sync(current());
+
+        // نتبع نظام الجهاز فقط إذا لم يختر المستخدم وضعًا بنفسه
+        try {
+            var mq = window.matchMedia('(prefers-color-scheme: light)');
+            var onChange = function (e) {
+                if (localStorage.getItem(KEY)) return;
+                apply(e.matches ? 'light' : 'dark', false);
+            };
+            if (mq.addEventListener) mq.addEventListener('change', onChange);
+            else if (mq.addListener) mq.addListener(onChange);
+        } catch (e) {}
+    }
+
+    return { init: init, current: current, apply: apply };
+})();
+
 // ============ MODAL ============
 let _lastFocused = null;
 
@@ -40,22 +98,28 @@ let _lastFocused = null;
 // تستدعيه اللعبة الحقيقية (س.ج / حروف / ارسم) عند انتهاء مباراتها لتُبلغ
 // صفحة البطولة بالنتيجة، فتتقدم الشجرة من نفسها. يعمل فقط داخل إطار.
 window.AmeenTournament = {
-    report: function (winnerIndex, scoreA, scoreB, detail) {
-        var payload = {
-            ameenTournament: true,
-            winner: winnerIndex,      // 0 = الفريق الأول، 1 = الثاني، null = تعادل
-            scoreA: scoreA || 0,
-            scoreB: scoreB || 0,
-            detail: detail || ''
-        };
+    _send: function (payload) {
         try {
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage(payload, '*');
             }
         } catch (e) {
-            console.warn('[tournament] تعذّر إرسال النتيجة', e);
+            console.warn('[tournament] تعذّر إرسال الرسالة', e);
         }
         return payload;
+    },
+    // اللعبة جاهزة للّعب فعليًا (اللوحة رُسمت) — عندها فقط يُخفى مكان التحميل
+    ready: function () {
+        return this._send({ ameenTournament: true, ready: true });
+    },
+    report: function (winnerIndex, scoreA, scoreB, detail) {
+        return this._send({
+            ameenTournament: true,
+            winner: winnerIndex,      // 0 = الفريق الأول، 1 = الثاني، null = تعادل
+            scoreA: scoreA || 0,
+            scoreB: scoreB || 0,
+            detail: detail || ''
+        });
     }
 };
 
@@ -353,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initReveal();
     initToTop();
+    ThemeCtl.init();
 });
 
 /* =====================================================================

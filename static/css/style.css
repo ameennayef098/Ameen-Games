@@ -121,6 +121,73 @@
     /* --- Effects --- */
     --blur: 14px;
     --ring: 0 0 0 3px rgba(79, 140, 255, 0.35);
+
+    /* --- Overlays & materials (theme-aware — were hardcoded dark tints) --- */
+    --glass-strong:   rgba(22, 27, 58, 0.86);   /* loading veil / heavy glass */
+    --scrim:          rgba(12, 13, 26, 0.74);   /* navbar + modal backdrop */
+    --scrim-soft:     rgba(12, 13, 26, 0.55);   /* section shading gradient */
+    --scrim-full:     rgba(4, 6, 16, 0.96);     /* fullscreen overlays in games */
+    --hairline:       rgba(255, 255, 255, 0.10);
+    --shine:          rgba(255, 255, 255, 0.06);
+    /* --- Accent INK: the same hue, darkened for use as text on light grounds.
+       Dark theme = the accent itself (already tuned for dark grounds); the light
+       theme overrides these to a darker stop so accent text keeps 4.5:1. --- */
+    --accent-blue-ink:   var(--accent-blue);
+    --accent-purple-ink: var(--accent-purple);
+    --accent-green-ink:  var(--accent-green);
+    --accent-gold-ink:   var(--accent-gold);
+    --accent-red-ink:    var(--accent-red);
+    --accent-cyan-ink:   var(--accent-cyan);
+
+}
+
+/* ==========================================================================
+   1b. LIGHT THEME — same brand accents, inverted surface ramp.
+   Only surfaces / ink / lines / elevation change; every accent, tint and
+   gradient stop that already carries the identity stays as it is.
+   ========================================================================== */
+:root[data-theme="light"] {
+    --bg-primary:      #f4f6fc;
+    --bg-secondary:    #ffffff;
+    --bg-card:         #ffffff;
+    --bg-card-hover:   #eef2fb;
+    --bg-elevated:     #ffffff;
+    --bg-inset:        #e9edf8;
+    --bg-glass:        rgba(255, 255, 255, 0.76);
+
+    --text-primary:    #0c1230;
+    --text-secondary:  #3c4568;
+    --text-muted:      #5c6588;
+
+    --border-color:    #d9dfef;
+    --border-strong:   #bfc8e2;
+
+    --glass-strong:    rgba(255, 255, 255, 0.88);
+    --scrim:           rgba(24, 30, 62, 0.34);
+    --scrim-soft:      rgba(24, 30, 62, 0.10);
+    --scrim-full:      rgba(10, 14, 34, 0.86);
+    --hairline:        rgba(12, 18, 48, 0.10);
+    --shine:           rgba(255, 255, 255, 0.85);
+
+    /* Elevation inverts too: on paper the shadow carries the depth, so it
+       goes from near-black to a soft blue-grey at lower opacity. */
+    --shadow-sm: 0 2px 8px rgba(16, 24, 60, 0.07);
+    --shadow:    0 10px 28px rgba(16, 24, 60, 0.10);
+    --shadow-lg: 0 24px 56px rgba(16, 24, 60, 0.14);
+    --shadow-glow-blue: 0 12px 34px rgba(79, 140, 255, 0.26);
+    --shadow-glow-gold: 0 12px 34px rgba(246, 167, 20, 0.22);
+    --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    --gradient-hero: radial-gradient(120% 90% at 82% 8%, rgba(161, 107, 255, 0.16) 0%, rgba(79, 140, 255, 0.10) 42%, rgba(244, 246, 252, 0) 72%);
+    --gradient-bg:   radial-gradient(90% 60% at 15% 100%, rgba(79, 140, 255, 0.07) 0%, rgba(244, 246, 252, 0) 60%),
+                     radial-gradient(70% 50% at 90% 0%, rgba(246, 167, 20, 0.06) 0%, rgba(244, 246, 252, 0) 60%);
+    --accent-blue-ink:   #1d4ed8;
+    --accent-purple-ink: #7e22ce;
+    --accent-green-ink:  #166534;
+    --accent-gold-ink:   #8a5a06;
+    --accent-red-ink:    #b42318;
+    --accent-cyan-ink:   #0e7490;
+
 }
 
 /* ==========================================================================
@@ -171,7 +238,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 a {
-    color: var(--accent-blue);
+    color: var(--accent-blue-ink);
     text-decoration: none;
     transition: var(--transition-fast);
 }
@@ -443,11 +510,11 @@ summary:focus-visible,
     gap: var(--space-4);
     height: var(--navbar-h);
     padding-inline: var(--space-6);
-    background: rgba(12, 13, 26, 0.78);
+    background: var(--scrim);
     -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
     backdrop-filter: blur(var(--blur)) saturate(140%);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, var(--shadow-sm);
+    box-shadow: 0 1px 0 var(--shine) inset, var(--shadow-sm);
 }
 
 .navbar::after {
@@ -753,7 +820,7 @@ summary:focus-visible,
 .hero-subtitle {
     font-size: clamp(1.15rem, 2.2vw, 1.6rem);
     font-weight: 800;
-    color: var(--accent-gold);
+    color: var(--accent-gold-ink);
     text-shadow: 0 2px 18px rgba(246, 167, 20, 0.28);
 }
 
@@ -880,7 +947,7 @@ summary:focus-visible,
 }
 
 .games-section {
-    background: linear-gradient(180deg, transparent, rgba(12, 13, 26, 0.55) 18%, rgba(12, 13, 26, 0.55) 82%, transparent);
+    background: linear-gradient(180deg, transparent, var(--scrim-soft) 18%, var(--scrim-soft) 82%, transparent);
 }
 
 .how-to-section {
@@ -1171,7 +1238,7 @@ summary:focus-visible,
     content: "←";
     display: inline-block;
     margin-inline-end: 0.4em;
-    color: var(--accent-gold);
+    color: var(--accent-gold-ink);
     opacity: 0;
     transform: translateX(-4px);
     transition: var(--transition-fast);
@@ -1397,7 +1464,7 @@ summary:focus-visible,
 .team-score .score {
     font-size: var(--font-size-2xl);
     font-weight: 900;
-    color: var(--accent-gold);
+    color: var(--accent-gold-ink);
     line-height: 1.1;
 }
 
@@ -1522,7 +1589,7 @@ summary:focus-visible,
 .player-rating {
     font-size: var(--font-size-3xl);
     font-weight: 900;
-    color: var(--accent-gold);
+    color: var(--accent-gold-ink);
     line-height: 1.1;
 }
 
@@ -1633,8 +1700,8 @@ summary:focus-visible,
     font-variant-numeric: tabular-nums;
 }
 
-.timer.warning { color: var(--accent-gold); }
-.timer.danger  { color: var(--accent-red); animation: pulse 1s ease-in-out infinite; }
+.timer.warning { color: var(--accent-gold-ink); }
+.timer.danger  { color: var(--accent-red-ink); animation: pulse 1s ease-in-out infinite; }
 
 @keyframes pulse {
     0%, 100% { opacity: 1; }
@@ -1661,7 +1728,7 @@ summary:focus-visible,
 .stat-card .number {
     font-size: var(--font-size-2xl);
     font-weight: 900;
-    color: var(--accent-blue);
+    color: var(--accent-blue-ink);
 }
 
 .stat-card .label {
@@ -2098,7 +2165,7 @@ body {
 .field-error::before { content: "!"; font-weight: 900; }
 
 /* Required marker, announced politely */
-.req { color: var(--accent-red); font-weight: 900; }
+.req { color: var(--accent-red-ink); font-weight: 900; }
 
 /* Checkboxes / radios: bigger hit area, checked state is obvious */
 input[type="checkbox"], input[type="radio"] {
@@ -2225,7 +2292,7 @@ select:focus { background-image: linear-gradient(45deg, transparent 50%, var(--a
 
 /* Timer urgency is colour + shape, never colour alone */
 .timer.danger {
-    color: var(--accent-red);
+    color: var(--accent-red-ink);
     border-color: var(--accent-red);
     background: var(--accent-red-tint);
     animation: pulse 1s ease-in-out infinite;
@@ -2817,8 +2884,8 @@ html.js .reveal-stagger.in > *:nth-child(n+11) { transition-delay: 600ms; }
     line-height: 1.7;
     font-family: 'Cascadia Mono', Consolas, 'Courier New', monospace;
 }
-.log .ok { color: var(--accent-green); }
-.log .err { color: var(--accent-red); }
+.log .ok { color: var(--accent-green-ink); }
+.log .err { color: var(--accent-red-ink); }
 
 .icon-picker { gap: 0.4rem; background: var(--bg-inset); border-radius: var(--radius); padding: var(--space-3); }
 .icon-picker button {
@@ -2991,8 +3058,8 @@ html.js .reveal-stagger.in > *:nth-child(n+11) { transition-delay: 600ms; }
 .turn-banner.active, .turn-chip.active { border-inline-start-color: var(--accent-gold); }
 
 /* Answers / results: correct and wrong differ by icon + colour */
-.answer-good { color: var(--accent-green); border-color: var(--accent-green) !important; }
-.answer-bad { color: var(--accent-red); border-color: var(--accent-red) !important; }
+.answer-good { color: var(--accent-green-ink); border-color: var(--accent-green) !important; }
+.answer-bad { color: var(--accent-red-ink); border-color: var(--accent-red) !important; }
 
 /* Field rows use the shared .setup-row class (ui-kit.css). Only a safety net is
    left for any setup screen that still carries an inline grid: keep its own
@@ -3104,7 +3171,7 @@ select { min-height: 2.75rem; }
   background:var(--bg-secondary);color:var(--text-primary);font-family:inherit;
   font-weight:900;font-size:1rem;line-height:1;cursor:pointer;display:grid;place-items:center;
   transition:var(--transition-fast)}
-.zoom-btn:hover{border-color:var(--accent-blue);color:var(--accent-blue)}
+.zoom-btn:hover{border-color:var(--accent-blue);color:var(--accent-blue-ink)}
 .zoom-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-primary),0 0 0 6px var(--accent-blue)}
 .zoom-val{min-width:3.1rem;text-align:center;font-size:var(--font-size-xs);font-weight:800;
   font-variant-numeric:tabular-nums;color:var(--text-secondary)}
@@ -3113,3 +3180,216 @@ select { min-height: 2.75rem; }
   .zoom-btn{min-width:1.9rem;height:1.9rem}
 }
 
+/* ==========================================================================
+   14. PRO LAYER — تمريرة تصميم على طريقة آبل (شكل فقط، لا تغيير في السلوك)
+   تُلحق أخيرًا فتكسب على الطبقات السابقة عند التعارض.
+   ========================================================================== */
+
+/* ---------- 14.1 وضع الفاتح/الداكن: مخطط الألوان يتبع الوضع ---------- */
+:root[data-theme="dark"]  { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+
+/* زر التبديل — حبة زجاجية بحجم هدف 40px (WCAG 2.5.8) */
+.theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 140ms ease-out,
+                background 200ms ease,
+                border-color 200ms ease,
+                color 200ms ease;
+}
+.theme-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+}
+/* المبدأ 1: الاستجابة لحظة الضغط لا بعد الإفلات */
+.theme-btn:active { transform: scale(0.93); transition-duration: 90ms; }
+.theme-btn .ico { width: 1.15rem; height: 1.15rem; flex: 0 0 auto; }
+.theme-btn:focus-visible { outline: 0; box-shadow: var(--ring); }
+
+/* الوضع الفاتح: نص الحبر الداكن كان مضبوطًا لقراءات الداكن على البقع اللونية،
+   فنعكس إلى حبر داكن يقرأ على البقعة الفاتحة نفسها. */
+:root[data-theme="light"] .badge-blue,
+:root[data-theme="light"] .eyebrow,
+:root[data-theme="light"] .hero-eyebrow,
+:root[data-theme="light"] .catalogue-intro .eyebrow,
+:root[data-theme="light"] .mb-turn.p0,
+:root[data-theme="light"] .pill.blue { color: #1d4ed8; }
+
+:root[data-theme="light"] .badge-red,
+:root[data-theme="light"] .field-error,
+:root[data-theme="light"] .error-text,
+:root[data-theme="light"] .auth-alert,
+:root[data-theme="light"] .acct-alert.err,
+:root[data-theme="light"] .turn-state.steal,
+:root[data-theme="light"] .turn-banner.steal,
+:root[data-theme="light"] .st-cell.wrong { color: #b42318; }
+
+/* الوضع الفاتح: حواف أدق للأسطح البيضاء — الحد الفاصل بدل الظل وحده */
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .game-card,
+:root[data-theme="light"] .glass,
+:root[data-theme="light"] .setup-card,
+:root[data-theme="light"] .info-card {
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+:root[data-theme="light"] .navbar { border-bottom-color: var(--border-color); }
+:root[data-theme="light"] .footer { border-top-color: var(--border-color); }
+
+/* ---------- 14.2 تغذية راجعة فورية عند الضغط (المبدأ 1) ---------- */
+.btn:active,
+.nav-link:active,
+.game-card:active,
+.jcell:active,
+.size-tab:active,
+.step-pill:active,
+.to-top:active,
+.zoom-btn:active,
+.theme-btn:active,
+.btn-gold:active,
+.btn-secondary:active { transform: scale(0.97); transition-duration: 90ms; }
+
+/* ---------- 14.3 حدود التركيز مرئية دائمًا ---------- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+    outline: 0;
+    box-shadow: var(--ring);
+    border-radius: inherit;
+}
+
+/* ---------- 14.4 ارتفاع أدق: حافة عليا تلتقط الضوء (المبدأ 12) ---------- */
+.card,
+.game-card,
+.setup-card,
+.info-card,
+.glass {
+    position: relative;
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+}
+
+/* ---------- 14.5 ظهور مادي للأسطح الزجاجية لا مجرّد تلاشي ---------- */
+.modal-overlay,
+.sh-scrim {
+    transition: opacity 260ms ease, -webkit-backdrop-filter 260ms ease, backdrop-filter 260ms ease;
+}
+
+/* ---------- 14.6 تبديل الوضع بلا قفزة سطوع مفاجئة ---------- */
+body { transition: background-color 280ms ease, color 280ms ease; }
+
+/* ---------- 14.7 إتاحة الوصول ---------- */
+/* تقليل الحركة: نبقي التغذية الراجعة لكن بتلاشٍ قصير بدل الانتقالات الطويلة */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 120ms !important;
+    }
+    .reveal,
+    .reveal-stagger > * { opacity: 1 !important; transform: none !important; }
+    body { transition: none; }
+}
+
+/* تقليل الشفافية: الزجاج يصبح سطحًا صلبًا وتبقى القراءة */
+@media (prefers-reduced-transparency: reduce) {
+    .navbar,
+    .mobile-menu,
+    .theme-btn,
+    .mt-loading,
+    .glass {
+        background: var(--bg-card) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+    .sh { background: var(--bg-secondary) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}
+
+/* تباين أعلى: أسطح شبه صلبة وحدود أوضح */
+@media (prefers-contrast: more) {
+    :root {
+        --border-color: var(--border-strong);
+        --bg-glass: var(--bg-card);
+        --scrim: rgba(0, 0, 0, 0.72);
+    }
+    :root[data-theme="light"] { --text-muted: #3c4568; }
+    .theme-btn,
+    .btn,
+    .nav-link { border-width: 2px; }
+}
+
+/* ---------- 14.8 الوضع الفاتح: بقع الحبر الفاتحة كانت مضبوطة للوضع الداكن ---------- */
+:root[data-theme="light"] .badge-green,
+:root[data-theme="light"] .dr-cell .dr-goal-tag,
+:root[data-theme="light"] .answer-good { color: #166534; }
+
+:root[data-theme="light"] .badge-gold,
+:root[data-theme="light"] .turn-state.keep,
+:root[data-theme="light"] .turn-keep { color: #8a5a06; }
+
+:root[data-theme="light"] .badge-purple { color: #7e22ce; }
+
+/* توهّج ذهبي حول العنوان لا يُرى على أرضية فاتحة — نكتفي بالحبر الداكن */
+:root[data-theme="light"] .hero-subtitle { text-shadow: none; }
+
+/* في الوضع الفاتح يقل اعتمادنا على الظل وحده وتزيد أهمية الحد الفاصل */
+:root[data-theme="light"] .cat-card,
+:root[data-theme="light"] .tab,
+:root[data-theme="light"] .pager button,
+:root[data-theme="light"] .doc-link { border-color: var(--border-color); }
+
+/* ---------- 14.9 الوضع الفاتح: نص التدرّج كان يبدأ بالأبيض ---------- */
+/* العنوان الرئيسي نصّه تدرّج مقصوص (background-clip: text) يبدأ بـ #ffffff،
+   وعلى أرضية فاتحة كان الجزء الأول منه أبيض على أبيض. نبدأ بحبر داكن. */
+:root[data-theme="light"] .hero-title {
+    background: linear-gradient(120deg, #0c1230 8%, #1d4ed8 48%, #7e22ce 92%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* اسم الفائز في حروف ومبلغ الفوز في مليون: نفس المشكلة بلون الذهب الفاتح */
+:root[data-theme="light"] .wm-name,
+:root[data-theme="light"] .mil-end-amount {
+    background: linear-gradient(120deg, #8a5a06, #a86e06);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* شبكة الخلفية البيضاء الخفيفة لا تُرى على أرضية فاتحة — نعكسها إلى حبر خفيف */
+:root[data-theme="light"] .hero::after {
+    background-image: linear-gradient(rgba(12, 18, 48, 0.035) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(12, 18, 48, 0.035) 1px, transparent 1px);
+}
+
+/* ---------- 14.10 زناد الأداة المختار في ارسم وخمّن ---------- */
+/* الأزرق على بقعة زرقاء فاتحة كان 4.42:1 — أقل من حد AA بقليل. نرفعه درجة واحدة. */
+:root[data-theme="dark"] .dg-tool.active { color: #6b9fff; }
+
+/* سجلّ لوحة الإدارة: كان صندوقًا أسود ثابتًا — في الفاتح يصبح سطحًا عاديًا
+   وتبقى أسطره الملوّنة مقروءة بفضل حبر الآثار. */
+:root[data-theme="light"] .log {
+    background: var(--bg-inset);
+    color: var(--text-primary);
+}

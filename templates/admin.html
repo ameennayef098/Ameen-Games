@@ -54,7 +54,7 @@
 .imp-mode-row{display:flex;gap:.7rem;flex-wrap:wrap}
 .imp-mode-row .form-group{flex:1;min-width:180px}
 .imp-mode-note{margin-top:.6rem;font-size:.82rem;line-height:1.9}
-.imp-mode-note b{color:var(--accent-red)}
+.imp-mode-note b{color:var(--accent-red-ink)}
 .imp-warn{margin-top:.7rem;display:grid;gap:.35rem}
 .imp-warn div{background:var(--bg-secondary);border-right:3px solid var(--accent-gold);padding:.45rem .7rem;border-radius:8px;font-size:.82rem;line-height:1.7}
 .imp-preview-bar{display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;flex-wrap:wrap}
@@ -72,7 +72,7 @@
 
 <!-- ============ LOGIN GATE ============ -->
 <div id="loginGate">
-    <div aria-hidden="true" style="font-size:3rem;color:var(--accent-gold)"><svg class="ico" style="width:3rem;height:3rem"><use href="#i-lock"></use></svg></div>
+    <div aria-hidden="true" style="font-size:3rem;color:var(--accent-gold-ink)"><svg class="ico" style="width:3rem;height:3rem"><use href="#i-lock"></use></svg></div>
     <h2 style="margin:.5rem 0 1rem;">لوحة الإدارة</h2>
     <p style="color:var(--text-secondary);font-size:.9rem;margin-bottom:1rem;">هذا القسم للمشرف فقط — إدارة الأسئلة والفئات واللاعبين وإعدادات الذكاء الاصطناعي.</p>
     <div class="form-group">
@@ -83,7 +83,7 @@
                onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="btn btn-primary btn-lg" style="width:100%" onclick="doLogin()">دخول</button>
-    <div id="loginMsg" style="margin-top:.75rem;color:var(--accent-red);font-size:.85rem"></div>
+    <div id="loginMsg" style="margin-top:.75rem;color:var(--accent-red-ink);font-size:.85rem"></div>
     <button class="btn btn-secondary btn-sm" style="margin-top:1rem" onclick="window.location.href='/'">← رجوع للألعاب</button>
 </div>
 
@@ -92,7 +92,7 @@
 <div class="game-container">
     <div class="page-header" style="padding-bottom:1rem;">
         <h1><svg class="ico" aria-hidden="true"><use href="#i-settings"></use></svg> لوحة الإدارة</h1>
-        <p>إدارة المحتوى والإعدادات — <span id="whoAmI" style="color:var(--accent-green)">مشرف</span>
+        <p>إدارة المحتوى والإعدادات — <span id="whoAmI" style="color:var(--accent-green-ink)">مشرف</span>
            <button class="btn btn-secondary small-btn" style="margin-right:.5rem" onclick="logout()">خروج</button></p>
     </div>
 
@@ -217,7 +217,7 @@
             <button class="btn btn-primary btn-lg" id="impAnalyzeBtn" onclick="impAnalyze()">
                 <svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> تحليل النص
             </button>
-            <span id="impBusy" style="display:none;color:var(--accent-gold);font-weight:700">⏳ جاري التحليل...</span>
+            <span id="impBusy" style="display:none;color:var(--accent-gold-ink);font-weight:700">⏳ جاري التحليل...</span>
         </div>
         <div id="impWarnings"></div>
     </div>
@@ -338,11 +338,11 @@
             <div id="aiProgStatus" style="margin:.8rem 0;font-weight:800;font-size:1.1rem;"></div>
             <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0;">
                 <div style="padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;text-align:center;">
-                    <div style="font-size:1.5rem;font-weight:900;color:var(--accent-gold)" id="aiProgAccepted">0</div>
+                    <div style="font-size:1.5rem;font-weight:900;color:var(--accent-gold-ink)" id="aiProgAccepted">0</div>
                     <div style="font-size:.8rem;color:var(--text-muted)">مقبول</div>
                 </div>
                 <div style="padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;text-align:center;">
-                    <div style="font-size:1.5rem;font-weight:900;color:var(--accent-red)" id="aiProgRejected">0</div>
+                    <div style="font-size:1.5rem;font-weight:900;color:var(--accent-red-ink)" id="aiProgRejected">0</div>
                     <div style="font-size:.8rem;color:var(--text-muted)">مرفوض</div>
                 </div>
                 <div style="padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;text-align:center;">
@@ -983,7 +983,7 @@ function loadCats() {
             var pct = Math.min(100, Math.round((c.approved_count || 0) / 36 * 100));
             var img = c.image ? '<img src="' + c.image + '">' : '<div class="ph">' + (c.icon || '📚') + '</div>';
             return '<div class="cat-card">' + img + '<div class="body"><b>' + esc(c.name) + '</b>' +
-                '<div style="font-size:.72rem;color:var(--accent-gold);font-weight:700">' +
+                '<div style="font-size:.72rem;color:var(--accent-gold-ink);font-weight:700">' +
                 esc((c.group_icon || '🗂️') + ' ' + (c.group || 'عام')) + '</div>' +
                 '<div style="font-size:.78rem;color:var(--text-muted)">' + (c.question_count || 0) + ' سؤال · ' +
                 '200:' + (c.count_200 || 0) + ' 400:' + (c.count_400 || 0) + ' 600:' + (c.count_600 || 0) + '</div>' +
@@ -1157,7 +1157,7 @@ function loadPending() {
         document.getElementById('pendingList').innerHTML = d.questions.map(function (q) {
             return '<div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:.9rem;margin-bottom:.6rem;">' +
                 '<div style="display:flex;justify-content:space-between;gap:1rem;">' +
-                '<div><b>' + esc(q.question) + '</b><br><span style="color:var(--accent-gold)">' + esc(q.answer) + '</span>' +
+                '<div><b>' + esc(q.question) + '</b><br><span style="color:var(--accent-gold-ink)">' + esc(q.answer) + '</span>' +
                 '<div style="font-size:.75rem;color:var(--text-muted)">' + (q.letter || q.category_name || '') +
                 ' · ' + (q.points || '') + ' · ' + (q.difficulty || '') + '</div></div>' +
                 '<div style="display:flex;gap:.3rem;align-items:flex-start;">' +
@@ -1199,7 +1199,7 @@ function loadAiQuestions() {
             var opts = (q.options && q.options.length)
                 ? '<div style="font-size:.78rem;margin-top:.3rem;">' + q.options.map(function (o) {
                       return '<span style="display:inline-block;margin:0 .3rem;padding:.1rem .5rem;border-radius:6px;' +
-                             (o === q.answer ? 'background:rgba(16,185,129,.2);color:var(--accent-green);font-weight:800' : 'background:var(--bg-secondary)') +
+                             (o === q.answer ? 'background:rgba(16,185,129,.2);color:var(--accent-green-ink);font-weight:800' : 'background:var(--bg-secondary)') +
                              '">' + esc(o) + '</span>';
                   }).join('') + '</div>'
                 : '';
@@ -1214,7 +1214,7 @@ function loadAiQuestions() {
                     '<span class="badge ' + stCls + '">' + stAr + '</span>' +
                   '</div>' +
                   '<b>' + esc(q.question) + '</b>' +
-                  '<div style="color:var(--accent-gold);margin-top:.25rem;">الإجابة: <b>' + esc(q.answer) + '</b></div>' +
+                  '<div style="color:var(--accent-gold-ink);margin-top:.25rem;">الإجابة: <b>' + esc(q.answer) + '</b></div>' +
                   (q.explanation ? '<div style="font-size:.78rem;color:var(--text-secondary);margin-top:.2rem;">' + esc(q.explanation) + '</div>' : '') +
                   opts +
                 '</div>' +
@@ -1415,7 +1415,7 @@ function fetchAiProgress() {
         if (d.items && d.items.length) {
             items.innerHTML = d.items.map(it => '<div style="padding:.3rem 0;border-bottom:1px solid var(--border-color);font-size:.85rem">' +
                 (it.ok ? '✅' : '❌') + ' ' + esc(it.question || it.answer || '') +
-                (it.reason ? ' <span style="color:var(--accent-red)">(' + esc(it.reason) + ')</span>' : '') +
+                (it.reason ? ' <span style="color:var(--accent-red-ink)">(' + esc(it.reason) + ')</span>' : '') +
                 '</div>').join('');
         }
         if (!d.running && aiProgPoll) { clearInterval(aiProgPoll); aiProgPoll = null; }
@@ -1451,13 +1451,13 @@ function testAI() {
     el.innerHTML = 'جاري الفحص...';
     fetch('/api/ai/test').then(function (r) { return r.json(); }).then(function (d) {
         if (d.status === 'ok') {
-            el.innerHTML = '<span style="color:var(--accent-green)">✓ الاتصال ناجح</span> — النموذج: <b>' + d.model + '</b>';
+            el.innerHTML = '<span style="color:var(--accent-green-ink)">✓ الاتصال ناجح</span> — النموذج: <b>' + d.model + '</b>';
         } else if (d.status === 'no_key') {
-            el.innerHTML = '<span style="color:var(--accent-red)">✗ ' + d.message + '</span>';
+            el.innerHTML = '<span style="color:var(--accent-red-ink)">✗ ' + d.message + '</span>';
         } else {
-            el.innerHTML = '<span style="color:var(--accent-red)">✗ خطأ: ' + (d.message || '') + '</span>';
+            el.innerHTML = '<span style="color:var(--accent-red-ink)">✗ خطأ: ' + (d.message || '') + '</span>';
         }
-    }).catch(function () { el.innerHTML = '<span style="color:var(--accent-red)">تعذّر الاتصال بالخادم</span>'; });
+    }).catch(function () { el.innerHTML = '<span style="color:var(--accent-red-ink)">تعذّر الاتصال بالخادم</span>'; });
 }
 
 /* ===== bulk generation: N per letter, 20/60/20 under/medium/hard ===== */
@@ -1819,8 +1819,8 @@ function renderJob(j) {
         '<div class="aijob-stats">' +
         '<div class="aijob-stat"><b>' + j.done + '</b><span>تم توليده</span></div>' +
         '<div class="aijob-stat"><b>' + j.target + '</b><span>المطلوب</span></div>' +
-        '<div class="aijob-stat"><b style="color:var(--accent-green)">' + j.accepted + '</b><span>مقبول</span></div>' +
-        '<div class="aijob-stat"><b style="color:var(--accent-red)">' + j.rejected + '</b><span>مرفوض</span></div>' +
+        '<div class="aijob-stat"><b style="color:var(--accent-green-ink)">' + j.accepted + '</b><span>مقبول</span></div>' +
+        '<div class="aijob-stat"><b style="color:var(--accent-red-ink)">' + j.rejected + '</b><span>مرفوض</span></div>' +
         '<div class="aijob-stat"><b>' + eta + '</b><span>الوقت التقريبي المتبقي</span></div>' +
         '</div>' +
         '<div class="aijob-bar"><i style="width:' + pct + '%"></i></div>' +
@@ -2157,9 +2157,9 @@ function impRow(r) {
     var st = stMap[r.status] || [r.status, 'badge-blue'];
     var warns = (r.warnings || []).map(function (w) { return esc(w.message); }).join('<br>');
     if (r.schema_error) {
-        warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red)">' + esc(r.schema_error) + '</span>';
+        warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red-ink)">' + esc(r.schema_error) + '</span>';
     } else if (r.savable === false) {
-        warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red)">لن يُحفظ</span>';
+        warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red-ink)">لن يُحفظ</span>';
     }
     var dup = '';
     if (r.duplicate) {

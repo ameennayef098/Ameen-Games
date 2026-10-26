@@ -84,7 +84,7 @@
     box-shadow: var(--shadow-inset);
 }
 .hud-center .hint { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: var(--leading-normal); }
-.hud-center .hint strong { color: var(--accent-gold); }
+.hud-center .hint strong { color: var(--accent-gold-ink); }
 
 /* --- Legend + controls under the board --- */
 .board-bar {
@@ -154,7 +154,7 @@
 
 /* --- Question modal --- */
 .qm-badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
-.qm-points { color: var(--accent-gold); font-weight: 900; font-size: var(--font-size-sm); }
+.qm-points { color: var(--accent-gold-ink); font-weight: 900; font-size: var(--font-size-sm); }
 .qm-points::before { content: "◈ "; opacity: .8; }
 
 .qm-question {
@@ -179,12 +179,12 @@
 }
 .qm-timer .tm {
     font-size: var(--font-size-3xl); font-weight: 900; line-height: 1;
-    color: var(--accent-gold); font-variant-numeric: tabular-nums;
+    color: var(--accent-gold-ink); font-variant-numeric: tabular-nums;
 }
 .qm-timer .tm-label { margin-top: .35rem; font-size: var(--font-size-sm); color: var(--text-secondary); }
 .qm-timer .tm-label b { color: var(--text-primary); }
-.qm-timer.warn .tm { color: var(--accent-gold); }
-.qm-timer.danger .tm { color: var(--accent-red); animation: pulse 1s ease-in-out infinite; }
+.qm-timer.warn .tm { color: var(--accent-gold-ink); }
+.qm-timer.danger .tm { color: var(--accent-red-ink); animation: pulse 1s ease-in-out infinite; }
 
 /* The answer reveal is a distinct card, not another text line */
 .qm-reveal {
@@ -195,11 +195,11 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-glow-gold), var(--shadow-inset);
 }
-.qm-reveal .cap { font-size: var(--font-size-xs); color: var(--accent-gold); font-weight: 800; letter-spacing: var(--tracking-wide); }
+.qm-reveal .cap { font-size: var(--font-size-xs); color: var(--accent-gold-ink); font-weight: 800; letter-spacing: var(--tracking-wide); }
 .qm-reveal .val { margin-top: .25rem; font-size: var(--font-size-xl); font-weight: 900; color: var(--text-primary); }
 
 .qm-bell { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin: var(--space-5) 0; }
-.qm-bell-result { text-align: center; font-weight: 800; color: var(--accent-gold); margin-bottom: var(--space-3); }
+.qm-bell-result { text-align: center; font-weight: 800; color: var(--accent-gold-ink); margin-bottom: var(--space-3); }
 .qm-claim { display: none; margin: var(--space-5) 0; }
 .qm-claim .claim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .qm-claim > p { text-align: center; color: var(--text-secondary); margin-bottom: var(--space-4); }
@@ -993,6 +993,8 @@ document.addEventListener('fullscreenchange', function () {
       if (cb) document.getElementById('team2Color').value = cb;
       document.getElementById('letters-setup').style.display = 'none';
       startLettersGame();
+      // الرقعة تُبنى داخل startLettersGame — نُعلن الجاهزية فيختفي مكان التحميل
+      AmeenTournament.ready();
   });
 
   // endGame(team): 1 أو 2 = فائز، و 0 = تعادل (امتلأت اللوحة دون مسار مكتمل)

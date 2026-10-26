@@ -50,11 +50,11 @@
 .cp-cat .cp-ico{font-size:1.5rem;line-height:1}
 .cp-cat .cp-name{font-size:.78rem;font-weight:700;line-height:1.45}
 .cp-cat .cp-n{font-size:.64rem;color:var(--text-secondary);line-height:1.5}
-.cp-cat .cp-n b{color:var(--accent-gold);font-weight:800}
+.cp-cat .cp-n b{color:var(--accent-gold-ink);font-weight:800}
 .fs-btn{background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);
   color:var(--text-primary);padding:0.45rem 0.95rem;cursor:pointer;font-family:inherit;
   font-weight:800;font-size:var(--font-size-sm);transition:var(--transition-fast)}
-.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold-ink)}
 :fullscreen .game-container{max-width:100%;padding:var(--space-2)}
 :fullscreen .jcell{min-height:56px;font-size:1.05rem}
 :fullscreen .jhead{min-height:74px}
@@ -78,7 +78,7 @@
   color:var(--text-on-accent);transition:var(--transition)}
 .hud-remaining{font-size:var(--font-size-xs);font-weight:700;color:var(--text-muted);
   font-variant-numeric:tabular-nums}
-.hud-remaining b{color:var(--accent-gold);font-size:var(--font-size-sm);font-weight:900}
+.hud-remaining b{color:var(--accent-gold-ink);font-size:var(--font-size-sm);font-weight:900}
 .team-card{position:relative;min-width:6.5rem;padding:var(--space-2) var(--space-4);border-radius:var(--radius);
   background:var(--bg-inset);border:1px solid var(--border-color);transition:var(--transition)}
 .team-card .team-name{font-size:var(--font-size-sm);max-width:9.5rem;overflow:hidden;
@@ -134,7 +134,7 @@
 .answer-card{padding:var(--space-4);background:var(--bg-secondary);border:1px solid var(--border-color);
   border-radius:var(--radius);margin-bottom:var(--space-4)}
 .answer-card .ans-label{font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:var(--space-1)}
-.answer-card .ans-value{font-size:var(--font-size-xl);font-weight:900;color:var(--accent-gold);line-height:1.5}
+.answer-card .ans-value{font-size:var(--font-size-xl);font-weight:900;color:var(--accent-gold-ink);line-height:1.5}
 .answer-card .ans-why{font-size:var(--font-size-sm);color:var(--text-secondary);margin-top:var(--space-2)}
 
 /* Decision row: three host decisions, clearly separated --- */
@@ -187,7 +187,7 @@
     </div>
 
     <div class="setup-catbar">
-        <span style="font-weight:700;">اختر 6 فئات <span id="catCount" style="color:var(--accent-gold)">(0/6)</span>
+        <span style="font-weight:700;">اختر 6 فئات <span id="catCount" style="color:var(--accent-gold-ink)">(0/6)</span>
         <div class="catbar-actions">
             <button class="btn btn-secondary btn-sm" onclick="randomCategories()"><svg class="ico" aria-hidden="true"><use href="#i-dice"></use></svg> فئات عشوائية</button>
             <button class="btn btn-secondary btn-sm" onclick="clearCategories()">مسح</button>
@@ -307,7 +307,7 @@
 <div id="winnerModal" class="modal-overlay">
     <div class="modal" style="max-width:700px;">
         <h1 style="text-align:center;">🎉 النتيجة النهائية</h1>
-        <h2 id="winnerName" style="text-align:center;color:var(--accent-gold);font-size:1.9rem;margin:.8rem 0;"></h2>
+        <h2 id="winnerName" style="text-align:center;color:var(--accent-gold-ink);font-size:1.9rem;margin:.8rem 0;"></h2>
         <div class="final-score" style="display:flex;justify-content:space-around;align-items:center;gap:1rem;
              margin:.8rem 0;padding:var(--space-4);background:var(--bg-inset);border:1px solid var(--border-color);
              border-radius:var(--radius);text-align:center;">
@@ -1066,6 +1066,12 @@ loadCategories();
       if (cb) document.getElementById('team2Color').value = cb;
       document.getElementById('quiz-setup').style.display = 'none';
       startQuizGame();
+
+      // اللوحة تُبنى بعد جلب الأسئلة — عندها فقط نُعلن الجاهزية فيختفي مكان التحميل
+      when(function () {
+          return document.getElementById('quiz-game').style.display !== 'none' &&
+                 document.querySelectorAll('#quizBoard .jcell').length > 0;
+      }, function () { AmeenTournament.ready(); });
   });
 
   // نُبلغ عند وجود فائز؛ التعادل يُحسم داخل اللعبة بجولة فاصلة

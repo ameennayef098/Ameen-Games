@@ -27,7 +27,7 @@
     font-size: var(--font-size-sm); font-weight: 700;
     color: var(--text-secondary); text-decoration: none;
 }
-.tn-home:hover { color: var(--accent-blue); }
+.tn-home:hover { color: var(--accent-blue-ink); }
 .tn-home .ico { width: 1rem; height: 1rem; }
 .tn-top .spacer { margin-inline-start: auto; }
 
@@ -46,7 +46,7 @@
     width: 1.3rem; height: 1.3rem; flex: 0 0 auto;
     display: grid; place-items: center;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.10);
+    background: var(--hairline);
     font-family: var(--num-font); font-size: 0.72rem; font-weight: 800;
 }
 .tn-step-pill.active { color: var(--text-primary); background: var(--accent-blue-tint); border-color: rgba(79, 140, 255, 0.5); }
@@ -68,10 +68,10 @@
 /* ── سطح زجاجي ── */
 .glass {
     border-radius: var(--radius-xl);
-    background: rgba(22, 27, 58, 0.72);
+    background: var(--bg-glass);
     -webkit-backdrop-filter: blur(22px) saturate(180%);
     backdrop-filter: blur(22px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--hairline);
     box-shadow: var(--shadow-lg), var(--shadow-inset);
 }
 
@@ -251,7 +251,7 @@
 .bm-row + .bm-row { border-top: 1px solid var(--border-color); }
 .bm-row .pts { margin-inline-start: auto; font-family: var(--num-font); font-weight: 800; font-size: var(--font-size-sm); }
 .bm-row.win { color: var(--text-primary); background: rgba(23, 195, 143, 0.10); }
-.bm-row.win .pts { color: var(--accent-green); }
+.bm-row.win .pts { color: var(--accent-green-ink); }
 .bm-row .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bm-foot { padding: 0.5rem; border-top: 1px solid var(--border-color); }
 .bm-play {
@@ -292,7 +292,7 @@
 @keyframes crown-in { from { opacity: 0; transform: translateY(-18px) scale(0.7); } to { opacity: 1; transform: none; } }
 .champ-crown .ico { width: 2.8rem; height: 2.8rem; }
 .champ h2 { margin: 0 0 var(--space-2); font-size: var(--font-size-3xl); line-height: 1.15; }
-.champ .who { color: var(--accent-gold); }
+.champ .who { color: var(--accent-gold-ink); }
 .champ p { margin: 0 auto var(--space-5); max-width: 34rem; color: var(--text-secondary); font-size: var(--font-size-sm); }
 .champ-actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
 
@@ -330,10 +330,10 @@
     display: flex;
     flex-direction: column;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    background: rgba(22, 27, 58, 0.88);
+    background: var(--glass-strong);
     -webkit-backdrop-filter: blur(26px) saturate(190%);
     backdrop-filter: blur(26px) saturate(190%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--hairline);
     border-bottom: 0;
     box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.55), var(--shadow-inset);
     transform: translateY(100%);
@@ -380,25 +380,52 @@
 .mt-vs { font-size: var(--font-size-sm); font-weight: 800; color: var(--text-muted); }
 
 /* الإطار الذي يشغّل اللعبة الحقيقية */
+.mt-stage {
+    position: relative;
+    flex: 0 0 auto;
+    margin-top: var(--space-4);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-inset);
+    box-shadow: var(--shadow);
+}
 .mt-frame {
     display: block;
     width: 100%;
-    height: min(76vh, 860px);
+    height: min(72vh, 840px);
     border: 0;
     border-radius: var(--radius-lg);
     background: var(--bg-primary);
-    margin-top: var(--space-4);
 }
+/* مكان التحميل يغطّي الإطار نفسه ويزول لمّا تجهز اللعبة —
+   لا يشغّل سطرًا تحتها ولا يبقى ظاهرًا بعد جاهزيتها. */
 .mt-loading {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: var(--space-3);
-    height: min(76vh, 860px);
-    margin-top: var(--space-4);
+    padding: var(--space-5);
     border-radius: var(--radius-lg);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(18px) saturate(170%);
+    backdrop-filter: blur(18px) saturate(170%);
+    color: var(--text-secondary);
     font-size: var(--font-size-sm);
+    font-weight: 700;
+    text-align: center;
+    transition: opacity 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                -webkit-backdrop-filter 320ms ease,
+                backdrop-filter 320ms ease;
+}
+.mt-loading.gone {
+    opacity: 0;
+    -webkit-backdrop-filter: blur(0) saturate(100%);
+    backdrop-filter: blur(0) saturate(100%);
+    pointer-events: none;
 }
 .spinner {
     width: 2rem; height: 2rem;
@@ -421,7 +448,7 @@
     color: var(--text-primary);
     font-size: var(--font-size-sm);
 }
-.mt-result .who { font-weight: 800; color: var(--accent-gold); }
+.mt-result .who { font-weight: 800; color: var(--accent-gold-ink); }
 .mt-result .nums { font-family: var(--num-font); font-weight: 700; color: var(--text-secondary); }
 .mt-result .btn { margin-inline-start: auto; }
 .mt-note { margin: var(--space-3) var(--space-5) 0; text-align: center; color: var(--text-muted); font-size: var(--font-size-xs); }
@@ -437,7 +464,7 @@
     font: inherit; font-size: var(--font-size-sm); font-weight: 700;
     cursor: pointer;
 }
-.mt-cancel:hover { color: var(--accent-red); border-color: rgba(240, 82, 79, 0.5); }
+.mt-cancel:hover { color: var(--accent-red-ink); border-color: rgba(240, 82, 79, 0.5); }
 
 @media (prefers-reduced-motion: reduce) {
     .tn-step.active { animation: rm-fade 160ms ease-out both; }
@@ -948,7 +975,7 @@ function renderBracketCard(m) {
             '<span class="pts">' + (m.done ? pts : '') + '</span></div>';
     }).join('');
     var note = m.done && m.note
-        ? '<div class="bm-row" style="color:var(--accent-gold);font-size:var(--font-size-xs)">' + esc(m.note) + '</div>'
+        ? '<div class="bm-row" style="color:var(--accent-gold-ink);font-size:var(--font-size-xs)">' + esc(m.note) + '</div>'
         : '';
     var foot = m.done
         ? '<div class="bm-foot"><span class="bm-wait">انتهت</span></div>'
@@ -1083,8 +1110,13 @@ function openMatch(r, i) {
                 '<div class="mt-team" style="border-color:' + m.b.color + '"><div class="nm">' + teamLabel(m.b) + '</div></div>' +
             '</div>' +
         '</div>' +
-        '<div class="mt-loading" id="mtLoading"><div class="spinner"></div>جارٍ فتح اللعبة…</div>' +
-        '<iframe class="mt-frame" id="mtFrame" title="مباراة ' + esc(gm.name) + '" allowfullscreen></iframe>';
+        '<div class="mt-stage">' +
+            '<iframe class="mt-frame" id="mtFrame" title="مباراة ' + esc(gm.name) + '" allowfullscreen></iframe>' +
+            '<div class="mt-loading" id="mtLoading" role="status" aria-live="polite">' +
+                '<span class="spinner" aria-hidden="true"></span>' +
+                '<span>جارٍ فتح اللعبة…</span>' +
+            '</div>' +
+        '</div>';
 
     // الزر في تذييل ثابت خارج منطقة التمرير — يبقى متاحًا مهما طال المحتوى
     $('shFoot').innerHTML = '<button class="mt-cancel" type="button" id="mtCancel">إلغاء المباراة</button>';
@@ -1096,11 +1128,40 @@ function openMatch(r, i) {
 
     $('mtCancel').addEventListener('click', function () { closeMatch(true); });
     openSheet();
+
+    // شبكة أمان: اللعبة تُعلن جاهزيتها بـ ready، لكن لو لم تفعل لأي سبب
+    // يُخفى مكان التحميل بعد 6 ثوانٍ كحد أقصى حتى لا يبقى عالقًا.
+    armLoadingFallback();
+}
+
+/* مكان التحميل يُخفى لمّا تجهز اللعبة فعلًا — لا قبل ولا بعد. */
+var _mtLoadingHidden = false;
+function hideMatchLoading() {
+    if (_mtLoadingHidden) return;
+    var el = $('mtLoading');
+    if (!el) return;
+    _mtLoadingHidden = true;
+    el.classList.add('gone');
+    window.setTimeout(function () { if (el.parentNode) el.remove(); }, 360);
+}
+
+function armLoadingFallback() {
+    _mtLoadingHidden = false;
+    window.clearTimeout(armLoadingFallback._t);
+    armLoadingFallback._t = window.setTimeout(hideMatchLoading, 6000);
 }
 
 window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d || d.ameenTournament !== true) return;
+
+    // اللعبة أعلنت أنها جهزت لوحتها: نزيل مكان التحميل فقط.
+    // لا نلمس reported — وإلا انتهت المباراة قبل أن تبدأ.
+    if (d.ready === true) {
+        hideMatchLoading();
+        return;
+    }
+
     if (!T.live || T.live.reported) return;
     T.live.reported = true;
     onMatchResult(d);

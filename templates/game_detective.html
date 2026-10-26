@@ -3,7 +3,7 @@
 <style>
 .inv-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
 .inv-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:1rem}
-.inv-card h4{margin:0 0 .5rem;color:var(--accent-gold)}
+.inv-card h4{margin:0 0 .5rem;color:var(--accent-gold-ink)}
 .inv-evidence{margin:.4rem 0;padding:.5rem .8rem;border-radius:8px;background:var(--bg-secondary);cursor:pointer;border:1px solid transparent;transition:.2s}
 .inv-evidence:hover{border-color:var(--accent)}
 .inv-evidence.unlocked{border-color:var(--accent-green)}
@@ -17,13 +17,13 @@
 .hint-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(245,158,11,.35)}
 .hint-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .fs-btn{background:rgba(255,255,255,.07);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);padding:.35rem .7rem;cursor:pointer;font-family:inherit;font-weight:800;font-size:.8rem}
-.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold-ink)}
 .diff-select{display:flex;gap:.5rem;margin:.5rem 0}
 .diff-btn{flex:1;padding:.6rem;border-radius:10px;border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text);font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}
 .diff-btn.active{border-color:var(--accent);background:var(--accent);color:#fff}
 .diff-btn:hover:not(.active){border-color:var(--accent)}
-.timer-display{font-size:2rem;font-weight:900;text-align:center;color:var(--accent-gold);padding:.5rem}
-.timer-warning{color:var(--accent-red)!important;animation:pulse 1s infinite}
+.timer-display{font-size:2rem;font-weight:900;text-align:center;color:var(--accent-gold-ink);padding:.5rem}
+.timer-warning{color:var(--accent-red-ink)!important;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .case-reveal{animation:revealSlide 1s ease-out}
 @keyframes revealSlide{0%{opacity:0;transform:translateY(30px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
@@ -31,7 +31,7 @@
 @keyframes revealText{0%{opacity:0;transform:translateX(20px)}100%{opacity:1;transform:translateX(0)}}
 .theory-field{margin:.5rem 0}
 .theory-field label{display:block;font-size:.85rem;color:var(--text-muted);margin-bottom:.3rem}
-.points-display{padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800;color:var(--accent-gold);display:inline-flex;align-items:center;gap:.5rem}
+.points-display{padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800;color:var(--accent-gold-ink);display:inline-flex;align-items:center;gap:.5rem}
 @media(max-width:768px){.inv-layout{grid-template-columns:1fr}}
 </style>
 
@@ -74,7 +74,7 @@
   <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
       <span style="font-weight:800">📊 تقدم التحقيق</span>
-      <span id="progressText" style="color:var(--accent-green);font-weight:800">0 / 0</span>
+      <span id="progressText" style="color:var(--accent-green-ink);font-weight:800">0 / 0</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
@@ -289,7 +289,7 @@ function submitTheory(){
   const result = document.getElementById('theoryResult');
   result.style.display='block';
   result.classList.add('case-reveal');
-  result.innerHTML = '<h3>'+(win?'🎉 إجابة صحيحة!':'❌ إجابة غير دقيقة')+'</h3><p style="margin:.8rem 0">النقاط: <b style="color:var(--accent-gold)">'+score+'</b>/100</p><div style="margin-top:1rem;padding:1rem;background:var(--bg-secondary);border-radius:8px"><b>الحل الصحيح:</b><p style="margin:.5rem 0">'+currentCase.solution+'</p><b>التبرير:</b><p style="margin:.5rem 0">'+currentCase.reasoning+'</p></div><button class="btn btn-primary" style="margin-top:1rem" onclick="showCaseSelect()">قضية أخرى</button>';
+  result.innerHTML = '<h3>'+(win?'🎉 إجابة صحيحة!':'❌ إجابة غير دقيقة')+'</h3><p style="margin:.8rem 0">النقاط: <b style="color:var(--accent-gold-ink)">'+score+'</b>/100</p><div style="margin-top:1rem;padding:1rem;background:var(--bg-secondary);border-radius:8px"><b>الحل الصحيح:</b><p style="margin:.5rem 0">'+currentCase.solution+'</p><b>التبرير:</b><p style="margin:.5rem 0">'+currentCase.reasoning+'</p></div><button class="btn btn-primary" style="margin-top:1rem" onclick="showCaseSelect()">قضية أخرى</button>';
 }
 
 function showCaseSelect(){

@@ -14,23 +14,23 @@
 .round-indicator .round-num{background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
 .round-clue-count{color:var(--text-muted);font-size:.85rem}
 .discussion-timer{text-align:center;padding:1rem;background:var(--bg-card);border-radius:12px;margin:1rem 0;border:1px solid var(--border-color)}
-.discussion-timer .timer-text{font-size:2.5rem;font-weight:900;color:var(--accent-gold)}
+.discussion-timer .timer-text{font-size:2.5rem;font-weight:900;color:var(--accent-gold-ink)}
 .discussion-timer .timer-label{color:var(--text-muted);font-size:.9rem}
 .discussion-phase{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;padding:1.5rem;margin:1rem 0;border:2px solid var(--accent);text-align:center}
-.discussion-phase h3{color:var(--accent-gold);margin-bottom:.5rem}
+.discussion-phase h3{color:var(--accent-gold-ink);margin-bottom:.5rem}
 .team-score{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
 .team-box{background:var(--bg-card);border:2px solid var(--border-color);border-radius:12px;padding:1rem;text-align:center}
 .team-box.active-turn{border-color:var(--accent-gold);box-shadow:0 0 15px rgba(245,158,11,.2)}
 .team-box .team-name{font-weight:800;font-size:1.1rem}
-.team-box .team-score-val{font-size:2rem;font-weight:900;color:var(--accent-gold)}
-.score-display{padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800;color:var(--accent-gold);display:inline-flex;align-items:center;gap:.5rem}
+.team-box .team-score-val{font-size:2rem;font-weight:900;color:var(--accent-gold-ink)}
+.score-display{padding:.5rem 1rem;background:var(--bg-secondary);border-radius:8px;font-weight:800;color:var(--accent-gold-ink);display:inline-flex;align-items:center;gap:.5rem}
 .accuse-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000}
 .accuse-modal-content{background:var(--bg-card);border:2px solid var(--accent-red);border-radius:16px;padding:2rem;max-width:400px;text-align:center;animation:modalIn .3s ease-out}
 @keyframes modalIn{0%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
 .result-reveal{animation:revealDramatic 1.5s ease-out}
 @keyframes revealDramatic{0%{opacity:0;transform:scale(.8)}50%{opacity:1;transform:scale(1.05)}100%{transform:scale(1)}}
 .fs-btn{background:rgba(255,255,255,.07);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);padding:.35rem .7rem;cursor:pointer;font-family:inherit;font-weight:800;font-size:.8rem}
-.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold-ink)}
 .round-controls{display:flex;gap:.5rem;margin:.5rem 0;justify-content:center}
 .round-btn{padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}
 .round-btn:hover{border-color:var(--accent)}
@@ -126,9 +126,9 @@
 
 <div class="accuse-modal" id="accuseModal" style="display:none">
   <div class="accuse-modal-content">
-    <h3 style="color:var(--accent-red)">⚖️ تأكيد الاتهام</h3>
+    <h3 style="color:var(--accent-red-ink)">⚖️ تأكيد الاتهام</h3>
     <p style="margin:1rem 0">هل أنت متأكد أن المتهم هو:</p>
-    <h2 id="accuseName" style="color:var(--accent-red)"></h2>
+    <h2 id="accuseName" style="color:var(--accent-red-ink)"></h2>
     <p style="color:var(--text-muted);font-size:.9rem;margin-top:.5rem">هذا القرار نهائي!</p>
     <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem">
       <button class="btn btn-danger" onclick="finalizeAccusation()">✅ نعم، متأكد</button>
@@ -218,7 +218,7 @@ function nextRound(){
     renderClues();
     updateRoundDisplay();
     if (unlockedClues.length >= (currentCase.clues||[]).length) {
-      document.getElementById('roundControls').innerHTML = '<p style="color:var(--accent-green);font-weight:800">✅ تم كشف جميع الأدلة!</p>';
+      document.getElementById('roundControls').innerHTML = '<p style="color:var(--accent-green-ink);font-weight:800">✅ تم كشف جميع الأدلة!</p>';
     }
   }
   startDiscussion();
@@ -292,7 +292,7 @@ function finalizeAccusation(){
   var result = document.getElementById('resultArea');
   result.style.display='block';
   result.classList.add('result-reveal');
-  result.innerHTML = '<h3>'+(win?'🎉 اتهام صحيح!':'❌ اتهام خاطئ')+'</h3><p style="margin:.8rem 0">اتهمت: <b>'+accused+'</b></p>'+(win?'<p style="color:var(--accent-green);font-weight:800">النقاط المكتسبة: '+score+' (أساسي: 100 + مكافأة أدلة: '+bonus+' + مكافأة جولات: '+roundBonus+')</p>':'')+'<div style="margin-top:1rem;padding:1rem;background:var(--bg-secondary);border-radius:8px"><b>الحل:</b><p style="margin:.5rem 0">'+currentCase.explanation+'</p></div><button class="btn btn-primary" style="margin-top:1rem" onclick="showCaseSelect()">قضية أخرى</button>';
+  result.innerHTML = '<h3>'+(win?'🎉 اتهام صحيح!':'❌ اتهام خاطئ')+'</h3><p style="margin:.8rem 0">اتهمت: <b>'+accused+'</b></p>'+(win?'<p style="color:var(--accent-green-ink);font-weight:800">النقاط المكتسبة: '+score+' (أساسي: 100 + مكافأة أدلة: '+bonus+' + مكافأة جولات: '+roundBonus+')</p>':'')+'<div style="margin-top:1rem;padding:1rem;background:var(--bg-secondary);border-radius:8px"><b>الحل:</b><p style="margin:.5rem 0">'+currentCase.explanation+'</p></div><button class="btn btn-primary" style="margin-top:1rem" onclick="showCaseSelect()">قضية أخرى</button>';
 }
 
 function showCaseSelect(){

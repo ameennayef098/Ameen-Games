@@ -5,7 +5,7 @@
 .debate-header h1{font-size:1.8rem;margin:0}
 .debate-container{max-width:1200px;margin:0 auto;padding:1rem}
 .criteria-box{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem}
-.criteria-box h3{color:var(--accent-gold);margin-bottom:.8rem}
+.criteria-box h3{color:var(--accent-gold-ink);margin-bottom:.8rem}
 .criteria-list{display:flex;gap:.8rem;flex-wrap:wrap}
 .criteria-item{background:var(--bg-secondary);padding:.4rem 1rem;border-radius:20px;font-size:.9rem;color:var(--text-secondary)}
 .topic-actions{display:flex;gap:1rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
@@ -15,14 +15,14 @@
 .topic-card h4{color:var(--text-primary);margin-bottom:.5rem}
 .topic-card .topic-meta{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
 .ai-topic-preview{background:var(--bg-card);border:2px solid var(--accent-gold);border-radius:var(--radius-lg);padding:1.5rem;margin:1.5rem 0;display:none}
-.ai-topic-preview h3{color:var(--accent-gold);margin-bottom:1rem}
+.ai-topic-preview h3{color:var(--accent-gold-ink);margin-bottom:1rem}
 .ai-topic-preview .preview-actions{display:flex;gap:1rem;margin-top:1rem}
 .play-area{background:var(--bg-card);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border-color)}
 .timer-config{display:flex;gap:1rem;align-items:center;justify-content:center;margin:1rem 0;flex-wrap:wrap}
 .timer-config select{padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-family:inherit}
 .timer-display{text-align:center;font-size:3.5rem;font-weight:900;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius);margin:1rem auto;max-width:250px;font-variant-numeric:tabular-nums}
-.timer-display.warning{color:var(--accent-gold)}
-.timer-display.danger{color:var(--accent-red);animation:pulse 1s infinite}
+.timer-display.warning{color:var(--accent-gold-ink)}
+.timer-display.danger{color:var(--accent-red-ink);animation:pulse 1s infinite}
 .phase-label{text-align:center;font-size:1.3rem;font-weight:800;margin:.8rem 0}
 .teams-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem}
 .team-card{background:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--radius);padding:1.2rem;transition:var(--transition)}
@@ -36,13 +36,13 @@
 .arg-input:focus{outline:none;border-color:var(--accent-gold)}
 .arg-input:disabled{opacity:.4;cursor:not-allowed}
 .results-area{background:var(--bg-card);border:2px solid var(--accent-gold);border-radius:var(--radius-lg);padding:2rem;margin-top:1.5rem;display:none}
-.winner-banner{text-align:center;font-size:1.5rem;font-weight:900;color:var(--accent-gold);margin-bottom:1.5rem}
+.winner-banner{text-align:center;font-size:1.5rem;font-weight:900;color:var(--accent-gold-ink);margin-bottom:1.5rem}
 .score-table{width:100%;border-collapse:collapse;margin:1rem 0}
 .score-table th,.score-table td{padding:.8rem;text-align:center;border-bottom:1px solid var(--border-color)}
 .score-table th{background:var(--bg-secondary);font-weight:700}
 .score-table .criterion-name{text-align:right;color:var(--text-secondary)}
 .feedback-box{background:var(--bg-secondary);border-radius:var(--radius);padding:1rem;margin:.8rem 0;text-align:right}
-.feedback-box h5{color:var(--accent-gold);margin-bottom:.5rem}
+.feedback-box h5{color:var(--accent-gold-ink);margin-bottom:.5rem}
 .btn-fullscreen{background:var(--bg-card);border:1px solid var(--border-color);color:var(--text-primary);border-radius:8px;padding:.5rem 1rem;cursor:pointer;font-size:1.2rem;transition:var(--transition)}
 .btn-fullscreen:hover{background:var(--bg-card-hover)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
@@ -77,8 +77,8 @@
       <h3>🤖 موضوع مقترح</h3>
       <p id="aiTopicText" style="font-size:1.1rem;font-weight:700"></p>
       <div class="setup-row">
-        <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-green)">المؤيد:</b> <span id="aiSideA"></span></div>
-        <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-red)">المعارض:</b> <span id="aiSideB"></span></div>
+        <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-green-ink)">المؤيد:</b> <span id="aiSideA"></span></div>
+        <div style="background:var(--bg-secondary);padding:.8rem;border-radius:8px"><b style="color:var(--accent-red-ink)">المعارض:</b> <span id="aiSideB"></span></div>
       </div>
       <div class="preview-actions" style="display:flex;gap:1rem;margin-top:1rem">
         <button class="btn btn-success" onclick="approveAiTopic()">✅ قبول والبدء</button>
@@ -91,7 +91,7 @@
   </div>
 
   <div id="playArea" class="play-area" style="display:none">
-    <h2 id="debateTopic" style="text-align:center;color:var(--accent-gold);margin-bottom:1rem"></h2>
+    <h2 id="debateTopic" style="text-align:center;color:var(--accent-gold-ink);margin-bottom:1rem"></h2>
 
     <div class="timer-config">
       <label>⏱️ مدة التقديم:</label>
@@ -109,14 +109,14 @@
 
     <div class="teams-layout">
       <div class="team-card" id="proCard">
-        <h4 style="color:var(--accent-green)">✅ الفريق الأول — المؤيد</h4>
+        <h4 style="color:var(--accent-green-ink)">✅ الفريق الأول — المؤيد</h4>
         <p class="team-side" id="proSide"></p>
         <div class="arg-list" id="proArgs"></div>
         <textarea class="arg-input" id="proInput" placeholder="اكتب حجة الفريق المؤيد..." disabled></textarea>
         <button class="btn btn-primary" style="width:100%" id="proSubmit" onclick="submitArg('pro')" disabled>📤 تقديم الحجة</button>
       </div>
       <div class="team-card" id="conCard">
-        <h4 style="color:var(--accent-red)">❌ الفريق الثاني — المعارض</h4>
+        <h4 style="color:var(--accent-red-ink)">❌ الفريق الثاني — المعارض</h4>
         <p class="team-side" id="conSide"></p>
         <div class="arg-list" id="conArgs"></div>
         <textarea class="arg-input" id="conInput" placeholder="اكتب حجة الفريق المعارض..." disabled></textarea>
@@ -347,9 +347,9 @@ function showResults(data){
 
   area.innerHTML='<div class="winner-banner">'+winnerText+'</div>'
     +'<h3 style="text-align:center;margin-bottom:1rem">📊 تفاصيل التقييم</h3>'
-    +'<table class="score-table"><thead><tr><th>المعيار</th><th style="color:var(--accent-green)">المؤيد</th><th style="color:var(--accent-red)">المعارض</th></tr></thead>'
+    +'<table class="score-table"><thead><tr><th>المعيار</th><th style="color:var(--accent-green-ink)">المؤيد</th><th style="color:var(--accent-red-ink)">المعارض</th></tr></thead>'
     +'<tbody>'+tableRows
-    +'<tr><td class="criterion-name"><b>المجموع</b></td><td><b style="color:var(--accent-green)">'+aTotal+'</b></td><td><b style="color:var(--accent-red)">'+bTotal+'</b></td></tr>'
+    +'<tr><td class="criterion-name"><b>المجموع</b></td><td><b style="color:var(--accent-green-ink)">'+aTotal+'</b></td><td><b style="color:var(--accent-red-ink)">'+bTotal+'</b></td></tr>'
     +'</tbody></table>'
     +'<div class="setup-row">'
     +'<div class="feedback-box"><h5>💬 تقييم المؤيد</h5><p>'+(data.side_a&&data.side_a.feedback?data.side_a.feedback:'')+'</p></div>'

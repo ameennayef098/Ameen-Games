@@ -40,7 +40,7 @@
     background: var(--bg-inset); border: 1px solid var(--border-color); border-radius: var(--radius);
     padding: .9rem; font-size: .88rem; color: var(--text-secondary); box-shadow: var(--shadow-inset);
 }
-.pool-summary b { color: var(--accent-gold); font-weight: 900; font-size: 1.15rem; }
+.pool-summary b { color: var(--accent-gold-ink); font-weight: 900; font-size: 1.15rem; }
 
 .pool-empty {
     display: none; margin-top: var(--space-3); padding: var(--space-4); text-align: center;
@@ -105,12 +105,12 @@
     padding: 1rem; text-align: center; box-shadow: var(--shadow-glow-gold), var(--shadow-inset);
 }
 .bid-turn .turn-label { font-size: .75rem; color: var(--text-muted); font-weight: 800; }
-.bid-turn .who { font-size: 1.35rem; font-weight: 900; color: var(--accent-gold); }
+.bid-turn .who { font-size: 1.35rem; font-weight: 900; color: var(--accent-gold-ink); }
 .bid-turn .turn-action { font-size: .9rem; font-weight: 700; color: var(--text-primary); }
-.bid-turn .turn-action b { color: var(--accent-gold); font-weight: 900; }
-.turn-warn { color: var(--accent-red); font-weight: 800; }
+.bid-turn .turn-action b { color: var(--accent-gold-ink); font-weight: 900; }
+.turn-warn { color: var(--accent-red-ink); font-weight: 800; }
 .turn-timer { margin-top: .5rem; font-size: .78rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 800; }
-.turn-timer.danger { color: var(--accent-red); animation: pulse 1s ease-in-out infinite; }
+.turn-timer.danger { color: var(--accent-red-ink); animation: pulse 1s ease-in-out infinite; }
 .turn-actions { display: flex; gap: .6rem; justify-content: center; margin-top: .8rem; flex-wrap: wrap; }
 
 /* --- Panels --- */
@@ -129,7 +129,7 @@
 .participant-card.active { border-color: var(--accent-gold); background: var(--accent-gold-tint); box-shadow: 0 0 0 1px var(--accent-gold); }
 .participant-card.passed { opacity: .5; }
 .participant-card .nm { font-weight: 900; color: var(--text-primary); }
-.participant-card.active .nm::after { content: " · 🎯 دوره الآن"; color: var(--accent-gold); font-size: .75rem; }
+.participant-card.active .nm::after { content: " · 🎯 دوره الآن"; color: var(--accent-gold-ink); font-size: .75rem; }
 .participant-card .meta { font-size: .72rem; color: var(--text-secondary); }
 
 .history-item, .ledger-item {
@@ -161,7 +161,7 @@
 .result-head { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-bottom: .6rem; flex-wrap: wrap; }
 .result-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 900; color: var(--text-primary); }
 .result-score { text-align: left; }
-.result-score .v { font-size: 1.9rem; font-weight: 900; color: var(--accent-gold); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.result-score .v { font-size: 1.9rem; font-weight: 900; color: var(--accent-gold-ink); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .result-score .l { font-size: .68rem; color: var(--text-muted); }
 .result-meta { margin-top: .7rem; font-size: .82rem; color: var(--text-secondary); display: grid; gap: .15rem; }
 .result-meta b { color: var(--text-primary); }
@@ -172,19 +172,19 @@
     border-radius: var(--radius-lg); padding: 1.25rem;
     box-shadow: var(--shadow-glow-gold), var(--shadow-inset);
 }
-.ai-winner { display: flex; align-items: center; gap: .6rem; font-size: var(--font-size-lg); font-weight: 900; color: var(--accent-gold); }
+.ai-winner { display: flex; align-items: center; gap: .6rem; font-size: var(--font-size-lg); font-weight: 900; color: var(--accent-gold-ink); }
 .ai-winner .trophy { font-size: 2.2rem; filter: drop-shadow(0 8px 22px rgba(246,167,20,.45)); }
 .ai-winner small { font-size: .7em; color: var(--text-secondary); font-weight: 800; }
 .ai-scenario { margin: .8rem 0; line-height: var(--leading-loose); color: var(--text-primary); }
 .ai-reason { color: var(--text-secondary); }
-.ai-reason b { color: var(--accent-gold); }
+.ai-reason b { color: var(--accent-gold-ink); }
 
 .fs-btn {
     background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm);
     color: var(--text-secondary); padding: .5rem .9rem; cursor: pointer; font-family: inherit;
     font-weight: 800; font-size: .8rem; transition: var(--transition-fast);
 }
-.fs-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+.fs-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold-ink); }
 
 :fullscreen .game-container { max-width: 100%; padding: .5rem; }
 :fullscreen .auc-layout { grid-template-columns: 300px 1fr 290px; }
@@ -281,7 +281,7 @@
             <div class="panel" style="margin:.8rem 0;">
                 <div class="setup-row">
                     <div class="stat-card"><div class="number" id="currentBid" style="font-size:1.5rem;">0</div><div class="label">المزايدة الحالية</div></div>
-                    <div class="stat-card"><div class="number" id="currentBidder" style="font-size:.95rem;color:var(--accent-gold);">لا يوجد</div><div class="label">أعلى مزايد</div></div>
+                    <div class="stat-card"><div class="number" id="currentBidder" style="font-size:.95rem;color:var(--accent-gold-ink);">لا يوجد</div><div class="label">أعلى مزايد</div></div>
                     <div class="stat-card"><div class="number" id="roundInfo" style="font-size:1rem;">0/0</div><div class="label">جولة</div></div>
                 </div>
             </div>
@@ -613,7 +613,7 @@ function renderParticipants() {
         return '<div class="participant-card' + (isTurn ? ' active' : '') + (passed ? ' passed' : '') + '">' +
                '<div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">' +
                '<span class="nm">' + p.name + '</span>' +
-               '<span style="color:var(--accent-gold);font-weight:900;font-variant-numeric:tabular-nums;">' +
+               '<span style="color:var(--accent-gold-ink);font-weight:900;font-variant-numeric:tabular-nums;">' +
                fmt(p.budget) + ' ' + A.unit + '</span></div>' +
                '<div class="meta">' + p.squad.length + '/' + p.maxPlayers +
                (passed ? ' · مرّر' : '') +
@@ -734,7 +734,7 @@ function applyFormationToAll() {
               '<div>قيمة اللاعبين: <b>' + fmt(sold) + ' ' + A.unit + '</b></div>' +
               '<div>متوسط التقييم: <b>' + ev.quality + '</b></div>' +
               '<div>الاحتياط: <b>' + bench + '</b></div>' +
-              '<div style="color:var(--accent-gold);font-weight:800;">' + ev.notes.join(' · ') + '</div></div></div>';
+              '<div style="color:var(--accent-gold-ink);font-weight:800;">' + ev.notes.join(' · ') + '</div></div></div>';
     }).join('');
 }
 function runAiMatch() {
@@ -748,13 +748,13 @@ function runAiMatch() {
     fetch('/api/ai/match', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({squads: squads})})
         .then(function (r) { return r.json(); })
         .then(function (d) {
-            if (d.error) { box.innerHTML = '<div style="color:var(--accent-red)">' + d.error + '</div>'; return; }
+            if (d.error) { box.innerHTML = '<div style="color:var(--accent-red-ink)">' + d.error + '</div>'; return; }
             box.innerHTML = '<div class="ai-winner"><span class="trophy">🏆</span>' +
                 '<span>الفائز: ' + (d.winner || '—') + ' <small>(' + (d.score || '') + ')</small></span></div>' +
                 '<p class="ai-scenario">' + (d.scenario || '') + '</p>' +
                 '<p class="ai-reason"><b>السبب:</b> ' + (d.reason || '') + '</p>';
         })
-        .catch(function (e) { box.innerHTML = '<div style="color:var(--accent-red)">تعذّر الاتصال: ' + e + '</div>'; });
+        .catch(function (e) { box.innerHTML = '<div style="color:var(--accent-red-ink)">تعذّر الاتصال: ' + e + '</div>'; });
 }
 function resetAuction() {
     document.getElementById('auction-results').style.display = 'none';

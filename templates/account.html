@@ -11,10 +11,10 @@
     padding: var(--space-6);
     margin-bottom: var(--space-5);
     border-radius: var(--radius-xl);
-    background: rgba(22, 27, 58, 0.72);
+    background: var(--bg-glass);
     -webkit-backdrop-filter: blur(22px) saturate(180%);
     backdrop-filter: blur(22px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--hairline);
     box-shadow: var(--shadow-lg), var(--shadow-inset);
 }
 .acct-avatar {
@@ -61,7 +61,7 @@
     margin: 0 0 var(--space-4);
     font-size: var(--font-size-lg);
 }
-.panel > h2 .ico { width: 1.2rem; height: 1.2rem; color: var(--accent-blue); }
+.panel > h2 .ico { width: 1.2rem; height: 1.2rem; color: var(--accent-blue-ink); }
 
 .avatar-row, .color-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
 .pick {
@@ -74,7 +74,7 @@
     cursor: pointer;
     transition: transform 120ms ease-out, border-color 120ms ease-out, background 120ms ease-out;
 }
-.pick:hover { background: rgba(255, 255, 255, 0.10); }
+.pick:hover { background: var(--hairline); }
 .pick:active { transform: scale(0.94); }
 .pick[aria-pressed="true"] { border-color: var(--accent-blue); background: var(--accent-blue-tint); }
 .pick.color { font-size: 0; }
@@ -93,7 +93,7 @@
     border: 1px solid var(--border-color);
     font-size: var(--font-size-sm);
 }
-.hist-item .ico { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; color: var(--accent-gold); }
+.hist-item .ico { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; color: var(--accent-gold-ink); }
 .hist-item .when { margin-inline-start: auto; color: var(--text-muted); font-size: var(--font-size-xs); font-weight: 600; }
 .hist-empty, .empty-note { color: var(--text-muted); font-size: var(--font-size-sm); margin: 0; }
 
@@ -360,7 +360,7 @@
                 return '<div class="hist-item">' +
                     '<svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>' +
                     '<span>بطولة ' + name + ' — ' + t.size + ' فرق</span>' +
-                    '<strong style="color:var(--accent-gold)">' + t.champion.name + '</strong>' +
+                    '<strong style="color:var(--accent-gold-ink)">' + t.champion.name + '</strong>' +
                     '<span class="when">' + (t.createdAt || '').slice(0, 10) + '</span>' +
                     '</div>';
             }).join('');

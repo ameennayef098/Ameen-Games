@@ -251,7 +251,7 @@
     gap: 0.35rem;
     font-size: 0.72rem;
     font-weight: 800;
-    color: var(--accent-green);
+    color: var(--accent-green-ink);
 }
 .aijob-head .aijob-live::before {
     content: '';
@@ -332,7 +332,7 @@
     position: fixed;
     inset: 0;
     z-index: 300;
-    background: rgba(6, 8, 20, 0.78);
+    background: var(--scrim);
     display: grid;
     place-items: center;
     padding: 1rem;
@@ -363,7 +363,7 @@
     padding: 0.2rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--accent-gold-tint);
-    color: var(--accent-gold);
+    color: var(--accent-gold-ink);
 }
 .qmodal-body { padding: 1.25rem; display: grid; gap: 1rem; }
 .qmodal-q {

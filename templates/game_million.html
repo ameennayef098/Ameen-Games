@@ -20,12 +20,12 @@
   font-weight:800;font-size:.82rem;color:var(--text-muted);
   border-inline-start:3px solid transparent;transition:all .25s}
 .ladder .step .n{opacity:.55;font-size:.75rem;font-variant-numeric:tabular-nums}
-.ladder .step.safe{color:var(--accent-gold);border-inline-start-color:var(--accent-gold);
+.ladder .step.safe{color:var(--accent-gold-ink);border-inline-start-color:var(--accent-gold);
   background:var(--accent-gold-tint)}
 .ladder .step.cur{background:var(--gradient-gold);color:#231600;border-inline-start-color:#fff;
   transform:scale(1.04);box-shadow:var(--shadow-glow-gold);font-weight:900}
 .ladder .step.cur .n{opacity:.75}
-.ladder .step.done{color:var(--accent-green);border-inline-start-color:var(--accent-green)}
+.ladder .step.done{color:var(--accent-green-ink);border-inline-start-color:var(--accent-green)}
 
 /* --- Stage --- */
 .stage{background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));
@@ -39,12 +39,12 @@
   background:var(--bg-inset);border:1px solid var(--border-color);border-radius:var(--radius-pill);
   padding:.4rem 1rem;font-weight:800;font-size:.85rem;color:var(--text-secondary);
   font-variant-numeric:tabular-nums}
-.pill.gold{color:var(--accent-gold);border-color:rgba(246,167,20,.45);background:var(--accent-gold-tint)}
+.pill.gold{color:var(--accent-gold-ink);border-color:rgba(246,167,20,.45);background:var(--accent-gold-tint)}
 .pill.blue{color:#a9c8ff;border-color:rgba(79,140,255,.4);background:var(--accent-blue-tint)}
 
 /* Per-question badges */
 .mil-badges{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-bottom:.5rem}
-.mil-points{color:var(--accent-gold);font-weight:900;font-size:var(--font-size-sm)}
+.mil-points{color:var(--accent-gold-ink);font-weight:900;font-size:var(--font-size-sm)}
 .mil-points::before{content:"◈ ";opacity:.8}
 
 /* --- Question card --- */
@@ -66,18 +66,18 @@
   color:var(--text-primary);
   font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer;transition:all .18s}
 .opt .k{width:32px;height:32px;flex:0 0 32px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;background:var(--accent-gold-tint);color:var(--accent-gold);
+  justify-content:center;background:var(--accent-gold-tint);color:var(--accent-gold-ink);
   font-weight:900;font-size:.9rem;transition:all .18s}
 .opt:hover:not(:disabled){border-color:var(--accent-gold);transform:translateY(-2px);
   box-shadow:var(--shadow),var(--shadow-inset)}
 .opt.correct{background:linear-gradient(180deg,rgba(23,195,143,.28),rgba(23,195,143,.10));
   border-color:var(--accent-green);color:var(--text-primary);box-shadow:0 0 0 1px var(--accent-green)}
 .opt.correct .k{background:var(--accent-green);color:#05231a}
-.opt.correct::after{content:"✓";margin-inline-start:auto;font-weight:900;color:var(--accent-green)}
+.opt.correct::after{content:"✓";margin-inline-start:auto;font-weight:900;color:var(--accent-green-ink)}
 .opt.wrong{background:linear-gradient(180deg,rgba(240,82,79,.30),rgba(240,82,79,.10));
   border-color:var(--accent-red);color:var(--text-primary);box-shadow:0 0 0 1px var(--accent-red)}
 .opt.wrong .k{background:var(--accent-red);color:#fff}
-.opt.wrong::after{content:"✕";margin-inline-start:auto;font-weight:900;color:var(--accent-red)}
+.opt.wrong::after{content:"✕";margin-inline-start:auto;font-weight:900;color:var(--accent-red-ink)}
 .opt:disabled{opacity:.35;cursor:not-allowed;transform:none}
 .opt.blink{animation:blink .6s ease-in-out 4}
 @keyframes blink{0%,100%{border-color:var(--border-color)}50%{border-color:var(--accent-gold);background:var(--bg-card-hover)}}
@@ -90,7 +90,7 @@
   cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;
   font-family:inherit;font-weight:800;font-size:.74rem;transition:all .2s}
 .ll .ic{font-size:1.35rem}
-.ll:hover:not(:disabled){border-color:var(--accent-gold);color:var(--accent-gold);transform:translateY(-2px);
+.ll:hover:not(:disabled){border-color:var(--accent-gold);color:var(--accent-gold-ink);transform:translateY(-2px);
   box-shadow:var(--shadow)}
 .ll:disabled{opacity:.3;cursor:not-allowed;transform:none}
 .ll.used{border-style:dashed;text-decoration:line-through}
@@ -114,7 +114,7 @@
 .fs-btn{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);
   color:var(--text-secondary);padding:.5rem .9rem;cursor:pointer;
   font-family:inherit;font-weight:800;font-size:.8rem;transition:var(--transition-fast)}
-.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+.fs-btn:hover{border-color:var(--accent-gold);color:var(--accent-gold-ink)}
 
 /* --- End modal --- */
 .mil-end-icon{font-size:3.4rem;line-height:1;filter:drop-shadow(0 8px 22px rgba(246,167,20,.45))}
@@ -169,7 +169,7 @@
         <div class="ladder" id="ladder"></div>
         <div class="card" style="margin-top:.75rem;padding:.9rem;text-align:center;">
             <div style="font-size:.75rem;color:var(--text-muted)">المبلغ المؤكد</div>
-            <div style="font-size:var(--font-size-xl);font-weight:900;color:var(--accent-gold)" id="safeAmount">0</div>
+            <div style="font-size:var(--font-size-xl);font-weight:900;color:var(--accent-gold-ink)" id="safeAmount">0</div>
         </div>
     </div>
 
@@ -433,7 +433,7 @@ function usePhone() {
     var wrongs = M.current.options.filter(function (o) { return o !== M.current.answer; });
     var guess = confident ? M.current.answer : wrongs[Math.floor(Math.random() * wrongs.length)];
     document.getElementById('milInfo').innerHTML =
-        '<div class="info-card">📞 <b style="color:var(--accent-gold)">صديقك يقول:</b> ' +
+        '<div class="info-card">📞 <b style="color:var(--accent-gold-ink)">صديقك يقول:</b> ' +
         '«أعتقد أن الإجابة هي <b>' + guess + '</b>»' +
         (confident ? ' — وأنا واثق إلى حد كبير.' : ' — لكنني لست متأكداً تماماً.') + '</div>';
 }
@@ -449,7 +449,7 @@ function useAudience() {
     var sum = weights.reduce(function (a, b) { return a + b; }, 0);
     var pct = weights.map(function (w) { return Math.round(w / sum * 100); });
     document.getElementById('milInfo').innerHTML =
-        '<div class="info-card">👥 <b style="color:var(--accent-gold)">رأي الجمهور:</b>' +
+        '<div class="info-card">👥 <b style="color:var(--accent-gold-ink)">رأي الجمهور:</b>' +
         '<div class="aud-wrap">' + pct.map(function (p, i) {
             return '<div class="aud-col"><div class="aud-bar" style="height:' + Math.max(6, p) + '%"></div>' +
                    '<div class="aud-lbl">' + KEYS[i] + ' · ' + p + '%</div></div>';

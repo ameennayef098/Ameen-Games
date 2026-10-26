@@ -10,22 +10,22 @@
 .cn-topbar{display:flex;justify-content:center;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
 .cn-btn{padding:.55rem 1.2rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:.95rem;font-weight:600;cursor:pointer;transition:var(--transition)}
 .cn-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
-.cn-btn.active{border-color:var(--accent-gold);background:rgba(245,158,11,.12);color:var(--accent-gold)}
+.cn-btn.active{border-color:var(--accent-gold);background:rgba(245,158,11,.12);color:var(--accent-gold-ink)}
 .cn-turn{text-align:center;font-size:1.2rem;font-weight:800;padding:.6rem 1.5rem;border-radius:var(--radius);background:var(--bg-card);border:2px solid var(--border-color);display:inline-block;transition:var(--transition)}
-.cn-turn.red{border-color:var(--accent-red);color:var(--accent-red)}
-.cn-turn.blue{border-color:var(--accent-blue);color:var(--accent-blue)}
+.cn-turn.red{border-color:var(--accent-red);color:var(--accent-red-ink)}
+.cn-turn.blue{border-color:var(--accent-blue);color:var(--accent-blue-ink)}
 .cn-scores{display:flex;justify-content:center;gap:1.5rem;margin-bottom:1rem}
 .cn-score-box{padding:.5rem 1.5rem;border-radius:var(--radius);text-align:center;font-weight:800;font-size:1.05rem;border:1px solid var(--border-color)}
 .cn-score-box .num{font-size:1.4rem;display:block}
-.cn-score-box.red{background:rgba(239,68,68,.08);border-color:var(--accent-red);color:var(--accent-red)}
-.cn-score-box.blue{background:rgba(59,130,246,.08);border-color:var(--accent-blue);color:var(--accent-blue)}
+.cn-score-box.red{background:rgba(239,68,68,.08);border-color:var(--accent-red);color:var(--accent-red-ink)}
+.cn-score-box.blue{background:rgba(59,130,246,.08);border-color:var(--accent-blue);color:var(--accent-blue-ink)}
 .cn-hint-area{text-align:center;margin-bottom:1.2rem;padding:1rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border-color)}
-.cn-hint-area p{color:var(--accent-gold);font-weight:700;margin-bottom:.6rem}
+.cn-hint-area p{color:var(--accent-gold-ink);font-weight:700;margin-bottom:.6rem}
 .cn-hint-row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
 .cn-hint-row input{padding:.5rem .8rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;text-align:center}
 .cn-hint-row input#cnHintWord{width:180px}
 .cn-hint-row input#cnHintNum{width:70px}
-.cn-hint-display{font-size:1.4rem;font-weight:800;color:var(--accent-gold);margin-top:.5rem;min-height:1.8rem}
+.cn-hint-display{font-size:1.4rem;font-weight:800;color:var(--accent-gold-ink);margin-top:.5rem;min-height:1.8rem}
 .cn-board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 auto 1.2rem;max-width:880px}
 .cn-card{background:var(--bg-card);border:2px solid var(--border-color);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:var(--transition);font-size:1rem;font-weight:700;min-height:68px;display:flex;align-items:center;justify-content:center;user-select:none}
 .cn-card:hover:not(.revealed){transform:translateY(-3px);border-color:var(--accent-blue)}
@@ -75,7 +75,7 @@
 <div class="cn-hint-row">
 <input id="cnHintWord" placeholder="كلمة التلميح" maxlength="30">
 <input id="cnHintNum" type="number" min="1" max="9" value="1" style="width:70px">
-<button class="cn-btn" style="border-color:var(--accent-gold);color:var(--accent-gold)" onclick="submitHint()">إرسال التلميح</button>
+<button class="cn-btn" style="border-color:var(--accent-gold);color:var(--accent-gold-ink)" onclick="submitHint()">إرسال التلميح</button>
 </div>
 <div class="cn-hint-display" id="cnHintDisplay"></div>
 </div>
@@ -89,7 +89,7 @@
 <h2 id="cnWinnerText"></h2>
 <p id="cnWinnerReason"></p>
 <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-<button class="cn-btn" style="border-color:var(--accent-green);color:var(--accent-green)" onclick="newGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة الجولة</button>
+<button class="cn-btn" style="border-color:var(--accent-green);color:var(--accent-green-ink)" onclick="newGame()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> إعادة الجولة</button>
 <button class="cn-btn" onclick="location.href='/games'">العودة للألعاب</button>
 </div>
 </div>

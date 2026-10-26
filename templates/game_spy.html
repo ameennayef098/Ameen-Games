@@ -11,17 +11,17 @@
 .spy-name-input{width:100%;padding:.6rem .8rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;margin:.4rem 0}
 .spy-btn{padding:.6rem 1.5rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);margin:.3rem}
 .spy-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
-.spy-btn-primary{border-color:var(--accent-green);color:var(--accent-green)}
-.spy-btn-gold{border-color:var(--accent-gold);color:var(--accent-gold)}
-.spy-btn-danger{border-color:var(--accent-red);color:var(--accent-red)}
+.spy-btn-primary{border-color:var(--accent-green);color:var(--accent-green-ink)}
+.spy-btn-gold{border-color:var(--accent-gold);color:var(--accent-gold-ink)}
+.spy-btn-danger{border-color:var(--accent-red);color:var(--accent-red-ink)}
 .spy-role-card{text-align:center;padding:2rem;border-radius:var(--radius);margin:1rem auto;max-width:400px}
 .spy-role-card.spy{background:rgba(225,29,72,.15);border:2px solid #e11d48}
 .spy-role-card.normal{background:rgba(16,185,129,.15);border:2px solid #10b981}
 .spy-word-display{font-size:2.5rem;font-weight:900;padding:1.5rem;background:var(--bg-card);border-radius:14px;margin:1rem auto;max-width:400px;border:2px solid var(--accent);text-align:center}
-.spy-handover-card{background:#000;border:none;border-radius:var(--radius);max-width:400px;margin:1rem auto;padding:3rem 1.5rem;text-align:center;color:#fff;box-shadow:none}
-.spy-handover-card .spy-handover-text{font-size:1.5rem;font-weight:900;color:#fff;line-height:1.6}
-.spy-handover-card .spy-handover-btn{display:block;width:100%;padding:.9rem;margin-top:1.5rem;border-radius:8px;border:1px solid #fff;background:transparent;color:#fff;font-size:1.15rem;font-weight:800;cursor:pointer;transition:var(--transition)}
-.spy-handover-card .spy-handover-btn:hover{background:#fff;color:#000}
+.spy-handover-card{background:var(--bg-card);border:none;border-radius:var(--radius);max-width:400px;margin:1rem auto;padding:3rem 1.5rem;text-align:center;color:var(--text-primary);box-shadow:var(--shadow)}
+.spy-handover-card .spy-handover-text{font-size:1.5rem;font-weight:900;color:var(--text-primary);line-height:1.6}
+.spy-handover-card .spy-handover-btn{display:block;width:100%;padding:.9rem;margin-top:1.5rem;border-radius:8px;border:1px solid var(--border-strong);background:transparent;color:var(--text-primary);font-size:1.15rem;font-weight:800;cursor:pointer;transition:var(--transition)}
+.spy-handover-card .spy-handover-btn:hover{background:var(--bg-inset);color:var(--text-primary)}
 .spy-hint-box{padding:1rem;border-radius:8px;background:rgba(245,158,11,.1);border:1px solid var(--accent-gold);margin:1rem 0;text-align:center}
 .spy-desc-item{padding:.6rem .8rem;border-radius:8px;background:var(--bg-secondary);margin:.4rem 0}
 .spy-desc-item .name{font-weight:700;margin-left:.5rem}
@@ -181,7 +181,7 @@ var isSpy=spyDescIdx===spyIdx;
 var area=document.getElementById('spyDescArea');
 var html='<p style="text-align:center;margin-bottom:1rem">مرر الجهاز إلى: <b>'+spyPlayers[spyDescIdx]+'</b></p>';
 if(isSpy){
-html+='<div class="spy-hint-box"><p style="color:var(--accent-gold);font-weight:700">💡 تلميح الجاسوس</p><p>'+spyHintWord+'</p></div>';
+html+='<div class="spy-hint-box"><p style="color:var(--accent-gold-ink);font-weight:700">💡 تلميح الجاسوس</p><p>'+spyHintWord+'</p></div>';
 }
 html+='<input type="text" class="spy-input" id="spyDescInput" placeholder="اكتب وصفاً قصيراً (كلمة واحدة أو عبارة قصيرة)" maxlength="50">';
 html+='<div style="text-align:center;margin-top:.8rem"><button class="spy-btn spy-btn-gold" onclick="submitDescription()">التالي ←</button></div>';
@@ -322,9 +322,9 @@ var area=document.getElementById('spyFinalResults');
 var html='<p style="text-align:center;font-size:1.5rem;font-weight:800;color:'+spyLastResult.color+'">'+spyLastResult.text+'</p>';
 html+='<p style="text-align:center;color:var(--text-secondary);margin:.5rem 0">'+spyLastResult.detail+'</p>';
 if(spyGuessed){
-html+='<p style="text-align:center;color:var(--accent-green);font-weight:700">🎯 الجاسوس خمّن الكلمة وحصل على +50 نقطة!</p>';
+html+='<p style="text-align:center;color:var(--accent-green-ink);font-weight:700">🎯 الجاسوس خمّن الكلمة وحصل على +50 نقطة!</p>';
 }else{
-html+='<p style="text-align:center;color:var(--accent-red)">❌ الجاسوس فشل في تخمين الكلمة</p>';
+html+='<p style="text-align:center;color:var(--accent-red-ink)">❌ الجاسوس فشل في تخمين الكلمة</p>';
 }
 html+='<table class="spy-score-table"><thead><tr><th>اللاعب</th><th>النقاط</th></tr></thead><tbody>';
 Object.entries(spyScores).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){
