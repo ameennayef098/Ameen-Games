@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0a0c1a">
-    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#fffdf4">
+    <meta name="color-scheme" content="light">
     <meta name="description" content="ألعاب أمين — منصة ألعاب جماعية وأسئلة ومزايدات عربية: حروف مع أمين، س.ج، مزاد اللاعبين، ومن سيربح المليون.">
     <script>
     /* يُطبَّق قبل أول رسم حتى لا يومض الموقع بوضع مختلف عن المحفوظ */
     (function () {
         try {
             var stored = localStorage.getItem('ameen_theme');
-            var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            var theme = stored || 'light';
             document.documentElement.setAttribute('data-theme', theme);
             var cs = document.querySelector('meta[name="color-scheme"]');
             if (cs) cs.setAttribute('content', theme);
@@ -19,9 +19,10 @@
     })();
     </script>
     <title>{{ title or 'الرئيسية' }} | ألعاب أمين</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234f8cff'/%3E%3Cpath d='M7 7.5h10a4.5 4.5 0 0 1 4.5 4.5v.6a2.9 2.9 0 0 1-5.1 2L15 12.2H9l-1.5 2.4a2.9 2.9 0 0 1-5.1-2V12A4.5 4.5 0 0 1 7 7.5Z' fill='%230a0c1a'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Clink%20rel=%22icon%22%20href=%22data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%3E%3Crect%20width=%2724%27%20height=%2724%27%20rx=%276%27%20fill=%27%234f8cff%27/%3E%3Cpath%20d=%27M7%207.5h10a4.5%204.5%200%200%201%204.5%204.5v.6a2.9%202.9%200%200%201-5.1%202L15%2012.2H9l-1.5%202.4a2.9%202.9%200%200%201-5.1-2V12A4.5%204.5%200%200%201%207%207.5Z%27%20fill=%27%230a0c1a%27/%3E%3C/svg%3E%22%3E">
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/ui-kit.css">
+    <link rel="stylesheet" href="/static/css/theme-ameen.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Changa:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,6 +46,33 @@
                 <path d="M7.6 9.8v3.2M6 11.4h3.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
                 <circle cx="15.6" cy="10.2" r="1" fill="currentColor"/>
                 <circle cx="17.9" cy="12.2" r="1" fill="currentColor"/>
+            </symbol>
+            <symbol id="i-logo" viewBox="0 0 64 64">
+                <defs>
+                    <linearGradient id="lgGold" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#FFE066"/><stop offset="1" stop-color="#F59E0B"/>
+                    </linearGradient>
+                    <linearGradient id="lgPur" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#9F6BFF"/><stop offset="1" stop-color="#5B21B6"/>
+                    </linearGradient>
+                </defs>
+                <path d="M9 16.5l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5L4 21.5l3.5-1.5z"
+                      fill="#FDE047" stroke="#1e1b4b" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M55 21l1.2 2.8 2.8 1.2-2.8 1.2-1.2 2.8-1.2-2.8-2.8-1.2 2.8-1.2z"
+                      fill="#FDE047" stroke="#1e1b4b" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M17 21 21 9 29 17 32 6 35 17 43 9 47 21Z"
+                      fill="url(#lgGold)" stroke="#1e1b4b" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="21" cy="8" r="2.4" fill="#FFE066" stroke="#1e1b4b" stroke-width="1.4"/>
+                <circle cx="32" cy="5" r="2.8" fill="#FFE066" stroke="#1e1b4b" stroke-width="1.4"/>
+                <circle cx="43" cy="8" r="2.4" fill="#FFE066" stroke="#1e1b4b" stroke-width="1.4"/>
+                <rect x="17" y="21" width="30" height="6.5" rx="3.2" fill="url(#lgGold)" stroke="#1e1b4b" stroke-width="2"/>
+                <path d="M13 34C13 29 17 27 23 27h18c6 0 10 2 10 7 0 5-2 8-5 10-3 2-6 1-8-1l-2-2H28l-2 2c-2 2-5 3-8 1-3-2-5-5-5-10z"
+                      fill="url(#lgPur)" stroke="#1e1b4b" stroke-width="2.2" stroke-linejoin="round"/>
+                <path d="M22.6 31.5h2v1.5h1.5v2h-1.5v1.5h-2v-1.5h-1.5v-2h1.5z" fill="#fff" stroke="#1e1b4b" stroke-width="1.3" stroke-linejoin="round"/>
+                <circle cx="41" cy="31.1" r="1.9" fill="#FDE047" stroke="#1e1b4b" stroke-width="1.2"/>
+                <circle cx="37.6" cy="34.5" r="1.9" fill="#34D399" stroke="#1e1b4b" stroke-width="1.2"/>
+                <circle cx="44.4" cy="34.5" r="1.9" fill="#60A5FA" stroke="#1e1b4b" stroke-width="1.2"/>
+                <circle cx="41" cy="37.9" r="1.9" fill="#F87171" stroke="#1e1b4b" stroke-width="1.2"/>
             </symbol>
             <symbol id="i-trophy" viewBox="0 0 24 24">
                 <path d="M8 4h8v4.6a4 4 0 0 1-8 0V4Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
@@ -236,8 +264,8 @@
 
     <nav class="navbar" aria-label="التنقل الرئيسي">
         <div class="nav-brand">
-            <span class="logo-icon" aria-hidden="true"><svg class="ico"><use href="#i-gamepad"></use></svg></span>
-            <span class="logo-text">ألعاب أمين</span>
+            <span class="logo-mark" aria-hidden="true"><svg class="ico"><use href="#i-logo"></svg></span>
+            <span class="logo-text"><b>ألعاب</b> أمين</span>
         </div>
         <div class="nav-links">
             <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
@@ -289,7 +317,7 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <span class="logo-icon" aria-hidden="true"><svg class="ico"><use href="#i-gamepad"></use></svg></span>
+                <span class="logo-mark" aria-hidden="true"><svg class="ico"><use href="#i-logo"></svg></span>
                 <div>
                     <span>ألعاب أمين</span>
                     <p class="footer-tagline">ألعاب جماعية وأسئلة ومزايدات — كل ما تحتاجه ليلة لعب في مكان واحد.</p>

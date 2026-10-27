@@ -104,6 +104,7 @@
         <div class="tab" data-tab="players" onclick="switchTab('players')">اللاعبون</div>
         <div class="tab" data-tab="ai" onclick="switchTab('ai')">الذكاء الاصطناعي</div>
         <div class="tab" data-tab="rev" onclick="switchTab('rev')">المراجعة <span id="revBadge" class="badge badge-gold">0</span></div>
+        <div class="tab" data-tab="reports" onclick="switchTab('reports')">🚩 التبليغات <span id="reportsBadge" class="badge badge-red">0</span></div>
         <div class="tab" data-tab="aiq" onclick="switchTab('aiq')"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> أسئلة الذكاء <span id="aiqBadge" class="badge badge-blue">0</span></div>
         <div class="tab" data-tab="import" onclick="switchTab('import')"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg> استيراد دفعة</div>
         <div class="tab" data-tab="content" onclick="switchTab('content')"><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg> إدارة المحتوى</div>
@@ -445,6 +446,24 @@
         <div id="pendingList"></div>
     </div>
 
+    <!-- ===== REPORTS ===== -->
+    <div id="tab-reports" style="display:none;">
+        <div class="gen-card">
+            <h3><svg class="ico" aria-hidden="true"><use href="#i-shield"></use></svg> تبليغات الأسئلة</h3>
+            <div class="hint">التبليغات من اللاعبين — راجعها، صحّح السؤال، أو احذف التبليغ.</div>
+            <div class="filters">
+                <select id="reportStatusFilter" onchange="loadReports()">
+                    <option value="">كل الحالات</option>
+                    <option value="open">مفتوح</option>
+                    <option value="resolved">تم الحل</option>
+                    <option value="dismissed">مرفوض</option>
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="loadReports()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> تحديث</button>
+            </div>
+            <div id="reportsList"></div>
+        </div>
+    </div>
+
     <!-- ===== AI-GENERATED QUESTIONS ===== -->
     <div id="tab-aiq" style="display:none;">
         <div class="gen-card">
@@ -736,7 +755,7 @@ function confirmBox(title, body, fn) {
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 function switchTab(t) {
-    ['q','cat','players','ai','rev','aiq','content','settings','import'].forEach(function (x) {
+    ['q','cat','players','ai','rev','reports','aiq','content','settings','import'].forEach(function (x) {
         var el = document.getElementById('tab-' + x);
         if (el) el.style.display = (x === t) ? 'block' : 'none';
     });
@@ -744,11 +763,95 @@ function switchTab(t) {
     if (t === 'cat') loadCats();
     if (t === 'players') loadPlayers();
     if (t === 'rev') loadPending();
+    if (t === 'reports') loadReports();
     if (t === 'aiq') loadAiQuestions();
     if (t === 'content') loadContent();
     if (t === 'ai') { testAI(); loadModels(); loadMilCount(); }
     if (t === 'settings') loadSettings();
     if (t === 'import') impInit();
+}
+
+function loadReports() {
+    var status = document.getElementById('reportStatusFilter').value;
+    var url = '/api/reports';
+    if (status) url += '?status=' + encodeURIComponent(status);
+    fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+        var reports = d.reports || [];
+        var el = document.getElementById('reportsList');
+        if (reports.length === 0) {
+            el.innerHTML = '<div class="hint">لا توجد تبليغات حالياً</div>';
+            return;
+        }
+        // newest first
+        reports.sort(function (a, b) { return (b.created_at || '').localeCompare(a.created_at || ''); });
+        el.innerHTML = '<table class="questions-table"><thead><tr>' +
+            '<th>#</th><th>السؤال</th><th>اللعبة</th><th>السبب</th><th>المبلّغ</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th>' +
+            '</tr></thead><tbody>' +
+            reports.map(function (r, i) {
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td>' + esc(r.question_id) + '</td>' +
+                    '<td>' + esc(r.game) + '</td>' +
+                    '<td>' + esc(r.reason) + '</td>' +
+                    '<td>' + esc(r.reported_by) + '</td>' +
+                    '<td>' + esc(r.status) + '</td>' +
+                    '<td>' + esc(r.created_at) + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-primary btn-sm" onclick="viewReportQuestion(\'' + r.id + '\')">عرض</button> ' +
+                        '<button class="btn btn-success btn-sm" onclick="editReportQuestion(\'' + r.id + '\')">تعديل</button> ' +
+                        '<button class="btn btn-danger btn-sm" onclick="deleteReport(\'' + r.id + '\')">حذف</button>' +
+                    '</td>' +
+                    '</tr>';
+            }).join('') +
+            '</tbody></table>';
+    });
+}
+
+function viewReportQuestion(rid) {
+    fetch('/api/reports/' + rid).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.error) { showToast(d.error, 'error'); return; }
+        fetch('/api/questions/' + d.question_id).then(function (r) { return r.json(); }).then(function (q) {
+            var qd = q.question || {};
+            var text = 'السؤال: ' + (qd.question || '') + '\nالإجابة: ' + (qd.answer || '') + '\nاللعبة: ' + (d.game || '') + '\nالسبب: ' + (d.reason || '');
+            alert(text);
+        });
+    });
+}
+
+function editReportQuestion(rid) {
+    fetch('/api/reports/' + rid).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.error) { showToast(d.error, 'error'); return; }
+        fetch('/api/questions/' + d.question_id).then(function (r) { return r.json(); }).then(function (q) {
+            var question = q.question || q;
+            if (question && question.id) {
+                openQForm(question);
+            } else {
+                showToast('تعذر تحميل السؤال للتعديل', 'error');
+            }
+        });
+    });
+}
+
+function deleteReport(rid) {
+    confirmBox('حذف التبليغ', 'هل أنت متأكد من حذف هذا التبليغ؟', function () {
+        authFetch('/api/reports/' + rid, { method: 'DELETE' }).then(function (r) { return r.json(); }).then(function (d) {
+            if (d.ok) {
+                showToast('✅ تم حذف التبليغ');
+                loadReports();
+                updateReportsBadge();
+            } else {
+                showToast(d.error || 'فشل الحذف', 'error');
+            }
+        });
+    });
+}
+
+function updateReportsBadge() {
+    fetch('/api/reports?status=open').then(function (r) { return r.json(); }).then(function (d) {
+        var reports = d.reports || [];
+        var badge = document.getElementById('reportsBadge');
+        if (badge) badge.textContent = reports.length;
+    });
 }
 
 function card(n, l, c) {
@@ -763,6 +866,7 @@ function loadStats() {
             card(s.letters, 'حروف', 'var(--accent-blue)') + card(s.quiz, 'س.ج', 'var(--accent-blue)') +
             card(s.players, 'اللاعبون', 'var(--accent-green)') + card(s.pending_queue, 'في المراجعة', 'var(--accent-gold)');
         document.getElementById('revBadge').textContent = s.pending_queue;
+        updateReportsBadge();
     });
 }
 

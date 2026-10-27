@@ -219,7 +219,7 @@
     backdrop-filter: blur(18px) saturate(170%);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.bracket { display: flex; gap: var(--space-6); align-items: stretch; min-width: max-content; }
+.bracket { display: flex; flex-direction: row-reverse; gap: var(--space-6); align-items: stretch; min-width: max-content; }
 .bcol { display: flex; flex-direction: column; gap: var(--space-3); min-width: 15.5rem; }
 .bcol + .bcol { border-inline-start: 1px solid var(--border-color); padding-inline-start: var(--space-5); }
 .bcol-title {
@@ -487,6 +487,183 @@
     .step-actions .btn { flex: 1 1 100%; }
     .mt-frame { height: 70vh; }
 }
+
+/* ── تخطيط الصفحة ── */
+.tn-layout { display: flex; gap: var(--space-6); align-items: flex-start; }
+.tn-main { flex: 1; min-width: 0; }
+
+/* ── الشريط الجانبي ── */
+.tn-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    display: none;
+    position: sticky;
+    top: calc(var(--navbar-h, 68px) + var(--space-4));
+    align-self: flex-start;
+}
+.tn:has(#step-bracket.active) .tn-sidebar,
+.tn:has(#step-champion.active) .tn-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* خلفية منقطة */
+.tn {
+    background-color: var(--bg-primary);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* لوحة الشريط الجانبي */
+.sb-panel {
+    border-radius: var(--radius-xl);
+    background: var(--bg-glass);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-lg), var(--shadow-inset);
+    padding: var(--space-5);
+}
+.sb-title {
+    font-size: var(--font-size-xs);
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-3);
+}
+
+/* أزرار الألعاب المصغرة */
+.sb-games { display: flex; flex-direction: column; gap: var(--space-2); }
+.sb-game {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: transform 100ms ease-out, border-color 160ms ease-out, background 160ms ease-out;
+}
+.sb-game:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+.sb-game:active { transform: scale(0.97); }
+.sb-game.active { border-color: var(--accent-blue); background: var(--accent-blue-tint); }
+.sb-game .sb-game-ico {
+    width: 2rem; height: 2rem;
+    display: grid; place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--accent-blue-tint);
+    color: var(--accent-blue);
+}
+.sb-game .sb-game-ico .ico { width: 1.2rem; height: 1.2rem; }
+.sb-game .sb-game-name { font-weight: 700; font-size: var(--font-size-sm); }
+.sb-game .sb-game-check {
+    margin-inline-start: auto;
+    width: 1.2rem; height: 1.2rem;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: var(--text-on-brand);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 200ms ease-out, transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sb-game.active .sb-game-check { opacity: 1; transform: none; }
+.sb-game .sb-game-check .ico { width: 0.8rem; height: 0.8rem; }
+
+/* قائمة حجم البطولة */
+.sb-size-select {
+    width: 100%;
+    padding: var(--space-3);
+    background: var(--bg-inset);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* زر إنشاء بطولة */
+.sb-create {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--gradient-brand);
+    color: var(--text-on-brand);
+    font: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 100ms ease-out, filter 160ms ease-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+}
+.sb-create:active { transform: scale(0.97); }
+.sb-create:hover { filter: brightness(1.08); }
+.sb-create .ico { width: 1.1rem; height: 1.1rem; }
+
+/* فاصل */
+.sb-divider {
+    height: 1px;
+    background: var(--border-color);
+    border: 0;
+    margin: 0;
+}
+
+/* ── أفاتار الفرق في البطولة ── */
+.bm-row {
+    position: relative;
+    padding-right: 2.2rem;
+}
+.bm-row::before {
+    content: attr(data-avatar);
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--team-color, var(--accent-purple));
+    color: var(--text-on-brand);
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    font-family: var(--num-font);
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* ── استجابة ── */
+@media (max-width: 960px) {
+    .tn-layout { flex-direction: column; }
+    .tn-sidebar {
+        width: 100%;
+        position: static;
+    }
+    .bracket { flex-direction: row-reverse; }
+}
+
+/* ── تقليل الحركة ── */
+@media (prefers-reduced-motion: reduce) {
+    .bracket { flex-direction: row; }
+    .tn-sidebar { display: none; }
+    .tn:has(#step-bracket.active) .tn-sidebar,
+    .tn:has(#step-champion.active) .tn-sidebar { display: flex; }
+}
+
 </style>
 
 <section class="tn">
@@ -504,6 +681,8 @@
         <div class="tn-steps" id="tnSteps" role="list" aria-label="خطوات البطولة"></div>
     </header>
 
+    <div class="tn-layout">
+        <div class="tn-main">
     <div class="tn-step" id="step-game" role="group" aria-label="اختر اللعبة">
         <div class="step-head">
             <h2>أي لعبة بدك تعمل فيها البطولة؟</h2>
@@ -597,6 +776,26 @@
             <a class="btn btn-secondary" href="/"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
         </div>
     </div>
+        </div>
+        <aside class="tn-sidebar" id="tnSidebar">
+            <div class="sb-panel">
+                <div class="sb-title">إعدادات البطولة</div>
+                <div class="sb-games" id="sbGames"></div>
+            </div>
+            <div class="sb-panel">
+                <div class="sb-title">عدد الفرق</div>
+                <select class="sb-size-select" id="sbSize" aria-label="عدد الفرق">
+                    <option value="4">4 فرق</option>
+                    <option value="8" selected>8 فرق</option>
+                    <option value="16">16 فريق</option>
+                </select>
+            </div>
+            <button class="sb-create" id="sbCreate" type="button">
+                <svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg>
+                بطولة جديدة
+            </button>
+        </aside>
+    </div>
 </section>
 
 <div class="sh-scrim" id="shScrim" hidden></div>
@@ -605,9 +804,138 @@
     <div class="sh-body" id="shBody"></div>
     <div class="sh-foot" id="shFoot"></div>
 </div>
-{% endblock %}
 
+{% endblock %}
 {% block scripts %}
+<script>
+/* ─────────────────────────────────────────────────────────────────
+   تحسينات بصرية للشريط الجانبي والأفاتارات — لا تُغيّر منطق البطولة
+   ───────────────────────────────────────────────────────────────── */
+(function () {
+'use strict';
+
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+/* ── الشريط الجانبي ── */
+function renderSidebar() {
+    var games = CFG.games;
+    if (!games || !Object.keys(games).length) return;
+    var container = $('sbGames');
+    if (!container) return;
+
+    container.innerHTML = Object.keys(games).map(function (key) {
+        var gm = games[key];
+        var on = T.game === key;
+        return '<button class="sb-game' + (on ? ' active' : '') + '" type="button" data-game="' + key + '">' +
+            '<span class="sb-game-ico"><svg class="ico" aria-hidden="true"><use href="#' + gm.icon + '"></use></svg></span>' +
+            '<span class="sb-game-name">' + esc(gm.name) + '</span>' +
+            '<span class="sb-game-check"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg></span>' +
+            '</button>';
+    }).join('');
+
+    container.querySelectorAll('.sb-game').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            T.game = btn.dataset.game;
+            container.querySelectorAll('.sb-game').forEach(function (b) {
+                b.classList.toggle('active', b === btn);
+            });
+            if (T.step === 'step-bracket' && T.rounds.length && T.teams.length === T.size) {
+                T.rounds = buildBracket(shuffle(T.teams));
+                T.champion = null;
+                saveState();
+                renderBracket();
+            }
+        });
+    });
+}
+
+function initSidebarControls() {
+    var sbSize = $('sbSize');
+    if (sbSize) {
+        sbSize.value = String(T.size || 8);
+        sbSize.addEventListener('change', function () {
+            setSize(Number(sbSize.value));
+            if (T.step === 'step-bracket' && T.rounds.length && T.teams.length === T.size) {
+                T.rounds = buildBracket(shuffle(T.teams));
+                T.champion = null;
+                saveState();
+                renderBracket();
+            }
+        });
+    }
+
+    var sbCreate = $('sbCreate');
+    if (sbCreate) {
+        sbCreate.addEventListener('click', function () {
+            clearState();
+            T.game = null; T.teams = []; T.rounds = []; T.champion = null; T.saved = false; T.live = null;
+            renderGameGrid();
+            setSize(8);
+            renderTeamGrid();
+            goStep('step-game');
+            renderSidebar();
+        });
+    }
+}
+
+/* ── أفاتار الفرق ── */
+function enhanceBracketAvatars() {
+    var bracket = $('bracket');
+    if (!bracket) return;
+    var rows = bracket.querySelectorAll('.bm-row');
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (row.dataset.avatarSet) continue;
+        var nameEl = row.querySelector('.nm');
+        if (!nameEl) continue;
+        var name = nameEl.textContent.trim();
+        var initial = name ? name.charAt(0) : '?';
+        row.dataset.avatar = initial;
+        var team = null;
+        for (var j = 0; j < T.teams.length; j++) {
+            if (T.teams[j].name === name) { team = T.teams[j]; break; }
+        }
+        if (team) {
+            row.style.setProperty('--team-color', team.color);
+        }
+        row.dataset.avatarSet = '1';
+    }
+}
+
+/* مراقبة التغييرات */
+var sidebarRendered = false;
+var gameGridObs = new MutationObserver(function () {
+    if (!sidebarRendered && CFG.games && Object.keys(CFG.games).length) {
+        sidebarRendered = true;
+        renderSidebar();
+    }
+});
+var bracketObs = new MutationObserver(function () {
+    enhanceBracketAvatars();
+});
+
+function initSidebarEnhancements() {
+    var gameGrid = $('gameGrid');
+    if (gameGrid) gameGridObs.observe(gameGrid, { childList: true, subtree: true });
+    var bracket = $('bracket');
+    if (bracket) bracketObs.observe(bracket, { childList: true, subtree: true });
+    initSidebarControls();
+    renderSidebar();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarEnhancements);
+} else {
+    initSidebarEnhancements();
+}
+})();
+</script>
+
 <script>
 (function () {
 'use strict';
@@ -1417,4 +1745,133 @@ if (document.readyState === 'loading') {
 }
 })();
 </script>
+<script>
+/* ─────────────────────────────────────────────────────────────────
+   تحسينات بصرية للشريط الجانبي والأفاتارات — لا تُغيّر منطق البطولة
+   ───────────────────────────────────────────────────────────────── */
+(function () {
+'use strict';
+
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+/* ── الشريط الجانبي ── */
+function renderSidebar() {
+    var games = CFG.games;
+    if (!games || !Object.keys(games).length) return;
+    var container = $('sbGames');
+    if (!container) return;
+
+    container.innerHTML = Object.keys(games).map(function (key) {
+        var gm = games[key];
+        var on = T.game === key;
+        return '<button class="sb-game' + (on ? ' active' : '') + '" type="button" data-game="' + key + '">' +
+            '<span class="sb-game-ico"><svg class="ico" aria-hidden="true"><use href="#' + gm.icon + '"></use></svg></span>' +
+            '<span class="sb-game-name">' + esc(gm.name) + '</span>' +
+            '<span class="sb-game-check"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg></span>' +
+            '</button>';
+    }).join('');
+
+    container.querySelectorAll('.sb-game').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            T.game = btn.dataset.game;
+            container.querySelectorAll('.sb-game').forEach(function (b) {
+                b.classList.toggle('active', b === btn);
+            });
+            if (T.step === 'step-bracket' && T.rounds.length && T.teams.length === T.size) {
+                T.rounds = buildBracket(shuffle(T.teams));
+                T.champion = null;
+                saveState();
+                renderBracket();
+            }
+        });
+    });
+}
+
+function initSidebarControls() {
+    var sbSize = $('sbSize');
+    if (sbSize) {
+        sbSize.value = String(T.size || 8);
+        sbSize.addEventListener('change', function () {
+            setSize(Number(sbSize.value));
+            if (T.step === 'step-bracket' && T.rounds.length && T.teams.length === T.size) {
+                T.rounds = buildBracket(shuffle(T.teams));
+                T.champion = null;
+                saveState();
+                renderBracket();
+            }
+        });
+    }
+
+    var sbCreate = $('sbCreate');
+    if (sbCreate) {
+        sbCreate.addEventListener('click', function () {
+            clearState();
+            T.game = null; T.teams = []; T.rounds = []; T.champion = null; T.saved = false; T.live = null;
+            renderGameGrid();
+            setSize(8);
+            renderTeamGrid();
+            goStep('step-game');
+            renderSidebar();
+        });
+    }
+}
+
+/* ── أفاتار الفرق ── */
+function enhanceBracketAvatars() {
+    var bracket = $('bracket');
+    if (!bracket) return;
+    var rows = bracket.querySelectorAll('.bm-row');
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (row.dataset.avatarSet) continue;
+        var nameEl = row.querySelector('.nm');
+        if (!nameEl) continue;
+        var name = nameEl.textContent.trim();
+        var initial = name ? name.charAt(0) : '?';
+        row.dataset.avatar = initial;
+        var team = null;
+        for (var j = 0; j < T.teams.length; j++) {
+            if (T.teams[j].name === name) { team = T.teams[j]; break; }
+        }
+        if (team) {
+            row.style.setProperty('--team-color', team.color);
+        }
+        row.dataset.avatarSet = '1';
+    }
+}
+
+/* مراقبة التغييرات */
+var sidebarRendered = false;
+var gameGridObs = new MutationObserver(function () {
+    if (!sidebarRendered && CFG.games && Object.keys(CFG.games).length) {
+        sidebarRendered = true;
+        renderSidebar();
+    }
+});
+var bracketObs = new MutationObserver(function () {
+    enhanceBracketAvatars();
+});
+
+function initSidebarEnhancements() {
+    var gameGrid = $('gameGrid');
+    if (gameGrid) gameGridObs.observe(gameGrid, { childList: true, subtree: true });
+    var bracket = $('bracket');
+    if (bracket) bracketObs.observe(bracket, { childList: true, subtree: true });
+    initSidebarControls();
+    renderSidebar();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarEnhancements);
+} else {
+    initSidebarEnhancements();
+}
+})();
+</script>
 {% endblock %}
+

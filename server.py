@@ -8,6 +8,7 @@ from flask import (Flask, render_template, request, jsonify, send_from_directory
                    send_file, redirect, make_response)
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(BASE_DIR, 'data')
 SETTINGS_FILE = os.path.join(DATA, 'settings.json')
@@ -37,6 +38,8 @@ CAT_FILE = os.path.join(DATA, 'categories', 'categories.json')
 PL_FILE = os.path.join(DATA, 'players', 'players.json')
 UPLOAD_DIR = os.path.join(DATA, 'uploads')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+REPORTS_DIR = os.path.join(DATA, 'reports')
+os.makedirs(REPORTS_DIR, exist_ok=True)
 
 ALLOWED_IMG = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'}
 MAX_IMG_BYTES = 4 * 1024 * 1024
@@ -536,6 +539,58 @@ def import_questions():
                     'update_count': len(upd),
                     'invalid': invalid[:50], 'duplicates': dups[:50]})
 
+
+REPORTS_FILE = os.path.join(DATA, 'reports', 'question_reports.json')
+
+@app.route('/api/questions/report', methods=['POST'])
+def report_question():
+    body = request.get_json(silent=True) or {}
+    qid = body.get('question_id', '')
+    game = body.get('game', '')
+    reason = body.get('reason', '')
+    reported_by = body.get('reported_by', 'لاعب')
+    if not qid or not game:
+        return jsonify({'error': 'question_id و game مطلوبان'}), 400
+    report = {
+        'id': gen_id(),
+        'question_id': qid,
+        'game': game,
+        'reason': reason or 'السؤال Seems wrong',
+        'reported_by': reported_by,
+        'status': 'open',
+        'created_at': now()
+    }
+    reports = load_json(REPORTS_FILE, [])
+    reports.append(report)
+    save_json(REPORTS_FILE, reports)
+    return jsonify({'ok': True, 'report': report})
+
+@app.route('/api/reports', methods=['GET'])
+def list_reports():
+    reports = load_json(REPORTS_FILE, [])
+    status = request.args.get('status', '')
+    if status:
+        reports = [r for r in reports if r.get('status') == status]
+    return jsonify({'reports': reports})
+
+@app.route('/api/reports/<rid>', methods=['PUT'])
+def update_report(rid):
+    data = request.get_json(silent=True) or {}
+    reports = load_json(REPORTS_FILE, [])
+    for r in reports:
+        if r.get('id') == rid:
+            r.update(data)
+            r['updated_at'] = now()
+            save_json(REPORTS_FILE, reports)
+            return jsonify(r)
+    return jsonify({'error': 'not found'}), 404
+
+@app.route('/api/reports/<rid>', methods=['DELETE'])
+def delete_report(rid):
+    reports = load_json(REPORTS_FILE, [])
+    reports = [r for r in reports if r.get('id') != rid]
+    save_json(REPORTS_FILE, reports)
+    return jsonify({'ok': True})
 
 @app.route('/api/questions/duplicates', methods=['GET'])
 def find_duplicates():
@@ -1584,19 +1639,30 @@ GAME_SCHEMAS = {
         'fields': ['player', 'hints', 'difficulty', 'status', 'source'],
         'prompt': (
             'أنشئ {n} مجموعة تلميحات للعبة «مين اللاعب؟» عن لاعبي كرة القدم.\n'
-            'الصيغة: [{{"player":"اسم اللاعب الكامل","hints":["تلميح عام","تلميح متوسط","تلميح متوسط",'
-            '"تلميح محدد","تلميح كاشف"],"difficulty":"easy|medium|hard"}}]\n'
+            'الصيغة: [{\"player\":\"اسم اللاعب الكامل\",\"hints\":[\"تلميح عام\",\"تلميح متوسط\",\"تلميح متوسط\",\"تلميح كاشف\",\"تلميح كاشف\"],\"difficulty\":\"easy|medium|hard\"}]\n'
             'شروط: التلميحات متدرجة من العام إلى الخاص (المركز، الجنسية، النادي، الدوري، الإنجازات)، '
             'ومعلومات صحيحة موثوقة فقط. لا تخترع انتقالات أو ألقاباً. كل النصوص عربية.'
         ),
     },
+    'seen_jeem': {
+        'name': 'سين جيم',
+        'required': ['question', 'answer', 'category', 'points'],
+        'fields': ['question', 'answer', 'category', 'points', 'difficulty', 'status', 'source'],
+        'prompt': (
+            'أنشئ {n} سؤالاً للعبة "سين جيم" (Seen Jeem) - لعبة اختيار الإجابة مع فئات ونقاط.\n'
+            'الصيغة: [{"question":"السؤال بالعربية","answer":"الإجابة الصحيحة","category":"الفئة","points":"200|400|600","difficulty":"easy|medium|hard"}]\n'
+            'شروط: الأسئلة عربية واضحة ومختصرة، الإجابات دقيقة، الفئات متنوعة (علوم، تاريخ، جغرافيا، رياضة، تكنولوجيا، أدب)، '
+            'لا توجد حروف لاتينية، لا تكرر الأسئلة.'
+        ),
+    },
     'minebali': {
         'name': 'مين في بالي؟',
-        'required': ['name'],
-        'fields': ['name', 'aliases', 'category', 'subcategory', 'work', 'gender', 'real', 'main', 'powers', 'field', 'role', 'country', 'era', 'difficulty', 'status', 'source'],
+        'required': ['name', 'gender', 'category', 'field', 'difficulty'],
+        'fields': ['name', 'aliases', 'category', 'subcategory', 'work', 'gender',
+                   'real', 'main', 'powers', 'field', 'role', 'country', 'era',
+                   'difficulty', 'status', 'source'],
         'prompt': (
-            'أنشئ {n} شخصية عربية أو عالمية للعبة «مين في بالي؟» (لعبة تخمين الشخصية بأسئلة نعم/لا).\n'
-            'الفئة المطلوبة: «__CATEGORY__».\n'
+            'أنشئ {n} شخصية للعبة «مين في بالي؟» (تخمين شخصية بأسئلة نعم/لا).\n'
             'الصيغة الدقيقة لكل شخصية:\n'
             '{"name":"الاسم الكامل","aliases":["اسم شائع"],"category":"اسم الفئة نفسه بالضبط",'
             '"subcategory":"العمل أو المجال","work":"العمل الأشهر","gender":"ذكر أو أنثى",'
@@ -3643,6 +3709,11 @@ def game_auction():
 @app.route('/game/lastone')
 def game_lastone():
     return serve_game('lastone', 'game_lastone.html')
+
+
+@app.route('/game/seen_jeem')
+def game_seen_jeem():
+    return serve_game('seen_jeem', 'game_seen_jeem.html')
 
 @app.route('/game/million')
 def game_million():
