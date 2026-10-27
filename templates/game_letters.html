@@ -1167,7 +1167,7 @@ function reportQuestion() {
     .then(function(r){ return r.json(); })
     .then(function(data){
         if (data.ok) {
-            showToast('✅ تم إرسال التبليغ للمشرف');
+            showToast('شكرا على التبليغ سنراجع السؤال في اقرب وقت');
             document.getElementById('reportBtn').style.display = 'none';
         } else {
             showToast('❌ ' + (data.error || 'فشل الإرسال'));

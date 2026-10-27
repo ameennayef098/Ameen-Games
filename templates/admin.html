@@ -691,6 +691,18 @@
         </div>
     </div>
 </div>
+
+<!-- Preview modal for reported questions -->
+<div id="previewModal" class="modal-overlay">
+    <div class="modal" style="max-width:560px;">
+        <h2 id="previewTitle">معاينة السؤال</h2>
+        <div id="previewBody" style="margin:1rem 0;"></div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="closeModal('previewModal')">إغلاق</button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -811,9 +823,19 @@ function viewReportQuestion(rid) {
     fetch('/api/reports/' + rid).then(function (r) { return r.json(); }).then(function (d) {
         if (d.error) { showToast(d.error, 'error'); return; }
         fetch('/api/questions/' + d.question_id).then(function (r) { return r.json(); }).then(function (q) {
-            var qd = q.question || {};
-            var text = 'السؤال: ' + (qd.question || '') + '\nالإجابة: ' + (qd.answer || '') + '\nاللعبة: ' + (d.game || '') + '\nالسبب: ' + (d.reason || '');
-            alert(text);
+            var qd = q.question || q;
+            var content = '<div style="direction:rtl;text-align:right;line-height:2">' +
+                '<p><b>السؤال:</b> ' + esc(qd.question || '') + '</p>' +
+                '<p><b>الإجابة:</b> ' + esc(qd.answer || '') + '</p>' +
+                '<p><b>اللعبة:</b> ' + esc(d.game || '') + '</p>' +
+                '<p><b>سبب التبليغ:</b> ' + esc(d.reason || '') + '</p>' +
+                '<p><b>المبلّغ:</b> ' + esc(d.reported_by || '') + '</p>' +
+                '<p><b>الحالة:</b> ' + esc(d.status || '') + '</p>' +
+                '<p><b>التاريخ:</b> ' + esc(d.created_at || '') + '</p>' +
+                '</div>';
+            document.getElementById('previewTitle').textContent = 'معاينة السؤال المبلغ عليه';
+            document.getElementById('previewBody').innerHTML = content;
+            openModal('previewModal');
         });
     });
 }
