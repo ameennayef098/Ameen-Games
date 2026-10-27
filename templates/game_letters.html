@@ -722,23 +722,6 @@
 
         <div class="qm-question" id="questionText">السؤال</div>
 
-        <div id="bellSection" style="margin:1rem 0;text-align:center;">
-            <p style="margin-bottom:.6rem;font-weight:800;color:var(--text-secondary);">🔔 اضغط على الجرس لبدء دور فريقك</p>
-            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-                <button class="btn btn-lg" id="bellBtn1" onclick="ringBell(1)" style="background:var(--accent-blue);color:#fff;">
-                    🔔 جرس الفريق الأول
-                </button>
-                <button class="btn btn-lg" id="bellBtn2" onclick="ringBell(2)" style="background:var(--accent-green);color:#fff;">
-                    🔔 جرس الفريق الثاني
-                </button>
-            </div>
-        </div>
-
-        <div class="qm-timer" id="timerRow" style="display:none;">
-            <div class="tm" id="timerDisplay">10</div>
-            <div class="tm-label" id="timerTeamLabel"></div>
-        </div>
-
         <div class="qm-reveal" id="revealSection">
             <div class="cap">الإجابة الصحيحة</div>
             <div class="val" id="correctAnswer"></div>
@@ -798,13 +781,6 @@ var usedQuestionIds = {};
 var selectedIdx = null;
 var currentQ = null;
 var claimHistory = [];
-
-// countdown state
-var timerHandle = null;
-var timerEnd = 0;
-var timerTeam = null;
-var answeredTeam = null;
-var timeouts = 0;
 
 var S = 42;
 var W = Math.sqrt(3) * S;
@@ -908,7 +884,7 @@ function startLettersGame() {
     if (dur !== 5 && dur !== 10) dur = 10;
     SoundManager.enabled = document.getElementById('soundEnabled').checked;
 
-    LS = { t1: t1, t2: t2, c1: c1, c2: c2, turn: 1, s1: 0, s2: 0, over: false,
+    LS = { t1: t1, t2: t2, c1: c1, c2: c2, s1: 0, s2: 0, over: false,
            correct1: 0, correct2: 0, wrong1: 0, wrong2: 0, timerDuration: dur };
 
     buildCells();
@@ -917,8 +893,6 @@ function startLettersGame() {
     cells.forEach(function (cell, i) { cell.letter = shuffled[i]; });
 
     claimHistory = [];
-    stopTimer();
-    timerTeam = null; answeredTeam = null; timeouts = 0;
 
     // Update team panels colors
     document.getElementById('displayTeam1').textContent = t1;
@@ -1078,13 +1052,24 @@ function selectCell(i) {
   document.getElementById('claimSection').style.display = 'none';
   document.getElementById('showAnswerRow').style.display = 'block';
 
-  // reset countdown for this question — manual bell, no auto-start
-  answeredTeam = null;
-  timeouts = 0;
-  stopTimer();
-  timerTeam = null;
-  document.getElementById('bellSection').style.display = '';
-  document.getElementById('timerRow').style.display = 'none';
+  // فتح السؤال مباشرة بدون أدوار أو أجراس
+  currentQ = q;
+  selectedIdx = i;
+  renderBoard();
+
+  document.getElementById('qLetterBadge').textContent = 'حرف ' + firstLetterOf(currentQ.answer);
+  var d = document.getElementById('qDiffBadge');
+  d.textContent = DIFF_AR[q.difficulty] || 'متوسط';
+  d.className = 'badge ' + (q.difficulty === 'under' ? 'badge-green'
+                           : (q.difficulty === 'hard' ? 'badge-red' : 'badge-blue'));
+  var pb = document.getElementById('qPointsBadge');
+  if (q.points) { pb.textContent = q.points + ' نقطة'; pb.style.display = ''; }
+  else { pb.textContent = ''; pb.style.display = 'none'; }
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('correctAnswer').textContent = q.answer;
+  document.getElementById('revealSection').style.display = 'none';
+  document.getElementById('claimSection').style.display = 'none';
+  document.getElementById('showAnswerRow').style.display = 'block';
 
   document.getElementById('questionModal').classList.add('active');
 }
