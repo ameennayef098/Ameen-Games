@@ -920,23 +920,38 @@ function startLettersGame() {
     stopTimer();
     timerTeam = null; answeredTeam = null; timeouts = 0;
 
+    // Update team panels colors
     document.getElementById('displayTeam1').textContent = t1;
     document.getElementById('displayTeam2').textContent = t2;
+    document.getElementById('teamPanel1').style.setProperty('--team-color', c1);
+    document.getElementById('teamPanel2').style.setProperty('--team-color', c2);
+
+    // Update claim buttons with team colors
     var b1 = document.getElementById('claimBtn1');
     var b2 = document.getElementById('claimBtn2');
     b1.textContent = t1; b2.textContent = t2;
     b1.style.background = c1; b1.style.color = inkFor(c1);
     b2.style.background = c2; b2.style.color = inkFor(c2);
+
+    // Update bell buttons with team colors
+    var bell1 = document.getElementById('bellBtn1');
+    var bell2 = document.getElementById('bellBtn2');
+    if (bell1) { bell1.textContent = '🔔 جرس ' + t1; bell1.style.background = c1; }
+    if (bell2) { bell2.textContent = '🔔 جرس ' + t2; bell2.style.background = c2; }
+
+    // Update swatches
     var sw1 = document.getElementById('swatchTeam1');
     var sw2 = document.getElementById('swatchTeam2');
     if (sw1) sw1.style.background = c1;
     if (sw2) sw2.style.background = c2;
 
+    // Highlight the active team panel at start
+    updateHUD();
+
     document.getElementById('letters-setup').style.display = 'none';
     document.getElementById('letters-game').style.display = 'block';
 
     renderBoard();
-    updateHUD();
     loadQuestions();
 }
 
