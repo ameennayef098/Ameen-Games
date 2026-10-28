@@ -689,7 +689,7 @@ def _norm_target(target):
 def _looks_like_json(text):
     """True when the pasted text is a JSON document rather than «س/ج» lines."""
     t = str(text or '').lstrip()
-    return t.startswith('[') or t.startswith('{'')
+    return t.startswith('[') or t.startswith('{')
 
 
 def _json_items(raw):
