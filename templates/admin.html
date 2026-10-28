@@ -129,8 +129,10 @@
             <input type="text" id="fSearch" placeholder="بحث..." oninput="debouncedLoad()">
             <button class="btn btn-primary btn-sm" onclick="openQForm()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> سؤال جديد</button>
             <button class="btn btn-secondary btn-sm" onclick="exportQ()"><svg class="ico" aria-hidden="true"><use href="#i-chevron-down"></use></svg> تصدير</button>
-            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importFile').click()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg> استيراد</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importFile').click()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg> استيراد JSON</button>
             <input type="file" id="importFile" accept=".json" style="display:none" onchange="importQ(this)">
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importXlsx').click()"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"></use></svg> استيراد Excel</button>
+            <input type="file" id="importXlsx" accept=".xlsx" style="display:none" onchange="importXlsx(this)">
             <button class="btn btn-secondary btn-sm" onclick="checkDups()"><svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg> كشف التكرار</button>
         </div>
 
@@ -1081,6 +1083,31 @@ function importQ(input) {
             });
     };
     reader.readAsText(input.files[0]);
+    input.value = '';
+}
+function importXlsx(input) {
+    if (!input.files.length) return;
+    var game = document.getElementById('impGame').value || document.getElementById('fGame').value || 'quiz';
+    var fd = new FormData();
+    fd.append('file', input.files[0]);
+    fd.append('game', game);
+    fd.append('mode', 'preview');
+    authFetch('/api/questions/import-xlsx', {method:'POST', body: fd})
+        .then(function (r) { return r.json(); })
+        .then(function (rep) {
+            confirmBox('معاينة استيراد Excel',
+                'في الملف: ' + rep.total_in_file + '\nجديدة: ' + rep.new_count +
+                '\nتحديث: ' + rep.update_count + '\nمكررة: ' + rep.duplicate_count +
+                '\nغير صالحة: ' + rep.invalid_count + '\n\nاستيراد الآن؟',
+                function () {
+                    var fd2 = new FormData();
+                    fd2.append('file', input.files[0]);
+                    fd2.append('game', game);
+                    fd2.append('mode', 'apply');
+                    authFetch('/api/questions/import-xlsx', {method:'POST', body: fd2})
+                        .then(function () { showToast('تم الاستيراد'); loadQ(1); loadStats(); });
+                });
+        });
     input.value = '';
 }
 function checkDups() {

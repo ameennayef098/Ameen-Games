@@ -33,6 +33,10 @@
     body.tourn .zoom-ctl,
     body.tourn .mobile-menu { display: none !important; }
     body.tourn .main-content { min-height: auto; }
+    .logo-img { height: 2.2rem; width: auto; display: block; }
+    @media (max-width: 480px) {
+      .logo-img { height: 1.7rem; }
+    }
     </style>
     <script>document.documentElement.classList.add('js');</script>
     <noscript><style>.reveal,.reveal-stagger>*{opacity:1!important;transform:none!important}</style></noscript>
@@ -264,7 +268,7 @@
 
     <nav class="navbar" aria-label="التنقل الرئيسي">
         <div class="nav-brand">
-            <span class="logo-mark" aria-hidden="true"><svg class="ico"><use href="#i-logo"></svg></span>
+            <span class="logo-mark" aria-hidden="true"><img class="logo-img" src="/static/img/logo.png" alt="ألعاب أمين"></span>
             <span class="logo-text"><b>ألعاب</b> أمين</span>
         </div>
         <div class="nav-links">
@@ -272,7 +276,8 @@
             <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
             <a href="/tournament" class="nav-link {{ 'active' if request.path.startswith('/tournament') }}"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>وضع البطولة</a>
             <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
-            <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
+            <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}{{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
+            <a href="/me" class="nav-link {{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>من أنا</a>
         </div>
         <div class="nav-actions">
             <a href="/games" class="btn btn-primary btn-sm"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
@@ -297,7 +302,8 @@
         <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
         <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
         <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
-        <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
+        <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}{{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
+        <a href="/me" class="nav-link {{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>من أنا</a>
         <a href="/games" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>ابدأ اللعب</a>
         <a href="/admin" class="nav-link"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg>لوحة الإدارة</a>
         <button class="theme-btn" id="themeBtnMobile" type="button" aria-pressed="false" aria-label="التبديل إلى الوضع الفاتح" title="الوضع الفاتح">
@@ -317,11 +323,11 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <span class="logo-mark" aria-hidden="true"><svg class="ico"><use href="#i-logo"></svg></span>
+                <span class="logo-mark" aria-hidden="true"><img class="logo-img" src="/static/img/logo.png" alt="ألعاب أمين"></span>
                 <div>
                     <span>ألعاب أمين</span>
                     <p class="footer-tagline">ألعاب جماعية وأسئلة ومزايدات — كل ما تحتاجه ليلة لعب في مكان واحد.</p>
-                    <div class="footer-version"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>الإصدار 2.0.0</div>
+                    <div class="footer-version"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>الإصدار 3.0.0</div>
                 </div>
             </div>
             <div class="footer-links">

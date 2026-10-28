@@ -540,6 +540,69 @@ def import_questions():
                     'invalid': invalid[:50], 'duplicates': dups[:50]})
 
 
+@app.route('/api/questions/import-xlsx', methods=['POST'])
+def import_questions_xlsx():
+    game = request.form.get('game', '').strip()
+    mode = request.form.get('mode', 'preview')
+    replace = request.form.get('replace') == '1'
+    target = request.form.get('target')
+    if game not in GAME_IMPORT_DEFS:
+        return jsonify({'error': 'اللعبة غير مدعومة'}), 400
+    uploaded = request.files.get('file')
+    if not uploaded:
+        return jsonify({'error': 'ارفع ملف Excel (.xlsx)'}), 400
+    fd, tmp = tempfile.mkstemp(suffix='.xlsx')
+    try:
+        with os.fdopen(fd, 'wb') as f:
+            f.write(uploaded.read())
+        parsed = qi.parse_xlsx(tmp, game, target)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+    recs = parsed.get('records', [])
+    valid, invalid, dups, new, upd = [], [], [], [], []
+    all_qs = load_bank()
+    existing_ids = {q['id'] for q in all_qs}
+    existing_keys = {q_key(q) for q in all_qs}
+    seen = set()
+    for rec in recs:
+        item, ok, err = qi.validate_and_build(game, rec, target)
+        if not ok:
+            invalid.append({'question': item.get('question', ''), 'reason': err})
+            continue
+        k = game + '|' + norm_ar(item.get('question', ''))
+        if k in existing_keys or k in seen:
+            dups.append({'question': item.get('question', ''), 'reason': 'سؤال مكرر'})
+            continue
+        seen.add(k)
+        (upd if item.get('id') in existing_ids else new).append(item)
+        valid.append(item)
+    if mode == 'apply':
+        removed = 0
+        if replace and new:
+            games = {game}
+            kept = [q for q in all_qs if q.get('game') not in games]
+            removed = len(all_qs) - len(kept)
+            all_qs = kept
+        for q in new:
+            q['id'] = gen_id()
+            q.setdefault('created_at', now())
+            q['updated_at'] = now()
+            all_qs.append(q)
+        for q in upd:
+            for i, e in enumerate(all_qs):
+                if e['id'] == q['id']:
+                    q['updated_at'] = now()
+                    all_qs[i] = q
+        save_json(Q_FILE, all_qs)
+    return jsonify({'mode': mode, 'replace': replace, 'removed': removed,
+                    'total_in_file': len(recs),
+                    'valid_count': len(valid), 'invalid_count': len(invalid),
+                    'duplicate_count': len(dups), 'new_count': len(new),
+                    'update_count': len(upd),
+                    'invalid': invalid[:50], 'duplicates': dups[:50]})
+
+
 REPORTS_FILE = os.path.join(DATA, 'reports', 'question_reports.json')
 
 @app.route('/api/questions/report', methods=['POST'])
@@ -3755,6 +3818,10 @@ def offline_page():
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+@app.route('/me')
+def me_page():
+    return render_template('me.html', title='من أنا')
 
 @app.route('/login')
 def login_page():

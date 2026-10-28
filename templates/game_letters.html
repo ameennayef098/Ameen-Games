@@ -59,20 +59,13 @@
 
 /* Active turn: the panel lights up, lifts and wears a marker */
 .team-panel.active {
-    border-color: var(--team-color, var(--accent-gold));
+    border-color: var(--team-color, var(--accent-blue));
     background: var(--bg-card-hover);
     box-shadow: var(--shadow), 0 0 0 1px var(--team-color, transparent), var(--shadow-inset);
     transform: translateY(-2px);
 }
 .team-panel.active .team-name { color: var(--text-primary); }
 .team-panel.active .score { text-shadow: 0 0 22px var(--team-color, transparent); }
-.team-panel.active::after {
-    content: "🎯 الدور";
-    position: absolute; top: -0.7rem; inset-inline-start: 50%; transform: translateX(50%);
-    padding: 0.12rem 0.6rem; border-radius: var(--radius-pill);
-    background: var(--team-color, var(--accent-gold)); color: #10122a;
-    font-size: var(--font-size-xs); font-weight: 900; white-space: nowrap;
-}
 
 .hud-center {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1052,87 +1045,13 @@ function selectCell(i) {
   document.getElementById('claimSection').style.display = 'none';
   document.getElementById('showAnswerRow').style.display = 'block';
 
-  // فتح السؤال مباشرة بدون أدوار أو أجراس
-  currentQ = q;
-  selectedIdx = i;
-  renderBoard();
-
-  document.getElementById('qLetterBadge').textContent = 'حرف ' + firstLetterOf(currentQ.answer);
-  var d = document.getElementById('qDiffBadge');
-  d.textContent = DIFF_AR[q.difficulty] || 'متوسط';
-  d.className = 'badge ' + (q.difficulty === 'under' ? 'badge-green'
-                           : (q.difficulty === 'hard' ? 'badge-red' : 'badge-blue'));
-  var pb = document.getElementById('qPointsBadge');
-  if (q.points) { pb.textContent = q.points + ' نقطة'; pb.style.display = ''; }
-  else { pb.textContent = ''; pb.style.display = 'none'; }
-  document.getElementById('questionText').textContent = q.question;
-  document.getElementById('correctAnswer').textContent = q.answer;
-  document.getElementById('revealSection').style.display = 'none';
-  document.getElementById('claimSection').style.display = 'none';
-  document.getElementById('showAnswerRow').style.display = 'block';
-
   document.getElementById('questionModal').classList.add('active');
 }
 
 // ===== countdown (Date.now based, no drift) =====
-function startTimer(team) {
-    stopTimer();
-    timerTeam = team;
-    timerEnd = Date.now() + LS.timerDuration * 1000;
-    document.getElementById('bellSection').style.display = 'none';
-    document.getElementById('timerRow').style.display = 'block';
-    document.getElementById('timerTeamLabel').innerHTML =
-        'الدور على <b>' + (team === 1 ? LS.t1 : LS.t2) + '</b> — ' + LS.timerDuration + ' ثوانٍ';
-    updateTimerDisplay();
-    timerHandle = setInterval(updateTimerDisplay, 200);
-}
-
-function ringBell(team) {
-    if (!currentQ || selectedIdx === null) return;
-    if (timerTeam !== null) return; // already ringing
-    if (team !== LS.turn) {
-        showToast('دور ' + (LS.turn === 1 ? LS.t1 : LS.t2) + ' الآن', 'error');
-        return;
-    }
-    startTimer(team);
-}
-
-function updateTimerDisplay() {
-    var remaining = Math.max(0, timerEnd - Date.now());
-    document.getElementById('timerDisplay').textContent = Math.ceil(remaining / 1000);
-    var row = document.getElementById('timerRow');
-    if (remaining <= 3000) row.className = 'qm-timer danger';
-    else if (remaining <= 5000) row.className = 'qm-timer warn';
-    else row.className = 'qm-timer';
-    if (remaining <= 0) onTimerExpired();
-}
-
-function stopTimer() {
-    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
-}
-
-function onTimerExpired() {
-    stopTimer();
-    timeouts++;
-    if (timeouts >= 2) {
-        showToast('انتهى الوقت ولم يُجب أحد', 'error');
-        closeQuestionModal();
-        return;
-    }
-    // pass to other team
-    LS.turn = (timerTeam === 1) ? 2 : 1;
-    showToast('انتهى الوقت — السؤال ينتقل إلى ' + (LS.turn === 1 ? LS.t1 : LS.t2));
-    startTimer(LS.turn);
-    updateHUD();
-}
-
 function markAnswered() {
-    answeredTeam = LS.turn;
-    stopTimer();
     document.getElementById('answeredRow').style.display = 'none';
-    document.getElementById('timerRow').style.display = 'none';
     revealAnswer();
-    showToast('✅ ' + (answeredTeam === 1 ? LS.t1 : LS.t2) + ' أجاب');
 }
 
 function reportQuestion() {
@@ -1168,7 +1087,6 @@ function revealAnswer() {
     document.getElementById('showAnswerRow').style.display = 'none';
     document.getElementById('answeredRow').style.display = 'none';
     document.getElementById('claimSection').style.display = 'block';
-    document.getElementById('bellSection').style.display = 'none';
     var rb = document.getElementById('reportBtn');
     if (rb) rb.style.display = '';
 }
@@ -1182,7 +1100,6 @@ function claimCell(team) {
     if (team === 1) { LS.s1++; LS.correct1++; } else { LS.s2++; LS.correct2++; }
     claimHistory.push({ idx: selectedIdx, team: team });
     SoundManager.play('correct');
-    LS.turn = (team === 1) ? 2 : 1;
 
     closeQuestionModal();
     renderBoard();
@@ -1209,7 +1126,6 @@ function changeTeam() {
     cell.owner = newTeam;
     if (newTeam === 1) { LS.s1++; LS.correct1++; } else { LS.s2++; LS.correct2++; }
     claimHistory[claimHistory.length - 1] = { idx: last.idx, team: newTeam };
-    LS.turn = (newTeam === 1) ? 2 : 1;
 
     renderBoard();
     updateHUD();
@@ -1232,16 +1148,10 @@ function saveLettersState() {
 
 function skipQuestion() {
     if (!currentQ) return;
-    if (LS.turn === 1) LS.wrong1++; else LS.wrong2++;
-    LS.turn = (LS.turn === 1) ? 2 : 1;
     closeQuestionModal();
-    updateHUD();
-    saveLettersState();
 }
 
 function closeQuestionModal() {
-    stopTimer();
-    timerTeam = null; answeredTeam = null; timeouts = 0;
     document.getElementById('questionModal').classList.remove('active');
     selectedIdx = null;
     currentQ = null;
@@ -1253,15 +1163,6 @@ function closeQuestionModal() {
 function updateHUD() {
     document.getElementById('score1Value').textContent = LS.s1;
     document.getElementById('score2Value').textContent = LS.s2;
-    // Turn indicator: highlight the panel of the team that answers next.
-    var p1 = document.getElementById('teamPanel1');
-    var p2 = document.getElementById('teamPanel2');
-    if (p1 && p2) {
-        p1.classList.toggle('active', !LS.over && LS.turn === 1);
-        p2.classList.toggle('active', !LS.over && LS.turn === 2);
-        p1.style.setProperty('--team-color', LS.c1);
-        p2.style.setProperty('--team-color', LS.c2);
-    }
 }
 
 // ===== BFS: team1 top->bottom (vertical), team2 right->left (horizontal) =====

@@ -18,6 +18,78 @@ Question 1) وعلى أسماء الحقول (خيارات: / عناصر: / ال
 
 import json
 import re
+from openpyxl import load_workbook
+
+MAX_RECORDS = 500
+
+GAME_XLSX_FIELDS = {
+    'letters': ['game','letter','question','answer','explanation','difficulty','status','source','created_at'],
+    'quiz': ['game','question','answer','explanation','difficulty','status','source','created_at','category_id','category_name','options'],
+    'million': ['game','question','answer','explanation','difficulty','status','source','created_at','category_id','category_name'],
+}
+
+
+def _xlsx_to_records(path, game):
+    gdef = GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        raise ValueError('اللعبة غير مدعومة: ' + str(game))
+    allowed = set(GAME_XLSX_FIELDS.get(game, []))
+    wb = load_workbook(filename=str(path), read_only=True, data_only=True)
+    ws = wb[game] if game in wb.sheetnames else wb[wb.sheetnames[0]]
+    rows = list(ws.iter_rows(values_only=True))
+    if not rows:
+        return []
+    headers = [str(h or '').strip() if h is not None else '' for h in rows[0]]
+    norm = {h.lower(): h for h in headers}
+    ordered = []
+    for h in GAME_XLSX_FIELDS.get(game, []):
+        if h in headers and h not in ordered:
+            ordered.append(h)
+        elif h.lower() in norm and norm[h.lower()] not in ordered:
+            ordered.append(norm[h.lower()])
+    recs = []
+    for i, row in enumerate(rows[1:]):
+        item = {h: (row[j] if j < len(row) else None) for j, h in enumerate(headers)}
+        rec = {
+            'num': i + 1,
+            'question': [str(item.get('question') or '').strip()] if str(item.get('question') or '').strip() else [],
+            'answer': [str(item.get('answer') or '').strip()] if str(item.get('answer') or '').strip() else [],
+            'fields': {k: v for k, v in item.items() if k in allowed and v not in (None, '', [])},
+            'orphan': False,
+        }
+        recs.append(rec)
+    return recs
+
+
+def parse_xlsx(path, game, target=None):
+    gdef = GAME_IMPORT_DEFS.get(game)
+    if not gdef:
+        raise ValueError('اللعبة غير مدعومة: ' + str(game))
+    tgt = _norm_target(target)
+    recs = _xlsx_to_records(path, game)
+    cap = gdef['max_records']
+    truncated = 0
+    if len(recs) > cap:
+        truncated = len(recs) - cap
+        recs = recs[:cap]
+    records = []
+    seen_nums = {}
+    for i, r in enumerate(recs):
+        r['_game'] = game
+        rec = _build_record(r, i, gdef, tgt)
+        if rec['num'] is not None:
+            if rec['num'] in seen_nums:
+                _warn(rec, 'duplicate_number', 'الرقم ' + str(rec['num']) + ' مكرر')
+            else:
+                seen_nums[rec['num']] = rec['idx']
+        records.append(rec)
+    warnings = []
+    if truncated:
+        warnings.append({'code': 'too_many', 'message': 'تم اقتصاص الدفعة إلى ' + str(cap) + ' سجلاً'})
+    return {'game': game, 'records': records, 'summary': _summarize(records),
+            'warnings': warnings, 'template': template_for(game, tgt),
+            'unparsed': [], 'truncated': truncated, 'format': 'xlsx'}
+
 
 MAX_RECORDS = 500
 MAX_TEXT_CHARS = 400000
@@ -614,19 +686,10 @@ def _norm_target(target):
     }
 
 
-# --------------------------------------------------------------------------
-# JSON paste — a pasted file is already structured, so it is read as data
-# --------------------------------------------------------------------------
-JSON_META = {'id', 'game', 'status', 'source', 'created_at', 'updated_at'}
-JSON_LIST_KEYS = ('questions', 'items', 'records', 'data', 'results', 'rows')
-JSON_ITEM_HINTS = ('question', 'answer', 'word', 'title', 'topic', 'player',
-                   'name', 'items')
-
-
 def _looks_like_json(text):
     """True when the pasted text is a JSON document rather than «س/ج» lines."""
     t = str(text or '').lstrip()
-    return t.startswith('[') or t.startswith('{')
+    return t.startswith('[') or t.startswith('{'')
 
 
 def _json_items(raw):
