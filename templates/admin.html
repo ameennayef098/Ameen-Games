@@ -502,8 +502,6 @@
             <div class="filters">
                 <select id="ctGame" onchange="loadContent()">
                     <option value="codenames">كود نيمز (كلمات)</option>
-                    <option value="detective">المحقق (قضايا)</option>
-                    <option value="culprit">من الفاعل؟ (قضايا)</option>
                     <option value="spy">الجاسوس (كلمات)</option>
                     <option value="debate">أقنعني! (موضوعات)</option>
                     <option value="whoplayer">مين اللاعب؟ (لاعبون)</option>
@@ -721,6 +719,7 @@ var BULK_STOP = false;
 var SETTINGS = {};
 var LEAGUE_NAMES = {laliga:'الدوري الإسباني',epl:'الدوري الإنجليزي',bundesliga:'الدوري الألماني',
                     seriea:'الدوري الإيطالي',ligue1:'الدوري الفرنسي',saudi:'دوري روشن السعودي'};
+var RPT_STATUS_AR = {open:'مفتوح', resolved:'تم الحل', dismissed:'مرفوض', closed:'مغلق'};
 
 function authFetch(url, opts) {
     opts = opts || {};
@@ -804,28 +803,46 @@ function loadReports() {
             reports.map(function (r, i) {
                 return '<tr>' +
                     '<td>' + (i + 1) + '</td>' +
-                    '<td>' + esc(r.question_id) + '</td>' +
+                    '<td class="rpt-q" data-qid="' + esc(r.question_id) + '" title="معرّف السؤال: ' + esc(r.question_id) + '">…</td>' +
                     '<td>' + esc(r.game) + '</td>' +
                     '<td>' + esc(r.reason) + '</td>' +
                     '<td>' + esc(r.reported_by) + '</td>' +
-                    '<td>' + esc(r.status) + '</td>' +
-                    '<td>' + esc(r.created_at) + '</td>' +
+                    '<td>' + esc(RPT_STATUS_AR[r.status] || r.status) + '</td>' +
+                    '<td>' + esc((r.created_at || '').replace('T', ' ')) + '</td>' +
                     '<td>' +
                         '<button class="btn btn-primary btn-sm" onclick="viewReportQuestion(\'' + r.id + '\')">عرض</button> ' +
                         '<button class="btn btn-success btn-sm" onclick="editReportQuestion(\'' + r.id + '\')">تعديل</button> ' +
-                        '<button class="btn btn-danger btn-sm" onclick="deleteReport(\'' + r.id + '\')">حذف</button>' +
+                        '<button class="btn btn-danger btn-sm" onclick="deleteReport(\'' + r.id + '\')">حذف</button> ' +
                     '</td>' +
                     '</tr>';
             }).join('') +
             '</tbody></table>';
+        // اعتراض نصّ كل سؤال مُبلّغ عنه ليظهر في الجدول بدل المعرّف
+        Array.prototype.forEach.call(el.querySelectorAll('.rpt-q'), function (td) {
+            fetch('/api/questions/' + td.getAttribute('data-qid')).then(function (r) { return r.json(); }).then(function (q) {
+                if (q && q.id && q.question) {
+                    td.textContent = q.question.length > 70 ? q.question.slice(0, 70) + '…' : q.question;
+                } else {
+                    td.textContent = '⚠️ ' + td.getAttribute('data-qid') + ' (غير موجود في المكتبة)';
+                }
+            }).catch(function () { td.textContent = td.getAttribute('data-qid'); });
+        });
     });
 }
 
 function viewReportQuestion(rid) {
-    fetch('/api/reports/' + rid).then(function (r) { return r.json(); }).then(function (d) {
+    authFetch('/api/reports/' + rid).then(function (r) { return r.json().catch(function () { return { error: 'رد غير صالح من الخادم' }; }); }).then(function (d) {
         if (d.error) { showToast(d.error, 'error'); return; }
-        fetch('/api/questions/' + d.question_id).then(function (r) { return r.json(); }).then(function (q) {
-            var qd = q.question || q;
+        if (!d.question_id) { showToast('هذا التبليغ غير مرتبط بسؤال', 'error'); return; }
+        fetch('/api/questions/' + d.question_id).then(function (r) { return r.json().catch(function () { return { error: 'رد غير صالح من الخادم' }; }); }).then(function (q) {
+            // الخادم يرجع كائن السؤال مباشرة {id, question, answer, ...}. النصّ q.question
+            // عبارة عن نصّ السؤال (صحيح منطقياً)، فلا يصح أن يكون بديلاً عن الكائن —
+            // وإلا صارت كل الحقول undefined وظهرت المعاينة فارغة. ندعم الشكلين احتياطاً.
+            if (!q || q.error || !q.id) {
+                showToast('لم يُعثر على هذا السؤال في مكتبة الأسئلة — ربما حُذف أو تم استبدال بنك الأسئلة', 'error');
+                return;
+            }
+            var qd = (q.question && typeof q.question === 'object') ? q.question : q;
             var content = '<div style="direction:rtl;text-align:right;line-height:2">' +
                 '<p><b>السؤال:</b> ' + esc(qd.question || '') + '</p>' +
                 '<p><b>الإجابة:</b> ' + esc(qd.answer || '') + '</p>' +
@@ -843,10 +860,16 @@ function viewReportQuestion(rid) {
 }
 
 function editReportQuestion(rid) {
-    fetch('/api/reports/' + rid).then(function (r) { return r.json(); }).then(function (d) {
+    authFetch('/api/reports/' + rid).then(function (r) { return r.json().catch(function () { return { error: 'رد غير صالح من الخادم' }; }); }).then(function (d) {
         if (d.error) { showToast(d.error, 'error'); return; }
-        fetch('/api/questions/' + d.question_id).then(function (r) { return r.json(); }).then(function (q) {
-            var question = q.question || q;
+        if (!d.question_id) { showToast('هذا التبليغ غير مرتبط بسؤال', 'error'); return; }
+        fetch('/api/questions/' + d.question_id).then(function (r) { return r.json().catch(function () { return { error: 'رد غير صالح من الخادم' }; }); }).then(function (q) {
+            // نفس عيب المعاينة: q.question نصّ لا كائن — لا تبنِ نموذج التعديل منه.
+            if (!q || q.error || !q.id) {
+                showToast('لم يُعثر على هذا السؤال في مكتبة الأسئلة — لا يمكن تعديله', 'error');
+                return;
+            }
+            var question = (q.question && typeof q.question === 'object') ? q.question : q;
             if (question && question.id) {
                 openQForm(question);
             } else {
@@ -1404,7 +1427,7 @@ function purgeBad() {
 
 /* ===== Content management for 7 games ===== */
 var CT_ROWS = [];
-var CT_LABELS = {codenames:'كلمة', detective:'قضية', culprit:'قضية', spy:'كلمة', debate:'موضوع', whoplayer:'لاعب', link:'لغز'};
+var CT_LABELS = {codenames:'كلمة', spy:'كلمة', debate:'موضوع', whoplayer:'لاعب', link:'لغز'};
 
 function loadContent() {
     var g = document.getElementById('ctGame').value;
@@ -1455,8 +1478,7 @@ function editContent(id) {
     var it = CT_ROWS.find(x => x.id === id);
     if (!it) return;
     var g = document.getElementById('ctGame').value;
-    var fields = {codenames: ['word','meaning','category'], detective: ['title','intro','solution'],
-        culprit: ['title','incident','culprit'], spy: ['word','category'],
+    var fields = {codenames: ['word','meaning','category'], spy: ['word','category'],
         debate: ['topic','side_a','side_b'], whoplayer: ['player'], link: ['items','answer','link']};
     var flds = fields[g] || ['title'];
     var html = '<h3>✏️ تعديل ' + (CT_LABELS[g] || 'عنصر') + '</h3><div style="display:grid;gap:.6rem">';
@@ -1471,8 +1493,7 @@ function editContent(id) {
 }
 function saveContentEdit(id) {
     var g = document.getElementById('ctGame').value;
-    var fields = {codenames: ['word','meaning','category'], detective: ['title','intro','solution'],
-        culprit: ['title','incident','culprit'], spy: ['word','category'],
+    var fields = {codenames: ['word','meaning','category'], spy: ['word','category'],
         debate: ['topic','side_a','side_b'], whoplayer: ['player'], link: ['items','answer','link']};
     var flds = fields[g] || ['title'];
     var data = {};
@@ -1488,8 +1509,7 @@ function saveContentEdit(id) {
 }
 function openContentForm() {
     var g = document.getElementById('ctGame').value;
-    var fields = {codenames: ['word','meaning','category'], detective: ['title','intro','solution'],
-        culprit: ['title','incident','culprit'], spy: ['word','category'],
+    var fields = {codenames: ['word','meaning','category'], spy: ['word','category'],
         debate: ['topic','side_a','side_b'], whoplayer: ['player'], link: ['items','answer','link']};
     var flds = fields[g] || ['title'];
     var html = '<h3>➕ إضافة ' + (CT_LABELS[g] || 'عنصر') + '</h3><div style="display:grid;gap:.6rem">';
@@ -1503,8 +1523,7 @@ function openContentForm() {
 }
 function saveNewContent() {
     var g = document.getElementById('ctGame').value;
-    var fields = {codenames: ['word','meaning','category'], detective: ['title','intro','solution'],
-        culprit: ['title','incident','culprit'], spy: ['word','category'],
+    var fields = {codenames: ['word','meaning','category'], spy: ['word','category'],
         debate: ['topic','side_a','side_b'], whoplayer: ['player'], link: ['items','answer','link']};
     var flds = fields[g] || ['title'];
     var data = {};
@@ -2522,7 +2541,7 @@ var IMP_GAME_URLS = {
     letters: '/game/letters', quiz: '/game/quiz', million: '/game/million',
     lastone: '/game/lastone', auction: '/game/auction', codenames: '/game/codenames',
     spy: '/game/spy', debate: '/game/debate', whoplayer: '/game/whoplayer',
-    culprit: '/game/culprit', detective: '/game/detective', minebali: '/game/minebali',
+    chess: '/game/chess', minebali: '/game/minebali',
     link: '/game/link'
 };
 
