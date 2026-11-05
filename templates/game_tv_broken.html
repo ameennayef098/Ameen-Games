@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.tv-container{max-width:900px;margin:0 auto}
+.tv-phase{display:none}
+.tv-phase.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.tv-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem}
+.tv-title{font-size:1.3rem;font-weight:800;margin-bottom:1rem;color:var(--accent-purple-ink);display:flex;align-items:center;gap:.5rem}
+.tv-input-group{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.tv-input{flex:1;min-width:200px;padding:.7rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem}
+.tv-btn{padding:.7rem 1.5rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.5rem}
+.tv-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.tv-btn.primary{border-color:var(--accent-purple);background:rgba(139,92,246,.12);color:var(--accent-purple-ink)}
+.tv-btn.success{border-color:var(--accent-green);background:rgba(34,197,94,.12);color:var(--accent-green-ink)}
+.tv-btn.danger{border-color:var(--accent-red);background:rgba(239,68,68,.12);color:var(--accent-red-ink)}
+.tv-btn:disabled{opacity:.5;cursor:not-allowed}
+.tv-players{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.tv-player-tag{padding:.4rem .8rem;border-radius:var(--radius-pill);font-size:.85rem;font-weight:700;background:var(--bg-secondary);border:1px solid var(--border-color)}
+.tv-player-tag.current{background:rgba(139,92,246,.2);border-color:var(--accent-purple);color:var(--accent-purple-ink)}
+.tv-player-tag.done{background:rgba(34,197,94,.15);border-color:var(--accent-green);color:var(--accent-green-ink)}
+.tv-canvas-wrap{position:relative;border:2px solid var(--border-color);border-radius:var(--radius);background:#fdfdfd;overflow:hidden}
+.tv-canvas{border-radius:var(--radius);display:block;cursor:crosshair;touch-action:none;width:100%;height:auto}
+.tv-tools{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;align-items:center}
+.tv-tool{padding:.4rem .8rem;border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-card);color:var(--text-primary);font-size:.85rem;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.3rem}
+.tv-tool.active,.tv-tool:hover{border-color:var(--accent-purple);background:rgba(139,92,246,.12);color:var(--accent-purple-ink)}
+.tv-tool.eraser.active{border-color:var(--accent-red);background:rgba(239,68,68,.12);color:var(--accent-red-ink)}
+.tv-color-picker{width:36px;height:36px;border:2px solid var(--border-color);border-radius:50%;cursor:pointer;background:none}
+.tv-brush-size{display:flex;align-items:center;gap:.5rem;margin-right:auto}
+.tv-brush-size label{font-size:.85rem;color:var(--text-secondary)}
+.tv-brush-size input{width:100px}
+.tv-chain{display:flex;flex-direction:column;gap:1rem}
+.tv-chain-item{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;animation:slideUp .4s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.tv-chain-step{font-size:.8rem;font-weight:800;color:var(--accent-purple-ink);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.5px}
+.tv-chain-content{font-size:1.1rem;color:var(--text-primary);white-space:pre-wrap;line-height:1.6}
+.tv-chain-img{max-width:100%;border-radius:var(--radius);margin-top:.5rem;border:1px solid var(--border-color);background:#fff}
+.tv-vote{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.tv-vote-btn{flex:1;min-width:120px;padding:.8rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-weight:700;cursor:pointer;transition:var(--transition)}
+.tv-vote-btn:hover,.tv-vote-btn.voted{border-color:var(--accent-gold);background:rgba(245,158,11,.15);color:var(--accent-gold-ink)}
+.tv-scoreboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem;margin-top:1rem}
+.tv-score-item{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;text-align:center}
+.tv-score-name{font-size:.9rem;color:var(--text-secondary);margin-bottom:.3rem}
+.tv-score-val{font-size:1.5rem;font-weight:800;color:var(--accent-purple-ink)}
+.tv-hint{font-size:.9rem;color:var(--text-secondary);text-align:center;margin-top:.5rem}
+@media(max-width:600px){
+    .tv-canvas{max-width:100%;height:auto}
+    .tv-input{min-width:100%}
+    .tv-btn{width:100%;justify-content:center}
+    .tv-tools{justify-content:center}
+    .tv-brush-size{display:none}
+}
+</style>
+<div class="tv-container">
+<h1 style="text-align:center;margin:.5rem 0;font-size:2rem">📺 تلفزيون خربان</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1.5rem">اكتب → ارسم → خمّن → اضحك! سلسلة تليфон مرسومة تنتهي بتصويت مضحك</p>
+
+<!-- Phase 1: Setup -->
+<div class="tv-phase active" id="phaseSetup">
+<div class="tv-card">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> إعداد اللاعبين</div>
+<div class="tv-input-group">
+<input type="text" class="tv-input" id="playerName" placeholder="اسم اللاعب" autocomplete="off">
+<button class="tv-btn primary" onclick="addPlayer()"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> إضافة</button>
+</div>
+<div class="tv-players" id="playersList"></div>
+<div class="tv-hint">الحد الأدنى 3 لاعبين، يفضل 4-8</div>
+<button class="tv-btn primary" id="startGameBtn" onclick="startGame()" style="width:100%;margin-top:.5rem" disabled><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء اللعبة</button>
+</div>
+</div>
+
+<!-- Phase 2: Writing -->
+<div class="tv-phase" id="phaseWrite">
+<div class="tv-card">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-pen"></use></svg> الخطوة 1: اكتب جملة</div>
+<div class="tv-players" id="writePlayers"></div>
+<p style="color:var(--text-secondary);margin-bottom:1rem">اللاعب الحالي: <strong id="currentWriter"></strong></p>
+<textarea class="tv-input" id="phraseInput" rows="3" placeholder="اكتب جملة مضحكة أو غريبة... (مثال: ديناصور يركب دراجة)" style="resize:vertical;font-family:inherit"></textarea>
+<button class="tv-btn primary" onclick="submitPhrase()" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> تأكيد والانتقال للرسم</button>
+</div>
+</div>
+
+<!-- Phase 3: Drawing -->
+<div class="tv-phase" id="phaseDraw">
+<div class="tv-card">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-draw"></use></svg> الخطوة 2: ارسم الجملة</div>
+<div class="tv-players" id="drawPlayers"></div>
+<p style="color:var(--text-secondary);margin-bottom:1rem">الراسم الحالي: <strong id="currentDrawer"></strong></p>
+<div class="tv-hint" style="background:rgba(139,92,246,.1);padding:.8rem;border-radius:var(--radius);border:1px solid rgba(139,92,246,.3)"><strong>الجملة:</strong> <span id="phraseToDraw"></span></div>
+<div class="tv-canvas-wrap">
+<canvas class="tv-canvas" id="drawCanvas" width="800" height="450"></canvas>
+</div>
+<div class="tv-tools">
+<button class="tv-tool active" data-tool="pen" onclick="setTool('pen')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><path d="M4 20h3.2L19 8.2 15.8 5 4 16.8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg> قلم</button>
+<button class="tv-tool" data-tool="brush" onclick="setTool('brush')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><path d="M12 3v5M9 6h6M7 10h10M6 14h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> فرشاة</button>
+<button class="tv-tool" data-tool="spray" onclick="setTool('spray')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><circle cx="8" cy="8" r="1" fill="currentColor"/><circle cx="14" cy="6" r="1" fill="currentColor"/><circle cx="10" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="12" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg> بخاخ</button>
+<button class="tv-tool eraser" data-tool="eraser" onclick="setTool('eraser')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><path d="M20 6.3l-2.3-2.3a1 1 0 0 0-1.4 0l-5 5 5 5a1 1 0 0 0 1.4 0l2.3-2.3a1 1 0 0 0 0-1.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M17 17l5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="7" y="7" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg> ممحاة</button>
+<button class="tv-tool" data-tool="clear" onclick="clearCanvas()"><svg class="ico" aria-hidden="true"><use href="#i-trash"></use></svg> مسح الكل</button>
+<div class="tv-brush-size">
+<label>الحجم:</label>
+<input type="range" id="brushSize" min="1" max="50" value="3" oninput="updateBrushSize()">
+</div>
+<input type="color" class="tv-color-picker" id="colorPicker" value="#1a1a2e" onchange="updateColor()">
+<span style="color:var(--text-secondary);font-size:.85rem">اللون</span>
+<button class="tv-btn primary" onclick="submitDrawing()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> انتهى الرسم</button>
+</div>
+</div>
+</div>
+
+<!-- Phase 4: Guessing -->
+<div class="tv-phase" id="phaseGuess">
+<div class="tv-card">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg> الخطوة 3: خمّن الرسمة</div>
+<div class="tv-players" id="guessPlayers"></div>
+<p style="color:var(--text-secondary);margin-bottom:1rem">المخمّن الحالي: <strong id="currentGuesser"></strong></p>
+<div style="text-align:center;margin-bottom:1rem">
+<img id="drawingToGuess" class="tv-chain-img" style="max-height:350px;display:none">
+</div>
+<input type="text" class="tv-input" id="guessInput" placeholder="ماذا ترى في الرسمة؟" style="width:100%;text-align:center;font-size:1.1rem">
+<button class="tv-btn primary" onclick="submitGuess()" style="width:100%;margin-top:.5rem"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> تأكيد التخمين</button>
+</div>
+</div>
+
+<!-- Phase 5: Reveal & Vote -->
+<div class="tv-phase" id="phaseReveal">
+<div class="tv-card">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg> كشف السلسلة الكاملة</div>
+<div class="tv-chain" id="chainDisplay"></div>
+<div class="tv-hint">اضغط على السلسلة الأفضل/الأكثر إضحاكاً للتصويت</div>
+<div class="tv-vote" id="voteButtons"></div>
+<button class="tv-btn primary" id="nextRoundBtn" onclick="goNextRound()" style="width:100%;margin-top:1rem;display:none"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> جولة جديدة</button>
+<button class="tv-btn" onclick="endGame()" style="width:100%;margin-top:.5rem;display:none" id="endGameBtn"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> إنهاء اللعبة وعرض النتائج</button>
+</div>
+</div>
+
+<!-- Phase 6: Final Results -->
+<div class="tv-phase" id="phaseResults">
+<div class="tv-card" style="text-align:center">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> النتائج النهائية</div>
+<div class="tv-scoreboard" id="finalScores"></div>
+<button class="tv-btn primary" onclick="location.reload()" style="width:100%;margin-top:1.5rem"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> لعبة جديدة</button>
+<button class="tv-btn" onclick="location.href='/games'" style="width:100%;margin-top:.5rem">العودة للألعاب</button>
+</div>
+</div>
+</div>
+
+<script>
+// ===== Game State =====
+let players=[], currentPlayerIdx=0, currentPhase='setup';
+let phrases=[], drawings=[], guesses=[], votes={};
+let currentRound=0, maxRounds=0;
+let drawingCtx=null, isDrawing=false, currentTool='pen', currentColor='#1a1a2e';
+let brushSize=3;
+let lastX=0, lastY=0;
+
+// Track who did what in each step for proper chain display
+let turnOrder = []; // Array of {type: 'phrase'|'draw'|'guess', playerIdx, data}
+
+// ===== Phase Management =====
+function showPhase(phase){
+    document.querySelectorAll('.tv-phase').forEach(el=>el.classList.remove('active'));
+    document.getElementById('phase'+phase.charAt(0).toUpperCase()+phase.slice(1)).classList.add('active');
+    currentPhase=phase;
+}
+
+function updatePlayerTags(containerId, currentIdx, doneCount=0){
+    const container=document.getElementById(containerId);
+    container.innerHTML=players.map((p,i)=>{
+        let cls='tv-player-tag';
+        if(i===currentIdx) cls+=' current';
+        else if(i<doneCount) cls+=' done';
+        return `<span class="${cls}">${p}</span>`;
+    }).join('');
+}
+
+// ===== Setup =====
+function addPlayer(){
+    const input=document.getElementById('playerName');
+    const name=input.value.trim();
+    if(!name) return;
+    if(players.includes(name)){ alert('الاسم موجود بالفعل'); return; }
+    players.push(name);
+    input.value='';
+    renderPlayersList();
+    document.getElementById('startGameBtn').disabled=players.length<3;
+}
+function renderPlayersList(){
+    document.getElementById('playersList').innerHTML=players.map((p,i)=>`<span class="tv-player-tag">${p} <button onclick="removePlayer(${i})" style="margin-right:.5rem;background:none;border:none;color:var(--accent-red);cursor:pointer">✕</button></span>`).join('');
+}
+function removePlayer(i){ players.splice(i,1); renderPlayersList(); document.getElementById('startGameBtn').disabled=players.length<3; }
+
+function startGame(){
+    maxRounds=players.length;
+    currentRound=0;
+    phrases=[]; drawings=[]; guesses=[];
+    turnOrder=[];
+    startNextRound();
+}
+
+function startNextRound(){
+    if(currentRound>=maxRounds){ showResults(); return; }
+    currentRound++;
+    currentPlayerIdx=0;
+    phrases=[]; drawings=[]; guesses=[];
+    turnOrder=[];
+    showPhase('write');
+    updatePlayerTags('writePlayers', 0);
+    document.getElementById('currentWriter').textContent=players[0];
+    document.getElementById('phraseInput').value='';
+    document.getElementById('phraseInput').focus();
+}
+
+function submitPhrase(){
+    const text=document.getElementById('phraseInput').value.trim();
+    if(!text){ alert('اكتب جملة أولاً'); return; }
+    phrases[currentPlayerIdx]=text;
+    turnOrder.push({type:'phrase', playerIdx:currentPlayerIdx, data:text});
+    currentPlayerIdx++;
+    if(currentPlayerIdx>=players.length){
+        currentPlayerIdx=0;
+        showPhase('draw');
+        initCanvas();
+        startDrawingTurn();
+    }else{
+        updatePlayerTags('writePlayers', currentPlayerIdx, currentPlayerIdx);
+        document.getElementById('currentWriter').textContent=players[currentPlayerIdx];
+        document.getElementById('phraseInput').value='';
+        document.getElementById('phraseInput').focus();
+    }
+}
+
+function startDrawingTurn(){
+    updatePlayerTags('drawPlayers', currentPlayerIdx, currentPlayerIdx);
+    document.getElementById('currentDrawer').textContent=players[currentPlayerIdx];
+    document.getElementById('phraseToDraw').textContent=phrases[currentPlayerIdx];
+    clearCanvas();
+}
+
+function initCanvas(){
+    const canvas=document.getElementById('drawCanvas');
+    // Fix canvas size to match CSS display size
+    const rect=canvas.getBoundingClientRect();
+    canvas.width=rect.width;
+    canvas.height=rect.height;
+    
+    drawingCtx=canvas.getContext('2d');
+    drawingCtx.lineCap='round';
+    drawingCtx.lineJoin='round';
+    drawingCtx.strokeStyle=currentColor;
+    drawingCtx.lineWidth=brushSize;
+    
+    // Remove old listeners first
+    canvas.removeEventListener('mousedown',startDraw);
+    canvas.removeEventListener('mousemove',draw);
+    canvas.removeEventListener('mouseup',stopDraw);
+    canvas.removeEventListener('mouseout',stopDraw);
+    canvas.removeEventListener('touchstart',touchStartHandler);
+    canvas.removeEventListener('touchmove',touchMoveHandler);
+    canvas.removeEventListener('touchend',stopDraw);
+    
+    canvas.addEventListener('mousedown',startDraw);
+    canvas.addEventListener('mousemove',draw);
+    canvas.addEventListener('mouseup',stopDraw);
+    canvas.addEventListener('mouseout',stopDraw);
+    const touchStartHandler=e=>{e.preventDefault();startDraw(e.touches[0])};
+    const touchMoveHandler=e=>{e.preventDefault();draw(e.touches[0])};
+    canvas.addEventListener('touchstart',touchStartHandler,{passive:false});
+    canvas.addEventListener('touchmove',touchMoveHandler,{passive:false});
+    canvas.addEventListener('touchend',stopDraw);
+    
+    // Store handlers for cleanup
+    canvas._touchStart=touchStartHandler;
+    canvas._touchMove=touchMoveHandler;
+}
+
+function getCoords(e){
+    const canvas=document.getElementById('drawCanvas');
+    const rect=canvas.getBoundingClientRect();
+    // Scale coordinates to canvas internal resolution
+    const scaleX=canvas.width/rect.width;
+    const scaleY=canvas.height/rect.height;
+    return {
+        x:(e.clientX-rect.left)*scaleX,
+        y:(e.clientY-rect.top)*scaleY
+    };
+}
+
+function startDraw(e){
+    isDrawing=true;
+    const c=getCoords(e);
+    lastX=c.x; lastY=c.y;
+    // Draw a dot for single click
+    drawingCtx.beginPath();
+    drawingCtx.arc(c.x,c.y,drawingCtx.lineWidth/2,0,Math.PI*2);
+    drawingCtx.fillStyle=drawingCtx.strokeStyle;
+    drawingCtx.fill();
+}
+
+function draw(e){
+    if(!isDrawing) return;
+    const c=getCoords(e);
+    drawingCtx.beginPath();
+    drawingCtx.moveTo(lastX,lastY);
+    
+    if(currentTool==='spray'){
+        // Spray effect
+        const density=brushSize*2;
+        for(let i=0;i<density;i++){
+            const angle=Math.random()*Math.PI*2;
+            const dist=Math.random()*brushSize;
+            const sx=c.x+Math.cos(angle)*dist;
+            const sy=c.y+Math.sin(angle)*dist;
+            drawingCtx.fillRect(sx,sy,1,1);
+        }
+    }else{
+        drawingCtx.lineTo(c.x,c.y);
+        drawingCtx.stroke();
+    }
+    lastX=c.x; lastY=c.y;
+}
+
+function stopDraw(){ isDrawing=false; }
+
+function setTool(tool){
+    currentTool=tool;
+    document.querySelectorAll('.tv-tool[data-tool]').forEach(b=>{
+        b.classList.toggle('active',b.dataset.tool===tool);
+        b.classList.toggle('eraser',b.dataset.tool==='eraser');
+    });
+    if(tool==='eraser'){
+        drawingCtx.globalCompositeOperation='destination-out';
+        drawingCtx.strokeStyle='rgba(0,0,0,1)';
+        drawingCtx.lineWidth=brushSize*3; // Eraser bigger
+    }else{
+        drawingCtx.globalCompositeOperation='source-over';
+        drawingCtx.strokeStyle=currentColor;
+        drawingCtx.lineWidth=brushSize;
+        drawingCtx.fillStyle=currentColor;
+    }
+}
+
+function updateBrushSize(){
+    brushSize=parseInt(document.getElementById('brushSize').value);
+    if(currentTool!=='eraser'){
+        drawingCtx.lineWidth=brushSize;
+        drawingCtx.fillStyle=currentColor;
+    }else{
+        drawingCtx.lineWidth=brushSize*3;
+    }
+}
+
+function clearCanvas(){
+    drawingCtx.clearRect(0,0,drawingCtx.canvas.width,drawingCtx.canvas.height);
+}
+
+function updateColor(){
+    currentColor=document.getElementById('colorPicker').value;
+    if(currentTool!=='eraser'){
+        drawingCtx.strokeStyle=currentColor;
+        drawingCtx.fillStyle=currentColor;
+    }
+}
+
+function submitDrawing(){
+    const canvas=document.getElementById('drawCanvas');
+    drawings[currentPlayerIdx]=canvas.toDataURL('image/png');
+    turnOrder.push({type:'draw', playerIdx:currentPlayerIdx, data:drawings[currentPlayerIdx]});
+    currentPlayerIdx++;
+    if(currentPlayerIdx>=players.length){
+        currentPlayerIdx=0;
+        showPhase('guess');
+        startGuessingTurn();
+    }else{
+        startDrawingTurn();
+    }
+}
+
+function startGuessingTurn(){
+    updatePlayerTags('guessPlayers', currentPlayerIdx, currentPlayerIdx);
+    document.getElementById('currentGuesser').textContent=players[currentPlayerIdx];
+    const img=document.getElementById('drawingToGuess');
+    img.src=drawings[currentPlayerIdx];
+    img.style.display='block';
+    document.getElementById('guessInput').value='';
+    document.getElementById('guessInput').focus();
+}
+
+function submitGuess(){
+    const text=document.getElementById('guessInput').value.trim();
+    if(!text){ alert('اكتب تخمينك أولاً'); return; }
+    guesses[currentPlayerIdx]=text;
+    turnOrder.push({type:'guess', playerIdx:currentPlayerIdx, data:text});
+    currentPlayerIdx++;
+    if(currentPlayerIdx>=players.length){
+        showReveal();
+    }else{
+        startGuessingTurn();
+    }
+}
+
+// ===== Reveal & Vote =====
+function showReveal(){
+    showPhase('reveal');
+    const container=document.getElementById('chainDisplay');
+    container.innerHTML='';
+    
+    // Build chain from turnOrder
+    turnOrder.forEach((turn,i)=>{
+        const div=document.createElement('div');
+        div.className='tv-chain-item';
+        let stepLabel='', content='', imgHtml='';
+        
+        if(turn.type==='phrase'){
+            stepLabel='الجملة الأصلية';
+            content=turn.data;
+        }else if(turn.type==='draw'){
+            stepLabel='الرسم';
+            content='';
+            imgHtml=`<img class="tv-chain-img" src="${turn.data}">`;
+        }else if(turn.type==='guess'){
+            stepLabel='التخمين';
+            content=turn.data;
+        }
+        
+        div.innerHTML=`
+            <div class="tv-chain-step">${stepLabel}</div>
+            <div class="tv-chain-content">${content}</div>
+            ${imgHtml}
+            <div style="font-size:.8rem;color:var(--text-secondary);margin-top:.5rem">— ${players[turn.playerIdx]}</div>
+        `;
+        container.appendChild(div);
+    });
+    
+    const voteContainer=document.getElementById('voteButtons');
+    voteContainer.innerHTML=players.map((p,i)=>`<button class="tv-vote-btn" onclick="vote(${i})">${p}</button>`).join('');
+    document.getElementById('nextRoundBtn').style.display='none';
+    document.getElementById('endGameBtn').style.display='none';
+}
+
+function vote(idx){
+    votes[idx]=(votes[idx]||0)+1;
+    document.querySelectorAll('.tv-vote-btn').forEach((b,i)=>{
+        b.classList.toggle('voted',i===idx);
+        b.textContent=players[i]+' ('+(votes[i]||0)+')';
+    });
+    document.getElementById('nextRoundBtn').style.display='inline-flex';
+    document.getElementById('endGameBtn').style.display='inline-flex';
+}
+
+function goNextRound(){
+    startNextRound();
+}
+
+function endGame(){
+    showResults();
+}
+
+function showResults(){
+    showPhase('results');
+    const container=document.getElementById('finalScores');
+    const scores=players.map((p,i)=>({name:p,score:votes[i]||0}));
+    scores.sort((a,b)=>b.score-a.score);
+    container.innerHTML=scores.map((s,i)=>`<div class="tv-score-item"><div class="tv-score-name">${i===0?'🥇 ':''}${i===1?'🥈 ':''}${i===2?'🥉 ':''}${s.name}</div><div class="tv-score-val">${s.score} تصويت</div></div>`).join('');
+}
+
+document.getElementById('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
+</script>
+{% endblock %}

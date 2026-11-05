@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.rm-container{max-width:1000px;margin:0 auto}
+.rm-field{background:linear-gradient(180deg,#1a5c2e 0%,#145324 100%);border-radius:var(--radius-xl);padding:2rem;position:relative;overflow:hidden;margin-bottom:1.5rem}
+.rm-field::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.03),rgba(255,255,255,.03) 2px,transparent 2px,transparent 40px);pointer-events:none}
+.rm-field::after{content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:rgba(255,255,255,.2);transform:translateY(-50%)}
+.rm-card{background:#fff;border-radius:var(--radius);padding:.8rem 1rem;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:var(--transition);border:2px solid transparent;cursor:pointer;min-width:140px;text-align:center}
+.rm-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.rm-card.selected{border-color:#f59e0b;background:#fef3c7}
+.rm-card.used{opacity:.4;pointer-events:none;filter:grayscale(1)}
+.rm-card-name{font-weight:800;font-size:.95rem;color:#1a1a2e;margin-bottom:.3rem}
+.rm-card-club{font-size:.75rem;color:#6b7280;display:flex;align-items:center;justify-content:center;gap:.3rem}
+.rm-card-nation{font-size:.7rem;color:#9ca3af}
+.rm-center{background:#fff;border-radius:var(--radius-lg);padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.1);margin-bottom:1.5rem}
+.rm-condition{display:inline-flex;align-items:center;gap:.5rem;background:#f3f4f6;border-radius:var(--radius-pill);padding:.5rem 1rem;font-weight:700;font-size:.9rem;color:#374151}
+.rm-condition-icon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1a5c2e,#145324);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem}
+.rm-hand{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;min-height:120px}
+.rm-btn{padding:.7rem 1.5rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.5rem}
+.rm-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.rm-btn.primary{border-color:var(--accent-green);background:rgba(34,197,94,.12);color:var(--accent-green-ink)}
+.rm-btn.danger{border-color:var(--accent-red);background:rgba(239,68,68,.12);color:var(--accent-red-ink)}
+.rm-btn:disabled{opacity:.5;cursor:not-allowed}
+.rm-turn{text-align:center;font-size:1.3rem;font-weight:800;padding:.8rem;border-radius:var(--radius);background:var(--bg-card);border:2px solid var(--accent-green);color:var(--accent-green-ink);margin-bottom:1rem}
+.rm-scores{display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem}
+.rm-score{text-align:center;padding:1rem 2rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border-color)}
+.rm-score-name{font-size:.9rem;color:var(--text-secondary);margin-bottom:.3rem}
+.rm-score-val{font-size:2rem;font-weight:800;color:var(--accent-green-ink)}
+.rm-log{max-height:200px;overflow-y:auto;background:var(--bg-card);border-radius:var(--radius);padding:1rem;border:1px solid var(--border-color)}
+.rm-log-line{padding:.3rem 0;border-bottom:1px solid var(--border-color);font-size:.9rem;color:var(--text-secondary)}
+.rm-log-line:last-child{border-bottom:none}
+.rm-setup{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem}
+.rm-input-group{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.rm-input{flex:1;min-width:180px;padding:.7rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem}
+.rm-players{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.rm-player-tag{padding:.4rem .8rem;border-radius:var(--radius-pill);font-size:.85rem;font-weight:700;background:var(--bg-secondary);border:1px solid var(--border-color)}
+.rm-player-tag.current{background:rgba(34,197,94,.2);border-color:var(--accent-green);color:var(--accent-green-ink)}
+.rm-result{text-align:center;padding:2rem}
+.rm-result h2{font-size:2rem;margin-bottom:1rem}
+.rm-final-score{font-size:1.5rem;color:var(--text-secondary);margin-bottom:1.5rem}
+@media(max-width:600px){
+    .rm-card{min-width:120px;padding:.6rem .8rem}
+    .rm-card-name{font-size:.85rem}
+    .rm-btn{width:100%;justify-content:center}
+}
+</style>
+<div class="rm-container">
+<h1 style="text-align:center;margin:.5rem 0;font-size:2rem">⚽ ريمونتادا</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1.5rem">تخلص من كروتك بمطابقة لاعبين حقيقيين مع 3 شروط — أول من يفرغ يده يفوز!</p>
+
+<!-- Setup Phase -->
+<div class="rm-setup" id="setupPhase">
+<div class="rm-title"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> إعداد اللاعبين</div>
+<div class="rm-input-group">
+<input type="text" class="rm-input" id="playerName" placeholder="اسم اللاعب" autocomplete="off">
+<button class="rm-btn primary" onclick="addPlayer()"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> إضافة</button>
+</div>
+<div class="rm-players" id="playersList"></div>
+<div class="rm-hint" style="color:var(--text-secondary);font-size:.9rem">الحد الأدنى 2 لاعبين، يفضل 3-6</div>
+<button class="rm-btn primary" id="startGameBtn" onclick="startGame()" style="width:100%;margin-top:.5rem" disabled><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء المباراة</button>
+</div>
+
+<!-- Game Phase -->
+<div id="gamePhase" style="display:none">
+<div class="rm-turn" id="turnDisplay">الدور: <span id="currentPlayerName"></span></div>
+
+<div class="rm-scores">
+<div class="rm-score"><div class="rm-score-name">كروت في اليد</div><div class="rm-score-val" id="cardsCount">0</div></div>
+<div class="rm-score"><div class="rm-score-name">الجولة</div><div class="rm-score-val" id="roundNum">1</div></div>
+</div>
+
+<!-- Center Conditions -->
+<div class="rm-center">
+<div style="text-align:center;margin-bottom:1rem;color:var(--text-secondary);font-weight:700">الشروط الحالية (يجب توفر الثلاثة في اللاعب)</div>
+<div style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center" id="conditionsDisplay"></div>
+</div>
+
+<!-- Player Hand -->
+<div class="rm-hand" id="handDisplay" role="list" aria-label="كروت يدك"></div>
+
+<div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+<button class="rm-btn primary" id="playBtn" onclick="playCard()" disabled><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> لعب الكرت المحدد</button>
+<button class="rm-btn" onclick="drawPenalty()"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> سحب كرت عقوبة (لا أستطيع اللعب)</button>
+<button class="rm-btn" onclick="rerollConditions()"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> تغيير الشروط</button>
+</div>
+
+<div class="rm-log" id="gameLog"></div>
+</div>
+
+<!-- Result Phase -->
+<div id="resultPhase" style="display:none;text-align:center;padding:2rem">
+<h2>🏆 الفائز: <span id="winnerName" style="color:var(--accent-green-ink)"></span></h2>
+<p class="rm-final-score">أفرغ يده في الجولة <span id="winRound"></span></p>
+<button class="rm-btn primary" onclick="location.reload()" style="margin-right:.5rem"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> مباراة جديدة</button>
+<button class="rm-btn" onclick="location.href='/games'">العودة للألعاب</button>
+</div>
+</div>
+
+<script>
+// ===== Football Players Database =====
+const PLAYERS_DB = [
+    {name:"كريم بنزيما",club:"ريال مدريد",nation:"فرنسا",ucl:true,league:"الدوري الإسباني"},
+    {name:"لوكا مودريتش",club:"ريال مدريد",nation:"كرواتيا",ucl:true,league:"الدوري الإسباني"},
+    {name:"فينيسيوس جونيور",club:"ريال مدريد",nation:"البرازيل",ucl:true,league:"الدوري الإسباني"},
+    {name:"تياغو ألكانتارا",club:"ليفربول",nation:"إسبانيا",ucl:true,league:"الدوري الإنجليزي"},
+    {name:"محمد صلاح",club:"ليفربول",nation:"مصر",ucl:true,league:"الدوري الإنجليزي"},
+    {name:"فيرجيل فان دايك",club:"ليفربول",nation:"هولندا",ucl:true,league:"الدوري الإنجليزي"},
+    {name:"كيفين دي بروين",club:"مانشستر سيتي",nation:"بلجيكا",ucl:true,league:"الدوري الإنجليزي"},
+    {name:"إيرلينغ هالاند",club:"مانشستر سيتي",nation:"النرويج",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"روبن دياز",club:"مانشستر سيتي",nation:"البرتغال",ucl:true,league:"الدوري الإنجليزي"},
+    {name:"ليونيل ميسي",club:"باريس سان جيرمان",nation:"الأرجنتين",ucl:true,league:"الدوري الفرنسي"},
+    {name:"نيمار جونيور",club:"باريس سان جيرمان",nation:"البرازيل",ucl:false,league:"الدوري الفرنسي"},
+    {name:"كيليان مبابي",club:"باريس سان جيرمان",nation:"فرنسا",ucl:false,league:"الدوري الفرنسي"},
+    {name:"روبرت ليفاندوفسكي",club:"برشلونة",nation:"بولندا",ucl:true,league:"الدوري الإسباني"},
+    {name:"مانويل نوير",club:"بايرن ميونخ",nation:"ألمانيا",ucl:true,league:"الدوري الألماني"},
+    {name:"توماس مولر",club:"بايرن ميونخ",nation:"ألمانيا",ucl:true,league:"الدوري الألماني"},
+    {name:"يوزوا كيميتش",club:"بايرن ميونخ",nation:"ألمانيا",ucl:true,league:"الدوري الألماني"},
+    {name:"لاوتارو مارتينيز",club:"إنتر ميلان",nation:"الأرجنتين",ucl:true,league:"الدوري الإيطالي"},
+    {name:"خفيتشا كفاراتسخيليا",club:"نابولي",nation:"جورجيا",ucl:false,league:"الدوري الإيطالي"},
+    {name:"فيكتور أوسيمين",club:"نابولي",nation:"نيجيريا",ucl:false,league:"الدوري الإيطالي"},
+    {name:"مارتن أوديغارد",club:"أرسنال",nation:"النرويج",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"بوكايو ساكا",club:"أرسنال",nation:"إنجلترا",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"ديكلان رايس",club:"أرسنال",nation:"إنجلترا",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"هاري كين",club:"بايرن ميونخ",nation:"إنجلترا",ucl:false,league:"الدوري الألماني"},
+    {name:"جود بيلينجهام",club:"ريال مدريد",nation:"إنجلترا",ucl:true,league:"الدوري الإسباني"},
+    {name:"فلوريان فيرتز",club:"باير ليفركوزن",nation:"ألمانيا",ucl:false,league:"الدوري الألماني"},
+    {name:"جمال موسيالا",club:"بايرن ميونخ",nation:"ألمانيا",ucl:true,league:"الدوري الألماني"},
+    {name:"إدواردو كامافينغا",club:"ريال مدريد",nation:"فرنسا",ucl:true,league:"الدوري الإسباني"},
+    {name:"أوريلين تشواميني",club:"ريال مدريد",nation:"فرنسا",ucl:true,league:"الدوري الإسباني"},
+    {name:"فederيكو فالفيردي",club:"ريال مدريد",nation:"أوروغواي",ucl:true,league:"الدوري الإسباني"},
+    {name:"رودريغو غوز",club:"ريال مدريد",nation:"البرازيل",ucl:true,league:"الدوري الإسباني"},
+    {name:"إيدر ميليتاو",club:"ريال مدريد",nation:"البرازيل",ucl:true,league:"الدوري الإسباني"},
+    {name:"تيبو كورتوا",club:"ريال مدريد",nation:"بلجيكا",ucl:true,league:"الدوري الإسباني"},
+    {name:"داني كارفاخال",club:"ريال مدريد",nation:"إسبانيا",ucl:true,league:"الدوري الإسباني"},
+    {name:"توني كروس",club:"ريال مدريد",nation:"ألمانيا",ucl:true,league:"الدوري الإسباني"},
+    {name:"سيرخيو راموس",club:"إشبيلية",nation:"إسبانيا",ucl:true,league:"الدوري الإسباني"},
+    {name:"مارسيلو",club:"فلومينينسي",nation:"البرازيل",ucl:true,league:"غير أوروبي"},
+    {name:"كريستيانو رونالدو",club:"النصر",nation:"البرتغال",ucl:true,league:"دوري روشن السعودي"},
+    {name:"نغولو كانتي",club:"الاتحاد",nation:"فرنسا",ucl:true,league:"دوري روشن السعودي"},
+    {name:"ساديو ماني",club:"النصر",nation:"السنغال",ucl:true,league:"دوري روشن السعودي"},
+    {name:"روبن نيفيز",club:"الهلال",nation:"البرتغال",ucl:false,league:"دوري روشن السعودي"},
+    {name:"كاليادو كوليبالي",club:"الهلال",nation:"السنغال",ucl:false,league:"دوري روشن السعودي"},
+    {name:"مالكوم",club:"الهلال",nation:"البرازيل",ucl:false,league:"دوري روشن السعودي"},
+    {name:"سيرجي ميلينكوفيتش",club:"الهلال",nation:"صربيا",ucl:false,league:"دوري روشن السعودي"},
+    {name:"أندريه أونانا",club:"مانشستر يونايتد",nation:"الكاميرون",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"برونو فيرنانديز",club:"مانشستر يونايتد",nation:"البرتغال",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"ماركوس راشفورد",club:"مانشستر يونايتد",nation:"إنجلترا",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"كاسيميرو",club:"مانشستر يونايتد",nation:"البرازيل",ucl:true,league:"الدوري الإنجليزي"},
+    {name:"ليساندرو مارتينيز",club:"مانشستر يونايتد",nation:"الأرجنتين",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"ألفارو موراتا",club:"ميلان",nation:"إسبانيا",ucl:true,league:"الدوري الإيطالي"},
+    {name:"رافاييل لياو",club:"ميلان",nation:"البرتغال",ucl:false,league:"الدوري الإيطالي"},
+    {name:"تيو هيرنانديز",club:"ميلان",nation:"فرنسا",ucl:false,league:"الدوري الإيطالي"},
+    {name:"مايك مينيان",club:"ميلان",nation:"فرنسا",ucl:false,league:"الدوري الإيطالي"},
+    {name:"خوسيه غايا",club:"فياريال",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"جيرارد مورينو",club:"فياريال",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"باو توريس",club:"أستون فيلا",nation:"إسبانيا",ucl:false,league:"الدوري الإنجليزي"},
+    {name:"أوناي سيمون",club:"أتلتيك بيلباو",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"إنياكي ويليامز",club:"أتلتيك بيلباو",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"ماركو رويس",club:"بوروسيا دورتموند",nation:"ألمانيا",ucl:true,league:"الدوري الألماني"},
+    {name:"ماتس هوملز",club:"بوروسيا دورتموند",nation:"ألمانيا",ucl:true,league:"الدوري الألماني"},
+    {name:"جود بيلينجهام",club:"ريال مدريد",nation:"إنجلترا",ucl:true,league:"الدوري الإسباني"},
+    {name:"جوليان ألفاريز",club:"أتلتيكو مدريد",nation:"الأرجنتين",ucl:false,league:"الدوري الإسباني"},
+    {name:"أنطوان غريزمان",club:"أتلتيكو مدريد",nation:"فرنسا",ucl:false,league:"الدوري الإسباني"},
+    {name:"يان أوبلاك",club:"أتلتيكو مدريد",nation:"سلوفينيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"كوكا",club:"أتلتيكو مدريد",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"بيدري",club:"برشلونة",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"غافي",club:"برشلونة",nation:"إسبانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"فرينكي دي يونغ",club:"برشلونة",nation:"هولندا",ucl:true,league:"الدوري الإسباني"},
+    {name:"مارك أندريه تير شتيغن",club:"برشلونة",nation:"ألمانيا",ucl:false,league:"الدوري الإسباني"},
+    {name:"رونالد أراوخو",club:"برشلونة",nation:"أوروغواي",ucl:false,league:"الدوري الإسباني"},
+    {name:"جول كوندي",club:"برشلونة",nation:"فرنسا",ucl:false,league:"الدوري الإسباني"},
+];
+
+const CLUBS = [...new Set(PLAYERS_DB.map(p=>p.club))];
+const NATIONS = [...new Set(PLAYERS_DB.map(p=>p.nation))];
+const LEAGUES = [...new Set(PLAYERS_DB.map(p=>p.league))];
+
+// ===== Game State =====
+let players=[], hands={}, currentPlayerIdx=0, currentConditions=null, selectedCardIdx=-1;
+let gameOver=false, round=1;
+
+// ===== Setup =====
+function addPlayer(){
+    const input=document.getElementById('playerName');
+    const name=input.value.trim();
+    if(!name) return;
+    if(players.includes(name)){ alert('الاسم موجود'); return; }
+    players.push(name);
+    input.value='';
+    renderPlayersList();
+    document.getElementById('startGameBtn').disabled=players.length<2;
+}
+function renderPlayersList(){
+    document.getElementById('playersList').innerHTML=players.map((p,i)=>`<span class="rm-player-tag">${p} <button onclick="removePlayer(${i})" style="margin-right:.5rem;background:none;border:none;color:var(--accent-red);cursor:pointer">✕</button></span>`).join('');
+}
+function removePlayer(i){ players.splice(i,1); renderPlayersList(); document.getElementById('startGameBtn').disabled=players.length<2; }
+
+function startGame(){
+    // Deal 7 cards to each player
+    hands={};
+    players.forEach(p=>{ hands[p]=drawCards(7); });
+    currentPlayerIdx=0;
+    round=1;
+    gameOver=false;
+    newConditions();
+    document.getElementById('setupPhase').style.display='none';
+    document.getElementById('gamePhase').style.display='block';
+    document.getElementById('resultPhase').style.display='none';
+    updateUI();
+}
+
+function drawCards(count){
+    const shuffled=[...PLAYERS_DB].sort(()=>Math.random()-0.5);
+    return shuffled.slice(0,count);
+}
+
+function newConditions(){
+    // Pick 3 random conditions: club, nation, ucl/league
+    const club=CLUBS[Math.floor(Math.random()*CLUBS.length)];
+    const nation=NATIONS[Math.floor(Math.random()*NATIONS.length)];
+    const ucl=Math.random()>.5;
+    const league=LEAGUES[Math.floor(Math.random()*LEAGUES.length)];
+    currentConditions={club,nation,ucl,league};
+    renderConditions();
+}
+
+function renderConditions(){
+    const container=document.getElementById('conditionsDisplay');
+    container.innerHTML=`
+        <span class="rm-condition"><span class="rm-condition-icon">🏟️</span> النادي: <strong>${currentConditions.club}</strong></span>
+        <span class="rm-condition"><span class="rm-condition-icon">🌍</span> الجنسية: <strong>${currentConditions.nation}</strong></span>
+        <span class="rm-condition"><span class="rm-condition-icon">${currentConditions.ucl?'🏆':'🏅'}</span> ${currentConditions.ucl?'فاز بدوري الأبطال':'الدوري: '+currentConditions.league}</span>
+    `;
+}
+
+function updateUI(){
+    if(gameOver) return;
+    const currentPlayer=players[currentPlayerIdx];
+    document.getElementById('currentPlayerName').textContent=currentPlayer;
+    document.getElementById('cardsCount').textContent=hands[currentPlayer].length;
+    document.getElementById('roundNum').textContent=round;
+    renderHand(currentPlayer);
+    document.getElementById('playBtn').disabled=true;
+    selectedCardIdx=-1;
+}
+
+function renderHand(player){
+    const container=document.getElementById('handDisplay');
+    const hand=hands[player];
+    container.innerHTML=hand.map((card,i)=>`
+        <div class="rm-card ${i===selectedCardIdx?'selected':''} ${card.used?'used':''}" onclick="selectCard(${i})" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter')selectCard(${i})">
+            <div class="rm-card-name">${card.name}</div>
+            <div class="rm-card-club">🏟️ ${card.club}</div>
+            <div class="rm-card-nation">🌍 ${card.nation} ${card.ucl?'🏆':''}</div>
+        </div>
+    `).join('');
+}
+
+function selectCard(idx){
+    const currentPlayer=players[currentPlayerIdx];
+    if(hands[currentPlayer][idx].used) return;
+    selectedCardIdx=idx;
+    renderHand(currentPlayer);
+    document.getElementById('playBtn').disabled=false;
+}
+
+function checkMatch(card){
+    return card.club===currentConditions.club && 
+           card.nation===currentConditions.nation && 
+           card.ucl===currentConditions.ucl;
+}
+
+function playCard(){
+    if(selectedCardIdx===-1) return;
+    const currentPlayer=players[currentPlayerIdx];
+    const card=hands[currentPlayer][selectedCardIdx];
+    if(checkMatch(card)){
+        // Correct! Remove card
+        hands[currentPlayer].splice(selectedCardIdx,1);
+        log(`✅ ${currentPlayer} لعب <strong>${card.name}</strong> — مطابقة صحيحة! تخلص من الكرت.`,'success');
+        checkWin(currentPlayer);
+        selectedCardIdx=-1;
+        newConditions();
+        nextTurn();
+    }else{
+        // Wrong! Card stays, draw penalty
+        hands[currentPlayer][selectedCardIdx].used=true;
+        hands[currentPlayer].push(drawCards(1)[0]);
+        log(`❌ ${currentPlayer} لعب <strong>${card.name}</strong> — لا يطابق الشروط! كرت عقوبة.`,'error');
+        selectedCardIdx=-1;
+        nextTurn();
+    }
+}
+
+function drawPenalty(){
+    const currentPlayer=players[currentPlayerIdx];
+    hands[currentPlayer].push(drawCards(1)[0]);
+    log(`🃏 ${currentPlayer} سحب كرت عقوبة.`,'warning');
+    nextTurn();
+}
+
+function rerollConditions(){
+    newConditions();
+    log(`🔄 تم تغيير الشروط.`,'info');
+}
+
+function nextTurn(){
+    currentPlayerIdx=(currentPlayerIdx+1)%players.length;
+    round=Math.floor(currentPlayerIdx/players.length)+1;
+    updateUI();
+}
+
+function checkWin(player){
+    if(hands[player].length===0){
+        gameOver=true;
+        document.getElementById('gamePhase').style.display='none';
+        document.getElementById('resultPhase').style.display='block';
+        document.getElementById('winnerName').textContent=player;
+        document.getElementById('winRound').textContent=round;
+    }
+}
+
+function log(msg,type){
+    const div=document.createElement('div');
+    div.className='rm-log-line';
+    const colors={success:'var(--accent-green-ink)',error:'var(--accent-red-ink)',warning:'var(--accent-gold-ink)',info:'var(--accent-blue-ink)'};
+    div.innerHTML=`<span style="color:${colors[type]||'var(--text-secondary)'}">●</span> ${msg}`;
+    const logEl=document.getElementById('gameLog');
+    logEl.insertBefore(div,logEl.firstChild);
+}
+
+document.getElementById('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
+</script>
+{% endblock %}

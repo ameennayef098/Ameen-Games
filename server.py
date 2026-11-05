@@ -385,6 +385,56 @@ def list_questions():
                     'page': page, 'pages': pages, 'per_page': per_page})
 
 
+@app.route('/api/questions/pool', methods=['GET'])
+def questions_pool():
+    """تجميعة أسئلة مختارة عشوائياً لألعاب اللوح (اللودو).
+
+    اللعبة تحتاج مئات الأسئلة دفعة واحدة؛ تحميل البنك كاملاً (15 ألف سؤال)
+    في المتصفح يبطيء البدء بلا داعٍ. هنا نرجع عيّنة مختلطة من ألعاب محددة.
+    """
+    games_raw = request.args.get('games', 'quiz,letters')
+    wanted = [g.strip() for g in games_raw.split(',') if g.strip()]
+    limit = min(800, max(10, int(request.args.get('limit', 400))))
+    difficulty = request.args.get('difficulty', '')
+    bank = load_bank()
+    pool = []
+    for q in bank:
+        if q.get('game') not in wanted:
+            continue
+        if q.get('status') != 'approved':
+            continue
+        if not str(q.get('question', '')).strip() or not str(q.get('answer', '')).strip():
+            continue
+        if difficulty and q.get('difficulty') != difficulty:
+            continue
+        pool.append({
+            'id': q.get('id', ''),
+            'game': q.get('game', ''),
+            'category': q.get('category_name') or q.get('category_id') or '',
+            'letter': q.get('letter') or '',
+            'question': q.get('question', ''),
+            'answer': q.get('answer', ''),
+            'alternatives': q.get('alternatives') or [],
+            'difficulty': q.get('difficulty') or 'medium',
+        })
+    _rnd.shuffle(pool)
+    return jsonify({'questions': pool[:limit], 'total': len(pool),
+                    'games': wanted})
+
+
+@app.route('/api/feud/questions', methods=['GET'])
+def feud_questions():
+    """All AMEEN FEUD survey questions."""
+    import json as _json
+    path = os.path.join(os.path.dirname(__file__), 'data', 'feud_bank.json')
+    with open(path, 'r', encoding='utf-8') as f:
+        data = _json.load(f)
+    cat = request.args.get('cat', '')
+    if cat:
+        data = [q for q in data if q.get('cat') == cat]
+    return jsonify({'questions': data, 'total': len(data)})
+
+
 @app.route('/api/questions/<qid>', methods=['GET'])
 def get_question(qid):
     q = next((x for x in load_bank() if x['id'] == qid), None)
@@ -635,6 +685,15 @@ def list_reports():
     if status:
         reports = [r for r in reports if r.get('status') == status]
     return jsonify({'reports': reports})
+
+@app.route('/api/reports/<rid>', methods=['GET'])
+def get_report(rid):
+    reports = load_json(REPORTS_FILE, [])
+    for r in reports:
+        if r.get('id') == rid:
+            return jsonify(r)
+    return jsonify({'error': 'not found'}), 404
+
 
 @app.route('/api/reports/<rid>', methods=['PUT'])
 def update_report(rid):
@@ -1635,42 +1694,6 @@ GAME_SCHEMAS = {
             '"difficulty":"easy|medium|hard"}}]'
         ),
     },
-    'detective': {
-        'name': 'المحقق',
-        'required': ['title', 'solution'],
-        'fields': ['title', 'intro', 'setting', 'characters', 'evidence', 'timeline', 'solution',
-                   'reasoning', 'key_evidence', 'difficulty', 'status', 'source'],
-        'prompt': (
-            'أنشئ {n} قضية تحقيق جنائي خيالي للعبة «المحقق».\n'
-            'لكل قضية أعد حقولاً بهذا الشكل الدقيق:\n'
-            '{{"title":"عنوان القضية","intro":"مقدمة مختصرة","setting":"المكان والظروف",'
-            '"characters":[{{"name":"اسم","role":"دوره","statement":"قول الشاهد"}}],'
-            '"evidence":[{{"id":"e1","text":"وصف الدليل","hidden":false}}],'
-            '"timeline":["حدث 1","حدث 2"],"solution":"ما حدث فعلاً",'
-            '"reasoning":"تسلسل الاستنتاج","key_evidence":["e1","e3"],'
-            '"difficulty":"easy|medium|hard"}}\n'
-            'شروط: 3 إلى 5 شخصيات، 4 إلى 7 أدلة (بعضها hidden:true)، الأقوال متسقة مع الحل، '
-            'والحل مدعوم فعلاً بالأدلة المذكورة في key_evidence. كل النصوص عربية.'
-        ),
-    },
-    'culprit': {
-        'name': 'من الفاعل؟',
-        'required': ['title', 'culprit'],
-        'fields': ['title', 'incident', 'suspects', 'initial_info', 'clues', 'culprit',
-                   'explanation', 'difficulty', 'status', 'source'],
-        'prompt': (
-            'أنشئ {n} قضية للعبة «من الفاعل؟» — تحديد المسؤول عن حادثة خيالية.\n'
-            'الصيغة:\n'
-            '{{"title":"عنوان","incident":"وصف الحادثة",'
-            '"suspects":[{{"name":"اسم","motive":"دافعه المحتمل"}}],'
-            '"initial_info":["معلومة أولية"],'
-            '"clues":[{{"text":"دليل","eliminates":"اسم من يستبعده أو فارغ"}}],'
-            '"culprit":"اسم المسؤول","explanation":"لماذا هو المسؤول ولماذا استُبعد الباقون",'
-            '"difficulty":"easy|medium|hard"}}\n'
-            'شروط: 3 إلى 6 مشتبهين، دافع كل واحد موجود، و4 إلى 6 أدلة. '
-            'يجب أن توجد أدلة تستبعد كل مشتبه بريء — الدافع وحده لا يكفي. كل النصوص عربية.'
-        ),
-    },
     'spy': {
         'name': 'الجاسوس',
         'required': ['word'],
@@ -1796,24 +1819,6 @@ def validate_content(game, item):
     if game == 'codenames':
         if len(str(item['word']).split()) > 3:
             return False, 'كلمة كود نيمز يجب أن تكون قصيرة'
-    if game == 'detective':
-        chars = item.get('characters') or []
-        ev = item.get('evidence') or []
-        if len(chars) < 3:
-            return False, 'القضية تحتاج 3 شخصيات على الأقل'
-        if len(ev) < 4:
-            return False, 'القضية تحتاج 4 أدلة على الأقل'
-        ids = [str(e.get('id')) for e in ev if isinstance(e, dict)]
-        for k in (item.get('key_evidence') or []):
-            if str(k) not in ids:
-                return False, 'دليل أساسي غير موجود في قائمة الأدلة'
-    if game == 'culprit':
-        sus = item.get('suspects') or []
-        if len(sus) < 3:
-            return False, 'القضية تحتاج 3 مشتبهين على الأقل'
-        names = [str(s.get('name')) for s in sus if isinstance(s, dict)]
-        if str(item['culprit']) not in names:
-            return False, 'المسؤول يجب أن يكون أحد المشتبهين'
     if game == 'link':
         if len(item.get('items') or []) < 3:
             return False, 'اللغز يحتاج 3 عناصر على الأقل'
@@ -2284,6 +2289,9 @@ def guard_admin_writes():
     if request.method in ('GET', 'HEAD', 'OPTIONS'):
         return None
     if request.path == '/api/admin/login':
+        return None
+    # تبليغ اللاعبين عن سؤال جزء من اللعب العام وليس إدارة
+    if request.path == '/api/questions/report':
         return None
     if request.path.startswith(GUARDED_PREFIXES) and not is_admin(request):
         return jsonify({'error': 'غير مصرّح — سجّل الدخول إلى لوحة الإدارة'}), 401
@@ -2880,8 +2888,6 @@ QUESTION_GAME_DEFS = {
 
 CONTENT_GAME_DEFS = {
     'codenames': {'name': 'كود نيمز', 'selectors': ['category', 'difficulty']},
-    'detective': {'name': 'المحقق', 'selectors': ['difficulty']},
-    'culprit': {'name': 'من الفاعل؟', 'selectors': ['difficulty']},
     'spy': {'name': 'الجاسوس', 'selectors': ['category', 'difficulty']},
     'debate': {'name': 'أقنعني!', 'selectors': ['category', 'difficulty']},
     'whoplayer': {'name': 'مين اللاعب؟', 'selectors': ['difficulty']},
@@ -3032,7 +3038,7 @@ def ai_job_push(job, item, ok, reason=''):
     title = (item.get('question') or item.get('word') or item.get('title')
              or item.get('topic') or item.get('player') or item.get('name') or '')
     answer = (item.get('answer') or item.get('meaning') or item.get('solution')
-              or item.get('culprit') or item.get('link') or '')
+              or item.get('link') or '')
     if ok:
         job['accepted'] += 1
         job['items'].append({'title': str(title)[:120], 'detail': str(answer)[:120],
@@ -3554,32 +3560,20 @@ GAME_INTROS = {
         ],
         'tip': 'إن لم يخمّن الفريق أي كلمة صحيحة، ينتقل الدور للفريق الآخر.',
     },
-    'detective': {
-        'name': 'المحقق',
-        'type': 'ألغاز وتحقيق',
-        'icon': 'i-search', 'color': 'var(--accent-blue)',
-        'lead': 'اجمع الأدلة من مسرح الحادثة واستجوب الشهود ثم قدّم استناجك.',
+    'ludo': {
+        'name': 'لودو الأسئلة',
+        'type': 'لعبة لوحة',
+        'icon': 'i-dice', 'color': 'var(--accent-gold)',
+        'lead': 'لودو بمسارات وأحجار وكروت خاصة — لا تتحرك إلا بسؤال تجيب عليه.',
         'steps': [
-            'اقرأ وقائع القضية والشخصيات المتورطة.',
-            'افحص الأدلة واحدًا تلو الآخر.',
-            'حدّد الأدلة الأساسية التي تدعم استنتاجك.',
-            'قدّم المتورط والأدلة الداعمة.',
-            'يُكشف الحل الصحيح وتُحتَسب نقاطك.',
+            'اختر عدد اللاعبين وأسماءهم وعدد أحجار كل لاعب.',
+            'ارمِ النرد: يظهر سؤال من بنك س.ج وحروف مع أمين.',
+            'الإجابة الصحيحة تمكّنك من التحرك بعدد النرد، والخطأ يُلغي الحركة.',
+            'الوقوف على حجر خصم يرسله لقاعدته، والحجر المنهي يفوز بالنقاط.',
+            'كروت خاصة (تحديد المسافة، تبديل، إرجاع) تُستخدم في أي وقت وبحد أقصى 4.',
+            'من يُدخل كل أحجاره إلى القاعدة الوسطى أولاً يفوز بالجولة.',
         ],
-        'tip': 'ليست كل الأدلة أساسية — اختيارها الصحيح هو نصف النقاط.',
-    },
-    'culprit': {
-        'name': 'من الفاعل؟',
-        'type': 'ألغاز وتحقيق',
-        'icon': 'i-scale', 'color': 'var(--accent-red)',
-        'lead': 'وقائع وأقوال مشتبه بهم متضاربة؛ مهمتك وزن القرائن وتحديد المسؤول.',
-        'steps': [
-            'اقرأ وقائع الحادثة.',
-            'راجع أقوال المشتبه بهم — بعضها متناقض.',
-            'حدّد المشتبه المسؤول والأدلة التي تدعم اختيارك.',
-            'يُكشف الحل وتُحتَسب نقاطك.',
-        ],
-        'tip': 'ابحث عن التناقض بين الأقوال؛ فهو أقوى قرينة.',
+        'tip': 'الخلايا المُلوّنة والنجمة آمنة — لا يمكن أسر حجر يقف عليها.',
     },
     'spy': {
         'name': 'الجاسوس',
@@ -3708,7 +3702,107 @@ GAME_INTROS = {
             'الإجابة المكررة أو الخاطئة تُخرجك من الجولة.',
             'آخر لاعب صامد يفوز.',
         ],
-        'tip': 'راقب الإجابات السابقة جيدًا؛ التكرار هو أكثر سبب للخروج.',
+                'tip': 'راقب الإجابات السابقة جيدًا؛ التكرار هو أكثر سبب للخروج.',
+            },
+            'mafia': {
+                            'name': 'المافيا',
+                            'type': 'استنتاج اجتماعي',
+                            'icon': 'i-eye', 'color': 'var(--accent-red)',
+                            'lead': 'لعبة أدوار سرية: المافيا تقتل ليلاً، والمواطنون يصوتون نهارًا. من سينجو؟',
+                            'steps': [
+                                'أدخل أسماء اللاعبين (6-12) واختر عدد المافيا.',
+                                'يُوزع الدور سرًا على كل لاعب (مافيا، طبيب، محقق، مواطن).',
+                                'الليلة: المافيا تختار ضحية، الطبيب ينقذ، المحقق يفحص.',
+                                'النهار: يُكشف من مات، ثم يناقش اللاعبون ويصوتون لإعدام مشتبه به.',
+                                'المُعدم يكشف دوره، وتستمر المراحل حتى فوز أحد الفريقين.',
+                            ],
+                            'tip': 'المافيا تعرف بعضها، الطبيب ينقذ مرة واحدة لنفسه، المحقق يكشف هوية واحدة كل ليلة.',
+                        },
+                        'tv_broken': {
+                            'name': 'تلفزيون خربان',
+                            'type': 'تمثيل وتخمين',
+                            'icon': 'i-tv', 'color': 'var(--accent-purple)',
+                            'lead': 'لعبة تمثيل صامت: لاعب يمثل الكلمة/العبارة دون نطق أي حرف، وباقي الفريق يخمّن.',
+                            'steps': [
+                                'قسّم الحضور إلى فريقين، واختر مدة الجولة (مثلاً 60 ثانية).',
+                                'الفريق صاحب الدور: لاعب واحد يرى الكلمة/العبارة على الشاشة.',
+                                'يمثّلها بحركات الجسد والوجه فقط — ممنوع الكلام، الأصوات، أو الإشارة للأحرف.',
+                                'باقي فريقه يخمّنون بصوت عالٍ قبل انتهاء الوقت.',
+                                'كل إجابة صحيحة = نقطة. ينتهي الدور بوقوع الوقت أو تخمين الكلمة.',
+                                'يتناوب الفريقان، والفريق صاحب أعلى رصيد يفوز.',
+                            ],
+                            'tip': 'استخدم إيماءات قياسية: «كتاب» = فتح يدين، «فيلم» = تدوير يد وهمية، «يبدو مثل…» = سحب شحمة الأذن.',
+                        },
+                        'remontada': {
+                            'name': 'ريمونتادا',
+                            'type': 'مسابقة عودة',
+                            'icon': 'i-trophy', 'color': 'var(--accent-red)',
+                            'lead': 'مسابقة أسئلة بفريقين: الفريق المتأخر يحصل على أسهل الأسئلة والفرص المضاعفة للعودة!',
+                            'steps': [
+                                'قسّم الحضور إلى فريقين، وأدخل أسماء الفريقين.',
+                                'الجولات العادية: كل فريق يختار فئة ويجيب على سؤال بنقاط عادية.',
+                                'عندما يتأخر فريق بـ 300 نقطة أو أكثر: يُفعَّل «وضع الريمونتادا» تلقائيًا.',
+                                'في وضع الريمونتادا: الفريق المتأخر يحصل على أسئلة أسهل، ونقاط مضاعفة، ووقت إضافي.',
+                                'الفريق المتقدم يلعب أسئلة أصعب بنقاط عادية — الضغط عليه!',
+                                'أول فريق يصل للنقاط المستهدفة (أو ينتهي الوقت) يفوز.',
+                            ],
+                            'tip': 'لا تستسلم مبكرًا — الريمونتادا صُمّمت لتقلب الطاولة! الفريق المتأخر له أفضلية حقيقية.',
+                        },
+                        'deaf_wedding': {
+                            'name': 'الأطرش بالزفة',
+                            'type': 'تسلسل همس',
+                            'icon': 'i-users', 'color': 'var(--accent-gold)',
+                            'lead': 'لعبة الهاتف المكسور: جملة تمرّر بالهمس من لاعب لآخر، والنتيجة النهائية غالبًا مضحكة!',
+                            'steps': [
+                                'اجلسوا في صف أو دائرة. المضيف يكتب جملة سرية ويظهرها لأول لاعب فقط.',
+                                'اللاعب الأول يهمس الجملة لزميله 옆، وهذا يهمس للذي بعده، وهكذا.',
+                                'ممنوع تكرار الهمس أكثر من مرة واحدة — ما سُمِع سُمِع.',
+                                'آخر لاعب ينطق الجملة بصوت عالٍ أمام الجميع.',
+                                'المضيف يكشف الجملة الأصلية — قارنوا وضحّكوا!',
+                                'جولات متعددة: كل جولة جملة أصعب (أطول، بها أسماء/أرقام).',
+                            ],
+                            'tip': 'الجمل التي تحتوي على كلمات متشابهة صوتيًا (مثل: «سفر/سقر»، «بنت/بنت») تعطي نتائج أروع.',
+                        },
+                        'same_wavelength': {
+                            'name': 'نفس الموجة',
+                            'type': 'تزامن تفكير',
+                            'icon': 'i-brain', 'color': 'var(--accent-cyan)',
+                            'lead': 'فريقان يتنافسان على إعطاء نفس الإجابة لنفس السؤال — كم أنتم على نفس الموجة؟',
+                            'steps': [
+                                'قسّم الحضور إلى فريقين (أحمر/أزرق). كل فريق يجلس جنبًا لجنب.',
+                                'يظهر سؤال مفتوح (مثال: «أول شيء يخطر ببالك عند سماع كلمة: بحر»).',
+                                'كل لاعب يكتب إجابته سرًا في هاتفه/ورقة — ممنوع التشاور!',
+                                'تكشف الإجابات: كل إجابة متطابقة داخل الفريق = نقطة للفريق.',
+                                'إجابة متطابقة بين الفريقين = نقطة إضافية «موجة مشتركة».',
+                                'بعد 10 أسئلة، الفريق صاحب أعلى رصيد يفوز بلقب «على نفس الموجة».',
+                            ],
+                            'tip': 'الأسئلة العامة (ألوان، أطعمة، أماكن) تتطابق أكثر. الأسئلة الشخصية (ذكريات، آراء) أصعب للتزامن.',
+                        },
+            'chess': {
+        'name': 'شطرنج',
+        'type': 'لعبة لوحة',
+        'icon': 'i-chess', 'color': 'var(--accent-purple)',
+        'lead': 'لعبة الشطرنج الكلاسيكية بين لاعبين على رقعة 8×8.',
+        'steps': [
+            'اضغط قطعة لتحديدها ثم اضغط المربع الذي تريد التحرك إليه.',
+            'الحركات الخضراء تدل على المربعات المتاحة.',
+            'احمِ ملكك من الكش وحاول أن تشل خصمك بالكش مات.',
+            'يمكنك التراجع أو قلب الرقعة في أي وقت.',
+        ],
+        'tip': 'الكش باللون الأحمر على الملك، والكش مات ينتهي اللعبة.',
+    },
+    'ludo': {
+        'name': 'لودو الأسئلة',
+        'type': 'لعبة طاولة',
+        'icon': 'i-dice', 'color': 'var(--accent-gold)',
+        'lead': 'لودو بمسارات وأحجار وكروت خاصة — لا تتحرك إلا بسؤال تجيب عليه.',
+        'steps': [
+            'اختر عدد اللاعبين ومصدر الأسئلة.',
+            'جاوب على السؤال لتتحرك بعدد النرد.',
+            'اجمع الكروت الخاصة واستخدمها لتغيير مجرى اللعبة.',
+            'أدخل كل أحجاره إلى القاعدة الوسطى أولاً يفوز.',
+        ],
+        'tip': 'رمي 6 يمنح دوراً إضافياً، والخلايا الملونة والنجمة آمنة من الالتقاط.',
     },
 }
 
@@ -3719,6 +3813,8 @@ def intro_skipped(game):
     """هل الشرح مُعفى لهذه اللعبة؟ (كوكيز دائم / جلسة / لكل الألعاب)"""
     # في وضع البطولة تفتح اللعبة داخل إطار، وشاشة الشرح ستفسد تدفق المباراة
     if request.args.get('tourn') == '1':
+        return True
+    if request.args.get('skip_intro') == '1':
         return True
     if request.cookies.get(INTRO_ALL_COOKIE) == '1':
         return True
@@ -3786,6 +3882,37 @@ def game_million():
 def game_minebali():
     return serve_game('minebali', 'game_minebali.html')
 
+@app.route('/game/chess')
+def game_chess():
+    return serve_game('chess', 'game_chess.html')
+
+@app.route('/game/tv_broken')
+def game_tv_broken():
+    return serve_game('tv_broken', 'game_tv_broken.html')
+
+@app.route('/game/remontada')
+def game_remontada():
+    return serve_game('remontada', 'game_remontada.html')
+
+@app.route('/game/deaf_wedding')
+def game_deaf_wedding():
+    return serve_game('deaf_wedding', 'game_deaf_wedding.html')
+
+@app.route('/game/same_wavelength')
+def game_same_wavelength():
+    return serve_game('same_wavelength', 'game_same_wavelength.html')
+
+
+@app.route('/game/ludo')
+def game_ludo():
+    return send_from_directory(os.path.join(BASE_DIR, 'static', 'ludo'), 'index.html')
+
+
+@app.route('/game/ludo/<path:filename>')
+def ludo_static(filename):
+    return send_from_directory(os.path.join(BASE_DIR, 'static', 'ludo'), filename)
+
+
 @app.route('/game/<game>/intro')
 def game_intro(game):
     """شاشة شرح اللعبة وحدها."""
@@ -3795,8 +3922,9 @@ def game_intro(game):
 
 @app.route('/game/<game>')
 def game(game):
-    valid = ['codenames','detective','culprit','spy','debate','whoplayer','link','draw_guess',
-             'letters_strikeout','dice_race']
+    valid = ['codenames','spy','debate','whoplayer','link','draw_guess',
+             'letters_strikeout','dice_race','chess','feud','mafia',
+             'tv_broken','remontada','deaf_wedding','same_wavelength']
     if game not in valid:
         return redirect('/games')
     return serve_game(game, 'game_' + game + '.html')
@@ -4286,6 +4414,34 @@ def send_static(path):
 @app.route('/uploads/<path:path>')
 def send_upload(path):
     return send_from_directory(UPLOAD_DIR, path)
+
+
+# ============ LUDO HELPERS ============
+@app.route('/api/ludo/million-questions')
+def ludo_million_questions():
+    """أسئلة لعبة لودو من بنك «سيربح المليون» — تحويل للتنسيق المطلوب."""
+    bank = load_bank()
+    million = [q for q in bank if q.get('game') == 'million' and q.get('status') == 'approved']
+    import random as _rnd
+    _rnd.shuffle(million)
+    count = min(int(request.args.get('count', 80)), len(million))
+    out = []
+    for q in million[:count]:
+        opts = list(q.get('options', []))
+        ans_text = str(q.get('answer', '') or '').strip()
+        try:
+            ans_idx = opts.index(ans_text)
+        except ValueError:
+            continue
+        out.append({
+            'id': q.get('id'),
+            'category': q.get('category_id', 'general'),
+            'difficulty': {'easy': 1, 'medium': 2, 'hard': 3}.get(q.get('difficulty', 'medium'), 2),
+            'question': q.get('question', ''),
+            'options': opts,
+            'answer': ans_idx,
+        })
+    return jsonify({'questions': out, 'total': len(out)})
 
 
 if __name__ == '__main__':

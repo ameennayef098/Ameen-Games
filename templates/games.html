@@ -111,12 +111,13 @@
             <input id="catSearch" type="search" placeholder="ابحث باسم اللعبة…" aria-label="ابحث في الألعاب" autocomplete="off">
         </div>
         <div class="cat-filters" id="catFilters" role="group" aria-label="تصفية الألعاب حسب النوع">
-            <button class="cat-chip active" type="button" data-filter="all">الكل</button>
-            <button class="cat-chip" type="button" data-filter="مسابقات">مسابقات</button>
-            <button class="cat-chip" type="button" data-filter="استراتيجية">استراتيجية</button>
-            <button class="cat-chip" type="button" data-filter="ألغاز وتحقيق">ألغاز وتحقيق</button>
-            <button class="cat-chip" type="button" data-filter="كلمات ومهارات">كلمات ومهارات</button>
-        </div>
+                    <button class="cat-chip active" type="button" data-filter="all">الكل</button>
+                    <button class="cat-chip" type="button" data-filter="مسابقات">مسابقات</button>
+                    <button class="cat-chip" type="button" data-filter="استراتيجية">استراتيجية</button>
+                    <button class="cat-chip" type="button" data-filter="ألغاز وتحقيق">ألغاز وتحقيق</button>
+                    <button class="cat-chip" type="button" data-filter="كلمات ومهارات">كلمات ومهارات</button>
+                    <button class="cat-chip" type="button" data-filter="ألعاب المجموعة">ألعاب المجموعة</button>
+                </div>
         <span class="cat-count" id="catCount" role="status" aria-live="polite"></span>
     </div>
 
@@ -151,6 +152,23 @@
                 <span><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg>فئات متعددة</span>
                 <span><svg class="ico" aria-hidden="true"><use href="#i-star"></use></svg>200 – 600 نقطة</span>
                 <span><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>سرقة السؤال</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/chess" data-cat="استراتيجية" style="--cat-color: var(--accent-purple)">
+            <div class="cat-card-top">
+                <span class="icon-chip purple"><svg class="ico" aria-hidden="true"><use href="#i-chess"></use></svg></span>
+                <div>
+                    <h2>شطرنج</h2>
+                    <span class="cat-game-type">لعبة لوحة</span>
+                </div>
+            </div>
+            <p>لعبة الشطرنج الكلاسيكية بين لاعبين. حرّك القطع بحسب قوانينها، اضغط على الخصم بالكش والكش مات.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-chess"></use></svg>32 قطعة</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>كش/كش مات</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-clock"></use></svg>دوران</span>
             </div>
             <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
         </a>
@@ -201,38 +219,6 @@
             <div class="cat-features">
                 <span><svg class="ico" aria-hidden="true"><use href="#i-megaphone"></use></svg>تلميح بكلمات</span>
                 <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>فريقان</span>
-            </div>
-            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
-        </a>
-
-        <a class="cat-card" href="/game/detective" data-cat="ألغاز وتحقيق" style="--cat-color: var(--accent-blue)">
-            <div class="cat-card-top">
-                <span class="icon-chip"><svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg></span>
-                <div>
-                    <h2>المحقق</h2>
-                    <span class="cat-game-type">تحقيق</span>
-                </div>
-            </div>
-            <p>اجمع الأدلة، استجوب الشهود، واستنتج من يقف خلف الحادثة قبل أن تنفد محاولاتك.</p>
-            <div class="cat-features">
-                <span><svg class="ico" aria-hidden="true"><use href="#i-bulb"></use></svg>أدلة</span>
-                <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>استنتاج</span>
-            </div>
-            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
-        </a>
-
-        <a class="cat-card" href="/game/culprit" data-cat="ألغاز وتحقيق" style="--cat-color: var(--accent-red)">
-            <div class="cat-card-top">
-                <span class="icon-chip red"><svg class="ico" aria-hidden="true"><use href="#i-scale"></use></svg></span>
-                <div>
-                    <h2>من الفاعل؟</h2>
-                    <span class="cat-game-type">لغز جنائي</span>
-                </div>
-            </div>
-            <p>اقرأ الوقائع وقارن أقوال المشتبه بهم لتحديد المسؤول عن الحادثة من بينهم.</p>
-            <div class="cat-features">
-                <span><svg class="ico" aria-hidden="true"><use href="#i-book"></use></svg>وقائع</span>
-                <span><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg>مشتبه بهم</span>
             </div>
             <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
         </a>
@@ -383,7 +369,131 @@
             </div>
             <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
         </a>
-    </div>
+        <a class="cat-card" href="/game/ludo" data-cat="استراتيجية" style="--cat-color: var(--accent-gold)">
+            <div class="cat-card-top">
+                <span class="icon-chip gold"><svg class="ico" aria-hidden="true"><use href="#i-dice"></use></svg></span>
+                <div>
+                    <h2>لودو الأسئلة</h2>
+                    <span class="cat-game-type">لعبة لوحة</span>
+                </div>
+            </div>
+            <p>لودو بمسارات وأحجار وكروت خاصة — لا تتحرك إلا بسؤال تجيب عليه.</p>
+            <div class="cat-features">
+                <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>أسئلة س.ج وحروف</span>
+                <span><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg>كروت خاصة</span>
+            </div>
+            <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+        </a>
+
+        <a class="cat-card" href="/game/feud" data-cat="مسابقات" style="--cat-color: var(--accent-blue, #3b82f6)">
+                    <div class="cat-card-top">
+                        <span class="icon-chip blue"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg></span>
+                        <div>
+                            <h2>أمين فيود</h2>
+                            <span class="cat-game-type">مسابقة جمهور</span>
+                        </div>
+                    </div>
+                    <p>تخمين إجابات الجمهور الأكثر شيوعاً. فريقان، 6 إجابات مخفية، ونقاط لكل إجابة. هل تستطيع كشفها جميعاً؟</p>
+                    <div class="cat-features">
+                        <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>فريقان</span>
+                        <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>200 سؤال</span>
+                        <span><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>سرقة ومواجهة</span>
+                    </div>
+                    <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+                </a>
+
+                <a class="cat-card" href="/game/mafia" data-cat="ألغاز وتحقيق" style="--cat-color: var(--accent-red, #ef4444)">
+                                    <div class="cat-card-top">
+                                        <span class="icon-chip red"><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg></span>
+                                        <div>
+                                            <h2>المافيا</h2>
+                                            <span class="cat-game-type">استنتاج اجتماعي</span>
+                                        </div>
+                                    </div>
+                                    <p>لعبة أدوار سرية: المافيا تقتل ليلاً، الطبيب ينقذ، المحقق يفحص، والمواطنون يصوتون نهارًا. هل ستكتشف الخونة قبل فوات الأوان؟</p>
+                                    <div class="cat-features">
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>6-12 لاعب</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-shield"></use></svg>4 أدوار</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-clock"></use></svg>مراحل ليلية/نهارية</span>
+                                    </div>
+                                    <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+                                </a>
+
+                                <!-- قسم ألعاب المجموعة -->
+                                <div class="catalogue-section-header reveal" style="grid-column:1/-1;text-align:center;margin:var(--space-6) 0 var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border-color)">
+                                    <h2 style="font-size:var(--font-size-xl);color:var(--accent-gold-ink);display:inline-flex;align-items:center;gap:var(--space-2)"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> ألعاب المجموعة</h2>
+                                    <p style="color:var(--text-secondary);margin-top:var(--space-2);font-size:var(--font-size-sm)">ألعاب جماعية تفاعلية للفرق والحفلات</p>
+                                </div>
+
+                                <a class="cat-card" href="/game/tv_broken" data-cat="ألعاب المجموعة" style="--cat-color: var(--accent-purple)">
+                                    <div class="cat-card-top">
+                                        <span class="icon-chip purple"><svg class="ico" aria-hidden="true"><use href="#i-tv"></use></svg></span>
+                                        <div>
+                                            <h2>تلفزيون خربان</h2>
+                                            <span class="cat-game-type">رسم وتخمين متسلسل</span>
+                                        </div>
+                                    </div>
+                                    <p>اكتب جملة → ارسمها → التالي يخمنها بالرسم → يكشف السلسلة كاملة بتصويت مضحك! سلسلة تليفون مرسومة.</p>
+                                    <div class="cat-features">
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-pen"></use></svg>رسم حر</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>3-8 لاعبين</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>تصويت مضحك</span>
+                                    </div>
+                                    <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+                                </a>
+
+                                <a class="cat-card" href="/game/remontada" data-cat="ألعاب المجموعة" style="--cat-color: var(--accent-green)">
+                                    <div class="cat-card-top">
+                                        <span class="icon-chip green"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg></span>
+                                        <div>
+                                            <h2>ريمونتادا</h2>
+                                            <span class="cat-game-type">كروت كرة قدم</span>
+                                        </div>
+                                    </div>
+                                    <p>تخلص من كروتك بمطابقة لاعبين حقيقيين مع 3 شروط (نادي، جنسية، دوري أبطال). أول من يفرغ يده يفوز!</p>
+                                    <div class="cat-features">
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-football"></use></svg>لاعبون حقيقيون</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>3 شروط</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg>عقوبات وسحب</span>
+                                    </div>
+                                    <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+                                </a>
+
+                                <a class="cat-card" href="/game/deaf_wedding" data-cat="ألعاب المجموعة" style="--cat-color: var(--accent-gold)">
+                                    <div class="cat-card-top">
+                                        <span class="icon-chip gold"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg></span>
+                                        <div>
+                                            <h2>الأطرش بالزفة</h2>
+                                            <span class="cat-game-type">استنتاج اجتماعي</span>
+                                        </div>
+                                    </div>
+                                    <p>الكل يجاوب على نفس السؤال... ما عدا «الأطرش»! اكشفوه بالتصويت قبل أن يخدعكم ويكسب نقاطاً مضاعفة.</p>
+                                    <div class="cat-features">
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg>أسئلة مختلفة</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>4-8 لاعبين</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>نقاط مضاعفة</span>
+                                    </div>
+                                    <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+                                </a>
+
+                                <a class="cat-card" href="/game/same_wavelength" data-cat="ألعاب المجموعة" style="--cat-color: var(--accent-cyan)">
+                                    <div class="cat-card-top">
+                                        <span class="icon-chip cyan"><svg class="ico" aria-hidden="true"><use href="#i-brain"></use></svg></span>
+                                        <div>
+                                            <h2>نفس الموجة</h2>
+                                            <span class="cat-game-type">تزامن تفكير</span>
+                                        </div>
+                                    </div>
+                                    <p>فريقان، عداد بين كلمتين متعاكستين، تلميح واحد — حركوا الإبرة للموقع المتوقع. هل أنتم على نفس الموجة؟</p>
+                                    <div class="cat-features">
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-target"></use></svg>عداد تفاعلي</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>فريقان 2-5</span>
+                                        <span><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg>موجة مشتركة</span>
+                                    </div>
+                                    <span class="cat-play">العب الآن <span aria-hidden="true">←</span></span>
+                                </a>
+
+                            </div>
 
     <div class="empty-state" id="catEmpty" hidden>
         <svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg>

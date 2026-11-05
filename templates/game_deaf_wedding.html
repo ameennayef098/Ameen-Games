@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.aw-container{max-width:900px;margin:0 auto}
+.aw-phase{display:none}
+.aw-phase.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.aw-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem}
+.aw-title{font-size:1.3rem;font-weight:800;margin-bottom:1rem;color:var(--accent-gold-ink);display:flex;align-items:center;gap:.5rem}
+.aw-input{width:100%;padding:.7rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;margin-bottom:1rem}
+.aw-btn{padding:.7rem 1.5rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.5rem}
+.aw-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.aw-btn.primary{border-color:var(--accent-gold);background:rgba(245,158,11,.12);color:var(--accent-gold-ink)}
+.aw-btn.success{border-color:var(--accent-green);background:rgba(34,197,94,.12);color:var(--accent-green-ink)}
+.aw-btn.danger{border-color:var(--accent-red);background:rgba(239,68,68,.12);color:var(--accent-red-ink)}
+.aw-btn:disabled{opacity:.5;cursor:not-allowed}
+.aw-players{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.aw-player-tag{padding:.4rem .8rem;border-radius:var(--radius-pill);font-size:.85rem;font-weight:700;background:var(--bg-secondary);border:1px solid var(--border-color)}
+.aw-player-tag.current{background:rgba(245,158,11,.2);border-color:var(--accent-gold);color:var(--accent-gold-ink)}
+.aw-player-tag.done{background:rgba(34,197,94,.15);border-color:var(--accent-green);color:var(--accent-green-ink)}
+.aw-question-box{background:linear-gradient(135deg,rgba(20,184,166,.1),rgba(139,92,246,.1));border:2px solid var(--accent-gold);border-radius:var(--radius-lg);padding:2rem;text-align:center;margin:1.5rem 0}
+.aw-question-label{font-size:.9rem;font-weight:700;color:var(--accent-gold-ink);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
+.aw-question-text{font-size:1.5rem;font-weight:800;color:var(--text-primary);line-height:1.5}
+.aw-answer-input{width:100%;padding:1rem;border:2px solid var(--border-color);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:1.2rem;text-align:center;margin:1rem 0}
+.aw-answers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:1rem}
+.aw-answer-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1.5rem;text-align:center;transition:var(--transition)}
+.aw-answer-card:hover{transform:translateY(-4px);border-color:var(--accent-gold);box-shadow:0 8px 20px rgba(245,158,11,.15)}
+.aw-answer-player{font-weight:800;color:var(--accent-gold-ink);margin-bottom:.5rem}
+.aw-answer-text{color:var(--text-primary);font-size:1.1rem;white-space:pre-wrap}
+.aw-vote{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem;justify-content:center}
+.aw-vote-btn{flex:1;min-width:120px;padding:.8rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-weight:700;cursor:pointer;transition:var(--transition)}
+.aw-vote-btn:hover,.aw-vote-btn.voted{border-color:var(--accent-red);background:rgba(239,68,68,.1);color:var(--accent-red-ink)}
+.aw-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem;margin-top:1.5rem}
+.aw-score{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;text-align:center}
+.aw-score-name{font-size:.9rem;color:var(--text-secondary);margin-bottom:.3rem}
+.aw-score-val{font-size:1.5rem;font-weight:800;color:var(--accent-gold-ink)}
+.aw-hint{font-size:.9rem;color:var(--text-secondary);text-align:center;margin-top:.5rem}
+.aw-secret-box{background:rgba(139,92,246,.1);border:2px solid var(--accent-purple);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;margin:1rem 0}
+.aw-secret-title{font-size:1rem;font-weight:800;color:var(--accent-purple-ink);margin-bottom:.5rem}
+@media(max-width:600px){
+    .aw-question-text{font-size:1.2rem}
+    .aw-answer-input{font-size:1rem}
+    .aw-btn{width:100%;justify-content:center}
+}
+</style>
+<div class="aw-container">
+<h1 style="text-align:center;margin:.5rem 0;font-size:2rem">🤐 الأطرش بالزفة</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1.5rem">الكل يجاوب على نفس السؤال... ما عدا «الأطرش» يحصل على سؤال مختلف سراً! اكشفوه بالتصويت</p>
+
+<!-- Phase 1: Setup -->
+<div class="aw-phase active" id="phaseSetup">
+<div class="aw-card">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> إعداد اللاعبين</div>
+<div style="display:flex;gap:.5rem;margin-bottom:1rem">
+<input type="text" class="aw-input" id="playerName" placeholder="اسم اللاعب" style="flex:1" autocomplete="off">
+<button class="aw-btn primary" onclick="addPlayer()"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> إضافة</button>
+</div>
+<div class="aw-players" id="playersList"></div>
+<div class="aw-hint">الحد الأدنى 4 لاعبين، يفضل 5-8</div>
+<button class="aw-btn primary" id="startGameBtn" onclick="startGame()" style="width:100%;margin-top:.5rem" disabled><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء اللعبة</button>
+</div>
+</div>
+
+<!-- Phase 2: Show Normal Question to Everyone -->
+<div class="aw-phase" id="phaseNormalQuestion">
+<div class="aw-card">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-question"></use></svg> الجولة <span id="roundNum">1</span> — السؤال للجميع</div>
+<div class="aw-players" id="playersTurn"></div>
+
+<div class="aw-question-box" id="normalQuestionBox">
+<div class="aw-question-label">السؤال الموحد للجميع:</div>
+<div class="aw-question-text" id="normalQuestionText"></div>
+</div>
+
+<div class="aw-hint" style="background:rgba(34,197,94,.1);border:1px solid var(--accent-green);padding:1rem;border-radius:var(--radius)"><strong>📋 التعليمات:</strong> اقرأوا السؤال جيداً. سيحصل «الأطرش» على سؤال مختلف سراً. اضغطوا «التالي» عندما يكون الجميع جاهزين.</div>
+<button class="aw-btn primary" onclick="goToDeafQuestion()" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> التالي: سؤال الأطرش السري</button>
+</div>
+</div>
+
+<!-- Phase 3: Secret Deaf Question (shown only to deaf player) -->
+<div class="aw-phase" id="phaseDeafQuestion">
+<div class="aw-card">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg> الجولة <span id="roundNum2">1</span> — <strong style="color:var(--accent-purple-ink)">للأطرش فقط</strong></div>
+
+<div class="aw-secret-box">
+<div class="aw-secret-title">🔒 يا <span id="deafPlayerName"></span> — أنت «الأطرش» هذه الجولة!</div>
+<p style="color:var(--text-secondary);margin-bottom:1rem">السؤال الموحد للآخرين: <strong id="normalQuestionRef"></strong></p>
+<p style="color:var(--text-secondary);margin-bottom:1rem">سؤالك أنت (اختلف قليلاً):</p>
+</div>
+
+<div class="aw-question-box" style="border-color:var(--accent-purple);background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(139,92,246,.05))">
+<div class="aw-question-label" style="color:var(--accent-purple-ink)">سؤالك السري:</div>
+<div class="aw-question-text" id="deafQuestionText"></div>
+</div>
+
+<div class="aw-hint" style="background:rgba(139,92,246,.1);border:1px solid var(--accent-purple);padding:1rem;border-radius:var(--radius)"><strong>🤫 مهم:</strong> احفظ سؤالك وإجابتك جيداً. لا تُرِ أحداً هذا الشاشة! اضغط «التالي» لإخفاء السؤال والانتقال لكتابة الإجابات.</div>
+<button class="aw-btn primary" onclick="goToAnswers()" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> التالي: كتابة الإجابات</button>
+</div>
+</div>
+
+<!-- Phase 4: All Players Write Answers -->
+<div class="aw-phase" id="phaseAnswers">
+<div class="aw-card">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-pen"></use></svg> الجولة <span id="roundNum3">1</span> — كتابة الإجابات</div>
+<div class="aw-players" id="answersPlayers"></div>
+<p style="color:var(--text-secondary);margin-bottom:1rem">دور: <strong id="currentAnswerPlayer"></strong> — <span id="answerHint"></span></p>
+
+<div class="aw-question-box" id="answerQuestionBox">
+<div class="aw-question-label">السؤال:</div>
+<div class="aw-question-text" id="answerQuestionText"></div>
+</div>
+
+<input type="text" class="aw-answer-input" id="answerInput" placeholder="اكتب إجابتك هنا..." autocomplete="off">
+<button class="aw-btn primary" onclick="submitAnswer()" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> تأكيد الإجابة</button>
+<div class="aw-hint">اكتب إجابتك سراً — لا يراها غيرك!</div>
+</div>
+</div>
+
+<!-- Phase 5: Reveal & Vote -->
+<div class="aw-phase" id="phaseReveal">
+<div class="aw-card">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg> كشف الإجابات — من هو الأطرش؟</div>
+
+<div class="aw-answers-grid" id="answersDisplay"></div>
+
+<div class="aw-vote" id="voteButtons"></div>
+<button class="aw-btn primary" id="nextRoundBtn" onclick="nextRound()" style="width:100%;margin-top:1rem;display:none"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> جولة جديدة</button>
+<button class="aw-btn" onclick="endGame()" style="width:100%;margin-top:.5rem;display:none" id="endGameBtn"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> إنهاء اللعبة وعرض النتائج</button>
+</div>
+</div>
+
+<!-- Phase 6: Round Result -->
+<div class="aw-phase" id="phaseRoundResult">
+<div class="aw-card" style="text-align:center">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg> نتيجة الجولة</div>
+<div id="roundResultText" style="font-size:1.3rem;margin:1.5rem 0"></div>
+<div class="aw-scores" id="scoresDisplay"></div>
+<button class="aw-btn primary" onclick="continueGame()" style="width:100%;margin-top:1rem"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> متابعة</button>
+</div>
+</div>
+
+<!-- Phase 7: Final Results -->
+<div class="aw-phase" id="phaseResults">
+<div class="aw-card" style="text-align:center">
+<div class="aw-title"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> النتائج النهائية</div>
+<div class="aw-scores" id="finalScores"></div>
+<button class="aw-btn primary" onclick="location.reload()" style="margin-right:.5rem"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> لعبة جديدة</button>
+<button class="aw-btn" onclick="location.href='/games'">العودة للألعاب</button>
+</div>
+</div>
+</div>
+
+<script>
+// ===== Questions Database (paired: normal <-> deaf) =====
+const QUESTION_PAIRS = [
+    {normal:"وش أحلى دولة زرتها للإجازة؟", deaf:"وش الدولة اللي تتمناها تكون عاصمتها البحر؟"},
+    {normal:"وش أطعم أكلة جربتها في حياتك؟", deaf:"وش الأكل اللي لو أكلته تصير تطير؟"},
+    {normal:"وش فيلم أو مسلسل تعيد مشاهدته؟", deaf:"وش الفيلم اللي بطلة representado تميمة؟"},
+    {normal:"وش أجمل ذكرى طفولة عندك؟", deaf:"وش الذكرى اللي تتذكرها من حياة سابقة؟"},
+    {normal:"لو ربحت المليون، أول شيء تشتريه؟", deaf:"لو ربحت المليون، تشتري جزيرة ولا كوكب؟"},
+    {normal:"وش موهبة تتمنى إنك تجيدها؟", deaf:"وش القدرة الخارقة اللي تختارها: الاختفاء أم الطيران؟"},
+    {normal:"وش أكثر شيء يخوفك في الحياة؟", deaf:"وش الشيء اللي يخوفك لو طار في غرفتك؟"},
+    {normal:"وش أغرب عادة يومية عندك؟", deaf:"وش العادة الغريبة اللي تمارسها وانت نائم؟"},
+    {normal:"وش أفضل هدية استلمتها؟", deaf:"وش أغرب هدية ممكن تستلمها من فضائي؟"},
+    {normal:"لو سافرت بالزمن، لأي فترة تروح؟", deaf:"لو سافرت بالزمن، تروح للمستقبل ولا الماضي البعيد؟"},
+    {normal:"وش أكثر تطبيق تستخدمه في جوالك؟", deaf:"وش التطبيق اللي تتمنى يكون موجود وما فيه؟"},
+    {normal:"وش لونك المفضل وليش؟", deaf:"وش اللون اللي لو شفتة تصير تغني؟"},
+    {normal:"وش حيوانك المفضل؟", deaf:"وش الحيوان اللي لو تكلم يقول حكمة؟"},
+    {normal:"وش أنمي أو كرتون أثر فيك صغير؟", deaf:"وش الكرتون اللي شخصياته كائنات فضائية؟"},
+    {normal:"وش وظيفتك المثالية؟", deaf:"وش الوظيفة اللي موجود فيها تنين كزميل؟"}
+];
+
+// ===== Game State =====
+let players=[], currentPlayerIdx=0, currentRound=0, maxRounds=0;
+let deafPlayerIdx=-1, usedPairs=[];
+let answers={}, votes={}, scores={};
+let currentPair=null;
+
+// ===== Setup =====
+function addPlayer(){
+    const input=document.getElementById('playerName');
+    const name=input.value.trim();
+    if(!name) return;
+    if(players.includes(name)){ alert('الاسم موجود'); return; }
+    players.push(name);
+    scores[name]=0;
+    input.value='';
+    renderPlayersList();
+    document.getElementById('startGameBtn').disabled=players.length<4;
+}
+function renderPlayersList(){
+    document.getElementById('playersList').innerHTML=players.map((p,i)=>`<span class="aw-player-tag">${p} <button onclick="removePlayer(${i})" style="margin-right:.5rem;background:none;border:none;color:var(--accent-red);cursor:pointer">✕</button></span>`).join('');
+}
+function removePlayer(i){ players.splice(i,1); renderPlayersList(); document.getElementById('startGameBtn').disabled=players.length<4; }
+
+function startGame(){
+    maxRounds=players.length;
+    currentRound=0;
+    answers={}; votes={};
+    nextRound();
+}
+
+function nextRound(){
+    if(currentRound>=maxRounds){ showFinalResults(); return; }
+    currentRound++;
+    // Pick deaf player (rotate)
+    deafPlayerIdx=currentRound%players.length;
+    // Pick unused question pair
+    const available=QUESTION_PAIRS.filter((_,i)=>!usedPairs.includes(i));
+    currentPair=available[Math.floor(Math.random()*available.length)];
+    usedPairs.push(QUESTION_PAIRS.indexOf(currentPair));
+    
+    currentPlayerIdx=0;
+    answers={};
+    document.getElementById('phaseSetup').style.display='none';
+    document.getElementById('phaseNormalQuestion').style.display='block';
+    document.getElementById('phaseDeafQuestion').style.display='none';
+    document.getElementById('phaseAnswers').style.display='none';
+    document.getElementById('phaseReveal').style.display='none';
+    document.getElementById('phaseRoundResult').style.display='none';
+    document.getElementById('phaseResults').style.display='none';
+    showNormalQuestion();
+}
+
+function showNormalQuestion(){
+    document.getElementById('roundNum').textContent=currentRound;
+    document.getElementById('roundNum2').textContent=currentRound;
+    document.getElementById('roundNum3').textContent=currentRound;
+    updatePlayerTags('playersTurn', -1, players.length);
+    document.getElementById('normalQuestionText').textContent=currentPair.normal;
+    document.getElementById('normalQuestionRef').textContent=currentPair.normal;
+    document.getElementById('deafQuestionText').textContent=currentPair.deaf;
+}
+
+function goToDeafQuestion(){
+    document.getElementById('phaseNormalQuestion').style.display='none';
+    document.getElementById('phaseDeafQuestion').style.display='block';
+    document.getElementById('deafPlayerName').textContent=players[deafPlayerIdx];
+}
+
+function goToAnswers(){
+    document.getElementById('phaseDeafQuestion').style.display='none';
+    document.getElementById('phaseAnswers').style.display='block';
+    currentPlayerIdx=0;
+    startAnswerTurn();
+}
+
+function startAnswerTurn(){
+    updatePlayerTags('answersPlayers', currentPlayerIdx, currentPlayerIdx);
+    const player=players[currentPlayerIdx];
+    document.getElementById('currentAnswerPlayer').textContent=player;
+    const isDeaf=currentPlayerIdx===deafPlayerIdx;
+    document.getElementById('answerHint').textContent=isDeaf?'🔒 أنت الأطرش — اكتب إجابة لسؤالك السري':'✍️ اكتب إجابتك للسؤال الموحد';
+    document.getElementById('answerQuestionText').textContent=isDeaf?currentPair.deaf:currentPair.normal;
+    document.getElementById('answerInput').value='';
+    document.getElementById('answerInput').focus();
+    document.getElementById('answerInput').dataset.isDeaf=isDeaf;
+}
+
+function updatePlayerTags(containerId, currentIdx, doneCount){
+    const container=document.getElementById(containerId);
+    container.innerHTML=players.map((p,i)=>{
+        let cls='aw-player-tag';
+        if(i===currentIdx) cls+=' current';
+        else if(i<doneCount) cls+=' done';
+        return `<span class="${cls}">${p}</span>`;
+    }).join('');
+}
+
+function submitAnswer(){
+    const input=document.getElementById('answerInput');
+    const answer=input.value.trim();
+    if(!answer){ alert('اكتب إجابة أولاً'); return; }
+    const player=players[currentPlayerIdx];
+    answers[player]={text:answer, isDeaf:currentPlayerIdx===deafPlayerIdx};
+    currentPlayerIdx++;
+    if(currentPlayerIdx>=players.length){
+        showReveal();
+    }else{
+        startAnswerTurn();
+    }
+}
+
+function showReveal(){
+    document.getElementById('phaseAnswers').style.display='none';
+    document.getElementById('phaseReveal').style.display='block';
+    const container=document.getElementById('answersDisplay');
+    container.innerHTML=players.map(p=>{
+        const a=answers[p];
+        return `<div class="aw-answer-card"><div class="aw-answer-player">${p}</div><div class="aw-answer-text">${a.text}</div></div>`;
+    }).join('');
+    const voteContainer=document.getElementById('voteButtons');
+    voteContainer.innerHTML=players.map((p,i)=>`<button class="aw-vote-btn" onclick="vote(${i})">${p}</button>`).join('');
+    document.getElementById('nextRoundBtn').style.display='none';
+    document.getElementById('endGameBtn').style.display='none';
+}
+
+function vote(idx){
+    const votedPlayer=players[idx];
+    votes[votedPlayer]=(votes[votedPlayer]||0)+1;
+    document.querySelectorAll('.aw-vote-btn').forEach((b,i)=>{
+        b.classList.toggle('voted',i===idx);
+        b.textContent=players[i]+' ('+(votes[players[i]]||0)+')';
+    });
+    document.getElementById('nextRoundBtn').style.display='inline-flex';
+    document.getElementById('endGameBtn').style.display='inline-flex';
+}
+
+function nextRound(){
+    const deafPlayer=players[deafPlayerIdx];
+    let roundResult='';
+    let maxVotes=0, mostVoted=null;
+    players.forEach(p=>{
+        if((votes[p]||0)>maxVotes){
+            maxVotes=votes[p];
+            mostVoted=p;
+        }
+    });
+    if(mostVoted===deafPlayer){
+        players.forEach(p=>{ if(p!==deafPlayer) scores[p]+=1; });
+        roundResult=`✅ المجموعة كشفت الأطرش (<strong>${deafPlayer}</strong>)! الجميع يكسبون نقطة ما عدا الأطرش.`;
+    }else{
+        scores[deafPlayer]+=2;
+        roundResult=`🤐 الأطرش (<strong>${deafPlayer}</strong>) نجا وخدع المجموعة! يكسب نقطتين.`;
+    }
+    document.getElementById('phaseReveal').style.display='none';
+    document.getElementById('phaseRoundResult').style.display='block';
+    document.getElementById('roundResultText').innerHTML=roundResult;
+    renderScores('scoresDisplay');
+    votes={};
+}
+
+function renderScores(containerId){
+    const container=document.getElementById(containerId);
+    const sorted=[...players].sort((a,b)=>scores[b]-scores[a]);
+    container.innerHTML=sorted.map((p,i)=>`<div class="aw-score"><div class="aw-score-name">${i===0?'🥇 ':''}${i===1?'🥈 ':''}${i===2?'🥉 ':''}${p}</div><div class="aw-score-val">${scores[p]}</div></div>`).join('');
+}
+
+function continueGame(){
+    currentRound++;
+    nextRound();
+}
+
+function endGame(){
+    showFinalResults();
+}
+
+function showFinalResults(){
+    document.getElementById('phaseRoundResult').style.display='none';
+    document.getElementById('phaseResults').style.display='block';
+    renderScores('finalScores');
+}
+
+document.getElementById('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
+document.getElementById('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitAnswer();});
+</script>
+{% endblock %}

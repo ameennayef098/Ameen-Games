@@ -1,0 +1,573 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.sw-container{max-width:900px;margin:0 auto}
+.sw-phase{display:none}
+.sw-phase.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sw-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem}
+.sw-title{font-size:1.3rem;font-weight:800;margin-bottom:1rem;color:var(--accent-cyan-ink);display:flex;align-items:center;gap:.5rem}
+.sw-input{width:100%;padding:.7rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;margin-bottom:.5rem}
+.sw-input-small{width:100%;padding:.5rem .8rem;border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:.95rem}
+.sw-btn{padding:.7rem 1.5rem;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.5rem}
+.sw-btn:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.sw-btn.primary{border-color:var(--accent-cyan);background:rgba(6,182,212,.12);color:var(--accent-cyan-ink)}
+.sw-btn.success{border-color:var(--accent-green);background:rgba(34,197,94,.12);color:var(--accent-green-ink)}
+.sw-btn.danger{border-color:var(--accent-red);background:rgba(239,68,68,.12);color:var(--accent-red-ink)}
+.sw-btn:disabled{opacity:.5;cursor:not-allowed}
+.sw-players{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.sw-player-tag{padding:.4rem .8rem;border-radius:var(--radius-pill);font-size:.85rem;font-weight:700;background:var(--bg-secondary);border:1px solid var(--border-color)}
+.sw-player-tag.current{background:rgba(6,182,212,.2);border-color:var(--accent-cyan);color:var(--accent-cyan-ink)}
+.sw-player-tag.done{background:rgba(34,197,94,.15);border-color:var(--accent-green);color:var(--accent-green-ink)}
+.sw-team-setup{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1rem}
+.sw-team-column{background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1rem;border:2px solid var(--border-color)}
+.sw-team-column.red{border-color:var(--accent-red)}
+.sw-team-column.blue{border-color:var(--accent-blue)}
+.sw-team-label{font-size:1.1rem;font-weight:800;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+.sw-team-label.red{color:var(--accent-red-ink)}
+.sw-team-label.blue{color:var(--accent-blue-ink)}
+.sw-player-row{display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center}
+.sw-player-row input{flex:1}
+.sw-add-player{width:100%;margin-top:.5rem;padding:.5rem;border:2px dashed var(--border-color);border-radius:var(--radius);background:transparent;color:var(--text-secondary);cursor:pointer;font-weight:600;transition:var(--transition)}
+.sw-add-player:hover{border-color:var(--accent-cyan);color:var(--accent-cyan-ink);background:rgba(6,182,212,.05)}
+
+/* Dial/Wheel */
+.sw-dial-wrap{position:relative;width:100%;max-width:400px;margin:2rem auto;display:flex;justify-content:center}
+.sw-dial{position:relative;width:320px;height:320px;cursor:grab;touch-action:none}
+.sw-dial:active{cursor:grabbing}
+.sw-dial-bg{width:100%;height:100%;border-radius:50%;background:conic-gradient(from 180deg, #06b6d4 0deg, #06b6d4 180deg, #f59e0b 180deg, #f59e0b 360deg);position:absolute;top:0;left:0;pointer-events:none}
+.sw-dial-inner{position:absolute;top:16px;left:16px;right:16px;bottom:16px;background:var(--bg-card);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;pointer-events:none}
+.sw-dial-labels{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.sw-dial-label{position:absolute;transform-origin:center;color:var(--text-primary);font-weight:800;font-size:1.1rem;text-shadow:0 0 4px var(--bg-card)}
+.sw-dial-label.left{left:10px;top:50%;transform:translateY(-50%)}
+.sw-dial-label.right{right:10px;top:50%;transform:translateY(-50%)}
+.sw-needle{position:absolute;bottom:50%;left:50%;width:4px;height:140px;background:var(--accent-red);transform-origin:bottom center;transform:translateX(-50%) rotate(0deg);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:3;border-radius:2px 2px 0 0;pointer-events:none}
+.sw-needle::before{content:'';position:absolute;bottom:-8px;left:-6px;width:16px;height:16px;background:var(--accent-red);border-radius:50%;border:3px solid var(--bg-card)}
+.sw-target-zone{position:absolute;top:16px;left:16px;right:16px;bottom:16px;border-radius:50%;border:3px dashed transparent;transition:border-color .3s;z-index:1;pointer-events:none}
+.sw-target-zone.active{border-color:var(--accent-green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.sw-dial-center{text-align:center;z-index:4;pointer-events:none}
+.sw-dial-value{font-size:2.5rem;font-weight:800;color:var(--accent-red-ink);font-variant-numeric:tabular-nums;font-family:'Changa',sans-serif}
+.sw-dial-unit{font-size:.9rem;color:var(--text-secondary);text-transform:uppercase}
+.sw-team-area{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
+.sw-team{background:var(--bg-secondary);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;border:2px solid var(--border-color)}
+.sw-team.red{border-color:var(--accent-red)}
+.sw-team.blue{border-color:var(--accent-blue)}
+.sw-team-name{font-size:1.2rem;font-weight:800;margin-bottom:.5rem}
+.sw-team-name.red{color:var(--accent-red-ink)}
+.sw-team-name.blue{color:var(--accent-blue-ink)}
+.sw-team-players{font-size:.9rem;color:var(--text-secondary);margin-bottom:1rem}
+.sw-team-score{font-size:2.5rem;font-weight:800;font-variant-numeric:tabular-nums;font-family:'Changa',sans-serif}
+.sw-team-score.red{color:var(--accent-red-ink)}
+.sw-team-score.blue{color:var(--accent-blue-ink)}
+.sw-answers{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.sw-answer{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;text-align:center}
+.sw-answer.player{font-weight:800;color:var(--accent-cyan-ink);margin-bottom:.5rem}
+.sw-answer.value{font-size:1.3rem;font-weight:700;color:var(--text-primary)}
+.sw-answer.match{background:rgba(34,197,94,.15);border-color:var(--accent-green)}
+.sw-round-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius)}
+.sw-round-label{font-weight:800;color:var(--accent-cyan-ink)}
+.sw-hint{font-size:.9rem;color:var(--text-secondary);text-align:center;margin-top:.5rem}
+.sw-final{text-align:center;padding:2rem}
+.sw-final h2{font-size:2rem;margin-bottom:1rem}
+.sw-final-score{font-size:1.3rem;color:var(--text-secondary);margin-bottom:1.5rem}
+@media(max-width:600px){
+    .sw-dial{width:280px;height:280px}
+    .sw-dial-inner{top:12px;left:12px;right:12px;bottom:12px}
+    .sw-needle{height:120px}
+    .sw-team-setup{grid-template-columns:1fr}
+    .sw-team-area{grid-template-columns:1fr}
+    .sw-answers{grid-template-columns:1fr}
+    .sw-btn{width:100%;justify-content:center}
+}
+</style>
+<div class="sw-container">
+<h1 style="text-align:center;margin:.5rem 0;font-size:2rem">🧠 نفس الموجة</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:1.5rem">فريقان، عداد بين كلمتين متعاكستين، تلميح واحد — هل أنتم على نفس الموجة؟</p>
+
+<!-- Phase 1: Setup Teams with individual inputs -->
+<div class="sw-phase active" id="phaseSetup">
+<div class="sw-card">
+<div class="sw-title"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> إعداد الفرق</div>
+
+<div class="sw-team-setup">
+<div class="sw-team-column red">
+<div class="sw-team-label red"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> 🔴 الفريق الأحمر</div>
+<div id="redPlayersContainer">
+<div class="sw-player-row"><input type="text" class="sw-input-small" placeholder="لاعب 1" required></div>
+<div class="sw-player-row"><input type="text" class="sw-input-small" placeholder="لاعب 2" required></div>
+</div>
+<button class="sw-add-player" onclick="addPlayerField('red')"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> إضافة لاعب (الحد 5)</button>
+</div>
+
+<div class="sw-team-column blue">
+<div class="sw-team-label blue"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> 🔵 الفريق الأزرق</div>
+<div id="bluePlayersContainer">
+<div class="sw-player-row"><input type="text" class="sw-input-small" placeholder="لاعب 1" required></div>
+<div class="sw-player-row"><input type="text" class="sw-input-small" placeholder="لاعب 2" required></div>
+</div>
+<button class="sw-add-player" onclick="addPlayerField('blue')"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> إضافة لاعب (الحد 5)</button>
+</div>
+</div>
+
+<div class="sw-hint">2-5 لاعبين لكل فريق. سيتم اختيار «الملمح» عشوائياً كل جولة.</div>
+<button class="sw-btn primary" onclick="startGame()" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء اللعبة</button>
+</div>
+</div>
+
+<!-- Phase 2: Clue Giver Phase -->
+<div class="sw-phase" id="phaseClue">
+<div class="sw-card">
+<div class="sw-title"><svg class="ico" aria-hidden="true"><use href="#i-megaphone"></use></svg> الجولة <span id="roundNum">1</span> — الملمح: <strong id="clueGiverName" style="color:var(--accent-cyan-ink)"></strong></div>
+<div class="sw-round-info">
+<span class="sw-round-label">الفريق: <span id="clueTeamName"></span></span>
+<span id="roundProgress"></span>
+</div>
+
+<div style="text-align:center;margin:1.5rem 0">
+<div class="sw-dial-labels">
+<span class="sw-dial-label left" id="labelLeft"></span>
+<span class="sw-dial-label right" id="labelRight"></span>
+</div>
+<div class="sw-dial-wrap">
+<div class="sw-dial" id="dial" tabindex="0" role="slider" aria-label="موقع الهدف السري" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+<div class="sw-dial-bg"></div>
+<div class="sw-target-zone" id="targetZone"></div>
+<div class="sw-dial-inner">
+<div class="sw-dial-center">
+<div class="sw-dial-value" id="dialValue">50</div>
+<div class="sw-dial-unit">%</div>
+</div>
+</div>
+<div class="sw-needle" id="needle"></div>
+</div>
+</div>
+</div>
+
+<div class="sw-hint" id="clueHint">الملمح: اضغط/اسحب على العداد لتحريك الإبرة للموقع السري، ثم اكتب تلميحاً لفريقك</div>
+<input type="text" class="sw-input" id="clueInput" placeholder="اكتب التلميح... (مثال: قهوة ساخنة ولكنها بردت شوي)" style="max-width:500px;margin:0 auto 1rem;display:block">
+<button class="sw-btn primary" onclick="submitClue()" style="width:100%;max-width:300px;margin:0 auto;display:block"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"></use></svg> تأكيد التلميح وإخفاء الهدف</button>
+</div>
+</div>
+
+<!-- Phase 3: Team Guessing -->
+<div class="sw-phase" id="phaseGuess">
+<div class="sw-card">
+<div class="sw-title"><svg class="ico" aria-hidden="true"><use href="#i-brain"></use></svg> الجولة <span id="guessRoundNum">1</span> — فريق <strong id="guessTeamName"></strong> يخمّن</div>
+<div class="sw-round-info">
+<span class="sw-round-label">التلميح: <span id="showClue" style="color:var(--accent-gold-ink)"></span></span>
+</div>
+
+<div style="text-align:center;margin:1.5rem 0">
+<div class="sw-dial-labels">
+<span class="sw-dial-label left" id="guessLabelLeft"></span>
+<span class="sw-dial-label right" id="guessLabelRight"></span>
+</div>
+<div class="sw-dial-wrap">
+<div class="sw-dial" id="guessDial" tabindex="0" role="slider" aria-label="توقع فريقك" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+<div class="sw-dial-bg"></div>
+<div class="sw-dial-inner">
+<div class="sw-dial-center">
+<div class="sw-dial-value" id="guessDialValue">50</div>
+<div class="sw-dial-unit">%</div>
+</div>
+</div>
+<div class="sw-needle" id="guessNeedle"></div>
+</div>
+</div>
+</div>
+
+<div class="sw-hint">تناقشوا مع فريقكم واضغطوا/اسحبوا على العداد للموقع المتوقع</div>
+<button class="sw-btn primary" onclick="submitGuess()" style="width:100%;max-width:300px;margin:0 auto 1rem;display:block"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> تأكيد التخمين</button>
+<div class="sw-hint">سيظهر التوقع الآخر للفريق المنافس بعد تأكيدكما</div>
+</div>
+</div>
+
+<!-- Phase 4: Reveal & Score -->
+<div class="sw-phase" id="phaseReveal">
+<div class="sw-card">
+<div class="sw-title"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg> كشف الهدف — الجولة <span id="revealRoundNum">1</span></div>
+
+<div class="sw-dial-wrap" style="margin-bottom:2rem">
+<div class="sw-dial">
+<div class="sw-dial-bg"></div>
+<div class="sw-target-zone active" id="revealTargetZone"></div>
+<div class="sw-dial-inner">
+<div class="sw-dial-center">
+<div class="sw-dial-value" id="revealTargetValue">50</div>
+<div class="sw-dial-unit">%</div>
+</div>
+</div>
+<div class="sw-needle" id="revealNeedle1" style="background:var(--accent-red)"></div>
+<div class="sw-needle" id="revealNeedle2" style="background:var(--accent-blue);transform:translateX(-50%) rotate(0deg)"></div>
+</div>
+</div>
+
+<div class="sw-answers" id="answersDisplay"></div>
+
+<div style="text-align:center;margin-top:1.5rem;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius)" id="scoreUpdate"></div>
+
+<button class="sw-btn primary" id="nextRoundBtn" onclick="nextRound()" style="width:100%;max-width:300px;margin:1rem auto 0;display:block"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> جولة قادمة</button>
+<button class="sw-btn" onclick="endGame()" style="width:100%;max-width:300px;margin:.5rem auto 0;display:block"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> إنهاء اللعبة وعرض النتائج</button>
+</div>
+</div>
+
+<!-- Phase 5: Final Results -->
+<div class="sw-phase" id="phaseResults">
+<div class="sw-card sw-final">
+<div class="sw-title"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg> النتائج النهائية</div>
+<h2 id="finalWinner">🏆 الفريق <span id="winnerTeamName"></span> يفوز!</h2>
+<p class="sw-final-score">النتيجة: <span id="finalRedScore">0</span> - <span id="finalBlueScore">0</span></p>
+<button class="sw-btn primary" onclick="location.reload()" style="margin-right:.5rem"><svg class="ico" aria-hidden="true"><use href="#i-spark"></use></svg> لعبة جديدة</button>
+<button class="sw-btn" onclick="location.href='/games'">العودة للألعاب</button>
+</div>
+</div>
+</div>
+
+<script>
+// ===== Pairs Database =====
+const PAIRS = [
+    {left:"بارد",right:"حار",unit:"°"},
+    {left:"هادئ",right:"صاخب",unit:""},
+    {left:"بسيط",right:"معقد",unit:""},
+    {left:"رخيص",right:"غالي",unit:" ريال"},
+    {left:"سريع",right:"بطيء",unit:" كم/س"},
+    {left:"خفيف",right:"ثقيل",unit:" كجم"},
+    {left:"صغير",right:"كبير",unit:""},
+    {left:"قريب",right:"بعيد",unit:" كم"},
+    {left:"نظيف",right:"وسخ",unit:""},
+    {left:"سهل",right:"صعب",unit:""},
+    {left:"جديد",right:"قديم",unit:""},
+    {left:"مفتوح",right:"مغلق",unit:""},
+    {left:"مستقيم",right:"معوج",unit:""},
+    {left:"ناعم",right:"خشن",unit:""},
+    {left:"حلو",right:"مر",unit:""},
+    {left:"مالح",right:"بلا ملح",unit:""},
+    {left:"نهار",right:"ليل",unit:""},
+    {left:"صيف",right:"شتاء",unit:""},
+    {left:"شمال",right:"جنوب",unit:""},
+    {left:"يمين",right:"يسار",unit:""},
+    {left:"فوق",right:"تحت",unit:""},
+    {left:"داخل",right:"خارج",unit:""},
+    {left:"ماضي",right:"مستقبل",unit:""},
+    {left:"حقيقة",right:"خيال",unit:""},
+    {left:"ربح",right:"خسارة",unit:""},
+    {left:"نجاح",right:"فشل",unit:""},
+    {left:"بداية",right:"نهاية",unit:""},
+    {left:"سؤال",right:"جواب",unit:""},
+    {left:"مشكلة",right:"حل",unit:""},
+    {left:"حلم",right:"واقع",unit:""},
+];
+
+// ===== Game State =====
+let redTeam=[], blueTeam=[], redScore=0, blueScore=0;
+let currentRound=0, maxRounds=10;
+let currentPair=null, targetValue=0, currentClueGiver=null, currentTeam='red';
+let redGuess=50, blueGuess=50, clueText='';
+
+// ===== Dial Controllers =====
+const dialControllers = {
+    clue: null,
+    guess: null
+};
+
+// ===== Setup =====
+function addPlayerField(team){
+    const container=document.getElementById(team+'PlayersContainer');
+    const inputs=container.querySelectorAll('input');
+    if(inputs.length>=5){ alert('الحد الأقصى 5 لاعبين لكل فريق'); return; }
+    const div=document.createElement('div');
+    div.className='sw-player-row';
+    div.innerHTML=`<input type="text" class="sw-input-small" placeholder="لاعب ${inputs.length+1}"><button type="button" onclick="this.parentElement.remove()" style="padding:.3rem .6rem;background:var(--accent-red-tint);border:1px solid var(--accent-red);border-radius:var(--radius);color:var(--accent-red-ink);cursor:pointer">✕</button>`;
+    container.appendChild(div);
+}
+
+function collectTeamNames(team){
+    const container=document.getElementById(team+'PlayersContainer');
+    return Array.from(container.querySelectorAll('input')).map(i=>i.value.trim()).filter(s=>s);
+}
+
+function startGame(){
+    redTeam=collectTeamNames('red');
+    blueTeam=collectTeamNames('blue');
+    if(redTeam.length<2||blueTeam.length<2){ alert('كل فريق يحتاج لاعبين على الأقل'); return; }
+    if(redTeam.length>5||blueTeam.length>5){ alert('الحد الأقصى 5 لاعبين لكل فريق'); return; }
+    redScore=0; blueScore=0; currentRound=0;
+    document.getElementById('phaseSetup').style.display='none';
+    nextRound();
+}
+
+function nextRound(){
+    if(currentRound>=maxRounds){ showFinalResults(); return; }
+    currentRound++;
+    currentPair=PAIRS[Math.floor(Math.random()*PAIRS.length)];
+    targetValue=Math.floor(Math.random()*101);
+    currentTeam=currentRound%2===1?'red':'blue';
+    const team=currentTeam==='red'?redTeam:blueTeam;
+    currentClueGiver=team[Math.floor(Math.random()*team.length)];
+    document.getElementById('phaseClue').style.display='block';
+    document.getElementById('phaseGuess').style.display='none';
+    document.getElementById('phaseReveal').style.display='none';
+    document.getElementById('phaseResults').style.display='none';
+    setupCluePhase();
+}
+
+function setupCluePhase(){
+    document.getElementById('roundNum').textContent=currentRound;
+    document.getElementById('clueGiverName').textContent=currentClueGiver;
+    document.getElementById('clueTeamName').textContent=currentTeam==='red'?'الأحمر 🔴':'الأزرق 🔵';
+    document.getElementById('roundProgress').textContent=`${currentRound}/${maxRounds}`;
+    document.getElementById('labelLeft').textContent=currentPair.left;
+    document.getElementById('labelRight').textContent=currentPair.right;
+    document.getElementById('guessLabelLeft').textContent=currentPair.left;
+    document.getElementById('guessLabelRight').textContent=currentPair.right;
+    document.getElementById('revealLabelLeft').textContent=currentPair.left;
+    document.getElementById('revealLabelRight').textContent=currentPair.right;
+    
+    // Initialize dial controllers
+    initDialController('clue', 'dial', 'needle', 'dialValue', v=>{
+        targetValue=v;
+        document.getElementById('dialValue').textContent=v;
+    }, true); // isCluePhase = true
+    
+    document.getElementById('clueInput').value='';
+    document.getElementById('clueHint').textContent='الملمح: اضغط/اسحب على العداد لتحريك الإبرة للموقع السري، ثم اكتب تلميحاً لفريقك';
+    document.getElementById('targetZone').classList.remove('active');
+}
+
+function initDialController(key, dialId, needleId, valueId, onChange, isCluePhase=false){
+    // Clean up existing controller
+    if(dialControllers[key]){
+        dialControllers[key].destroy();
+    }
+    
+    const dial=document.getElementById(dialId);
+    const needle=document.getElementById(needleId);
+    const valueEl=document.getElementById(valueId);
+    
+    if(!dial || !needle){
+        console.error('Dial elements not found:', dialId, needleId);
+        return;
+    }
+    
+    let isDragging=false;
+    let animationFrame=null;
+    
+    function getValueFromEvent(e){
+        const rect=dial.getBoundingClientRect();
+        const cx=rect.left+rect.width/2;
+        const cy=rect.top+rect.height/2;
+        const clientX=e.clientX!==undefined?e.clientX:e.touches[0].clientX;
+        const clientY=e.clientY!==undefined?e.clientY:e.touches[0].clientY;
+        const x=clientX-cx;
+        const y=clientY-cy;
+        let angle=Math.atan2(y,x)*180/Math.PI+90;
+        if(angle<0) angle+=360;
+        // Clamp to 180 degree range (left to right semicircle)
+        if(angle>180) angle=180;
+        return Math.round((angle/180)*100);
+    }
+    
+    function updateNeedle(value){
+        const angle=(value/100)*180;
+        needle.style.transform=`translateX(-50%) rotate(${angle}deg)`;
+        valueEl.textContent=value;
+        dial.setAttribute('aria-valuenow', value);
+    }
+    
+    function onMove(e){
+        if(!isDragging) return;
+        e.preventDefault();
+        const value=getValueFromEvent(e);
+        updateNeedle(value);
+        onChange(value);
+    }
+    
+    function onStart(e){
+        isDragging=true;
+        dial.style.cursor='grabbing';
+        onMove(e);
+    }
+    
+    function onEnd(){
+        isDragging=false;
+        dial.style.cursor='grab';
+    }
+    
+    // Click anywhere on dial to jump
+    function onClick(e){
+        if(isDragging) return;
+        const value=getValueFromEvent(e);
+        updateNeedle(value);
+        onChange(value);
+    }
+    
+    // Keyboard support
+    function onKeyDown(e){
+        if(e.key==='ArrowLeft' || e.key==='ArrowDown'){
+            e.preventDefault();
+            const value=Math.max(0, parseInt(valueEl.textContent)-1);
+            updateNeedle(value);
+            onChange(value);
+        }else if(e.key==='ArrowRight' || e.key==='ArrowUp'){
+            e.preventDefault();
+            const value=Math.min(100, parseInt(valueEl.textContent)+1);
+            updateNeedle(value);
+            onChange(value);
+        }
+    }
+    
+    // Initial setup
+    updateNeedle(50);
+    
+    // Attach listeners
+    dial.addEventListener('mousedown', onStart);
+    dial.addEventListener('touchstart', e=>{e.preventDefault(); onStart(e.touches[0])}, {passive:false});
+    dial.addEventListener('click', onClick);
+    dial.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', e=>{onMove(e.touches[0])}, {passive:false});
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchend', onEnd);
+    
+    // Store controller for cleanup
+    dialControllers[key] = {
+        dial,
+        destroy: function(){
+            dial.removeEventListener('mousedown', onStart);
+            dial.removeEventListener('touchstart', onStart);
+            dial.removeEventListener('click', onClick);
+            dial.removeEventListener('keydown', onKeyDown);
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+            document.removeEventListener('touchend', onEnd);
+        }
+    };
+}
+
+function setupGuessPhase(){
+    document.getElementById('phaseGuess').style.display='block';
+    document.getElementById('guessRoundNum').textContent=currentRound;
+    document.getElementById('guessTeamName').textContent=currentTeam==='red'?'الأحمر 🔴':'الأزرق 🔵';
+    document.getElementById('showClue').textContent=clueText;
+    redGuess=50; blueGuess=50;
+    
+    initDialController('guess', 'guessDial', 'guessNeedle', 'guessDialValue', v=>{
+        if(currentTeam==='red') redGuess=v; else blueGuess=v;
+    });
+}
+
+function submitClue(){
+    clueText=document.getElementById('clueInput').value.trim();
+    if(!clueText){ alert('اكتب تلميحاً أولاً'); return; }
+    document.getElementById('targetZone').classList.add('active');
+    document.getElementById('clueHint').textContent='الهدف مخفي! مرر الجهاز لفريقك';
+    setTimeout(()=>{
+        document.getElementById('phaseClue').style.display='none';
+        setupGuessPhase();
+    },1500);
+}
+
+function submitGuess(){
+    if(currentTeam==='red') redGuess=parseInt(document.getElementById('guessDialValue').textContent);
+    else blueGuess=parseInt(document.getElementById('guessDialValue').textContent);
+    if(currentTeam==='red'){
+        currentTeam='blue';
+        setupGuessPhase();
+    }else{
+        showReveal();
+    }
+}
+
+function showReveal(){
+    // Clean up dial controllers
+    if(dialControllers.clue) dialControllers.clue.destroy();
+    if(dialControllers.guess) dialControllers.guess.destroy();
+    dialControllers.clue=null;
+    dialControllers.guess=null;
+    
+    document.getElementById('phaseGuess').style.display='none';
+    document.getElementById('phaseReveal').style.display='block';
+    document.getElementById('revealRoundNum').textContent=currentRound;
+    document.getElementById('revealLabelLeft').textContent=currentPair.left;
+    document.getElementById('revealLabelRight').textContent=currentPair.right;
+    
+    // Animate target needle
+    const targetNeedle=document.getElementById('revealNeedle1');
+    const angle=(targetValue/100)*180;
+    targetNeedle.style.transition='transform 1s cubic-bezier(.34,1.56,.64,1)';
+    targetNeedle.style.transform=`translateX(-50%) rotate(${angle}deg)`;
+    document.getElementById('revealTargetValue').textContent=targetValue;
+    document.getElementById('revealTargetZone').classList.add('active');
+    
+    const redDiff=Math.abs(redGuess-targetValue);
+    const blueDiff=Math.abs(blueGuess-targetValue);
+    let redPoints=Math.max(0,10-redDiff);
+    let bluePoints=Math.max(0,10-blueDiff);
+    let sharedPoints=0;
+    if(Math.abs(redGuess-blueGuess)<=5){
+        sharedPoints=3;
+        redPoints+=3; bluePoints+=3;
+    }
+    redScore+=redPoints;
+    blueScore+=bluePoints;
+    
+    const container=document.getElementById('answersDisplay');
+    container.innerHTML=`
+        <div class="sw-answer ${redDiff<=blueDiff?'match':''}">
+            <div class="sw-answer player">🔴 الفريق الأحمر</div>
+            <div class="sw-answer value">${redGuess}%</div>
+            <div style="font-size:.9rem;color:var(--text-secondary);margin-top:.5rem">بعد ${redDiff} — <strong>${redPoints} نقطة</strong></div>
+        </div>
+        <div class="sw-answer ${blueDiff<=redDiff?'match':''}">
+            <div class="sw-answer player">🔵 الفريق الأزرق</div>
+            <div class="sw-answer value">${blueGuess}%</div>
+            <div style="font-size:.9rem;color:var(--text-secondary);margin-top:.5rem">بعد ${blueDiff} — <strong>${bluePoints} نقطة</strong></div>
+        </div>
+    `;
+    
+    let scoreText=``;
+    if(sharedPoints>0) scoreText+=`🌊 <strong>موجة مشتركة!</strong> الفريقان قريبان من بعض — +3 لكل فريق<br>`;
+    if(redDiff<=blueDiff) scoreText+=`🔴 الأحمر كان أقرب (+${redPoints})`; else scoreText+=`🔵 الأزرق كان أقرب (+${bluePoints})`;
+    if(redDiff===blueDiff) scoreText=`🤝 <strong>تعادل تام!</strong> الفريقان على نفس المسافة — ${redPoints} لكل فريق`;
+    document.getElementById('scoreUpdate').innerHTML=scoreText;
+    
+    // Animate second needle
+    setTimeout(()=>{
+        const guessNeedle=document.getElementById('revealNeedle2');
+        const guessValue=currentTeam==='red'?blueGuess:redGuess;
+        const guessAngle=(guessValue/100)*180;
+        guessNeedle.style.transition='transform 1s cubic-bezier(.34,1.56,.64,1)';
+        guessNeedle.style.transform=`translateX(-50%) rotate(${guessAngle}deg)`;
+    },500);
+}
+
+function showFinalResults(){
+    document.getElementById('phaseReveal').style.display='none';
+    document.getElementById('phaseResults').style.display='block';
+    let winner, winnerName;
+    if(redScore>blueScore){ winner='red'; winnerName='الأحمر 🔴'; }
+    else if(blueScore>redScore){ winner='blue'; winnerName='الأزرق 🔵'; }
+    else { winner='tie'; winnerName='تعادل 🤝'; }
+    document.getElementById('finalWinner').innerHTML=winner==='tie'?'🤝 تعادل!':`🏆 الفريق <span id="winnerTeamName" style="color:${winner==='red'?'var(--accent-red-ink)':'var(--accent-blue-ink)'}">${winnerName}</span> يفوز!`;
+    document.getElementById('finalRedScore').textContent=redScore;
+    document.getElementById('finalBlueScore').textContent=blueScore;
+}
+
+function nextRound(){
+    // Clean up dial controllers
+    if(dialControllers.clue) dialControllers.clue.destroy();
+    if(dialControllers.guess) dialControllers.guess.destroy();
+    dialControllers.clue=null;
+    dialControllers.guess=null;
+    
+    currentRound++;
+    nextRound();
+}
+
+function endGame(){
+    showFinalResults();
+}
+</script>
+{% endblock %}
