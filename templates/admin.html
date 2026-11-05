@@ -173,24 +173,30 @@
         <div class="imp-grid" id="impTargetGrid"></div>
 
         <div class="imp-mode">
-            <div class="imp-mode-row">
-                <div class="form-group" style="margin:0">
-                    <label for="impMode">وضع الحفظ</label>
-                    <select id="impMode" onchange="impModeChanged()">
-                        <option value="append">إضافة أسئلة جديدة — لا يُحذف أي سؤال</option>
-                        <option value="replace">استبدال — حذف الأسئلة القديمة ثم إضافة الجديدة</option>
-                    </select>
+                    <div class="imp-mode-row">
+                        <div class="form-group" style="margin:0">
+                            <label for="impMode">وضع الحفظ</label>
+                            <select id="impMode" onchange="impModeChanged()">
+                                <option value="append">إضافة أسئلة جديدة — لا يُحذف أي سؤال</option>
+                                <option value="replace">استبدال — حذف الأسئلة القديمة ثم إضافة الجديدة</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="impScopeWrap" style="display:none;margin:0">
+                            <label for="impScope">نطاق الحذف</label>
+                            <select id="impScope" onchange="impModeChanged()">
+                                <option value="game">اللعبة كاملة</option>
+                                <option value="target">الحرف / الفئة المحدد فقط</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;display:flex;align-items:flex-end">
+                            <label style="display:flex;align-items:center;gap:.5rem;font-weight:500;cursor:pointer">
+                                <input type="checkbox" id="impAutoSkipDupes" onchange="impModeChanged()">
+                                <span>إلغاء المكررات تلقائياً</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="imp-mode-note" id="impModeNote"></div>
                 </div>
-                <div class="form-group" id="impScopeWrap" style="display:none;margin:0">
-                    <label for="impScope">نطاق الحذف</label>
-                    <select id="impScope" onchange="impModeChanged()">
-                        <option value="game">اللعبة كاملة</option>
-                        <option value="target">الحرف / الفئة المحدد فقط</option>
-                    </select>
-                </div>
-            </div>
-            <div class="imp-mode-note" id="impModeNote"></div>
-        </div>
 
         <div class="imp-template">
             <div class="imp-template-head">
@@ -2156,7 +2162,12 @@ function impModeChanged() {
     IMP.saved = false;
     impLoadCount();
     /* كشف التكرار يختلف بين الوضعين: في الاستبدال السجل المكرر هو نفسه من سيُستبدل */
-    if (IMP.records.length) impAnalyze();
+    if (IMP.records.length) {
+        impAnalyze();
+    }
+    // Refresh preview to show/hide duplicate keep checkboxes
+    impRenderPreview();
+    impRenderFinal();
 }
 function impLoadCount() {
     if (impMode() !== 'replace') return;
@@ -2319,6 +2330,10 @@ function impRenderFinal() {
 }
 
 function impKeepChecked(idx) {
+    // If auto-skip duplicates is enabled, never keep duplicates
+    if (document.getElementById('impAutoSkipDupes')?.checked) {
+        return false;
+    }
     var el = document.getElementById('impKeep-' + idx);
     return !!el && el.checked;
 }
@@ -2334,10 +2349,15 @@ function impRow(r) {
         warns += (warns ? '<br>' : '') + '<span style="color:var(--accent-red-ink)">لن يُحفظ</span>';
     }
     var dup = '';
+    var autoSkip = document.getElementById('impAutoSkipDupes')?.checked;
     if (r.duplicate) {
-        dup = '<label style="display:block;font-size:.78rem;margin-top:.3rem">' +
-               '<input type="checkbox" id="impKeep-' + r.idx + '" onchange="impRenderFinal()"> ' +
-               'الاحتفاظ به</label>';
+        if (autoSkip) {
+            dup = '<span style="color:var(--accent-red-ink);font-size:.78rem">⚠ مكرر — سيُتجاهل تلقائياً</span>';
+        } else {
+            dup = '<label style="display:block;font-size:.78rem;margin-top:.3rem">' +
+                  '<input type="checkbox" id="impKeep-' + r.idx + '" onchange="impRenderFinal()"> ' +
+                  'الاحتفاظ به</label>';
+        }
     }
     return '<tr class="' + (r.excluded ? 'imp-row-excluded' : '') + '">' +
         '<td style="white-space:nowrap">' + (r.num != null ? r.num : (r.idx + 1)) + '</td>' +
