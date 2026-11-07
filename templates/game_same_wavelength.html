@@ -31,21 +31,28 @@
 .sw-add-player{width:100%;margin-top:.5rem;padding:.5rem;border:2px dashed var(--border-color);border-radius:var(--radius);background:transparent;color:var(--text-secondary);cursor:pointer;font-weight:600;transition:var(--transition)}
 .sw-add-player:hover{border-color:var(--accent-cyan);color:var(--accent-cyan-ink);background:rgba(6,182,212,.05)}
 
-/* Dial/Wheel */
-.sw-dial-wrap{position:relative;width:100%;max-width:400px;margin:2rem auto;display:flex;justify-content:center}
-.sw-dial{position:relative;width:320px;height:320px;cursor:grab;touch-action:none}
+/* ===== العداد (Dial) =====
+   المقياس أفقي: 0 = يسار القرص (الكلمة اليسرى) ، 50 = أعلى القرص ، 100 = يمين القرص. */
+.sw-dial-wrap{position:relative;width:400px;max-width:100%;height:320px;margin:1.5rem auto}
+.sw-dial{position:relative;width:320px;height:320px;margin:0 auto;cursor:grab;touch-action:none}
 .sw-dial:active{cursor:grabbing}
-.sw-dial-bg{width:100%;height:100%;border-radius:50%;background:conic-gradient(from 180deg, #06b6d4 0deg, #06b6d4 180deg, #f59e0b 180deg, #f59e0b 360deg);position:absolute;top:0;left:0;pointer-events:none}
+.sw-dial.dragging .sw-needle{transition:none}
+.sw-dial-bg{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 180deg,#06b6d4 0deg,#06b6d4 180deg,#f59e0b 180deg,#f59e0b 360deg);pointer-events:none}
 .sw-dial-inner{position:absolute;top:16px;left:16px;right:16px;bottom:16px;background:var(--bg-card);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;pointer-events:none}
-.sw-dial-labels{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
-.sw-dial-label{position:absolute;transform-origin:center;color:var(--text-primary);font-weight:800;font-size:1.1rem;text-shadow:0 0 4px var(--bg-card)}
-.sw-dial-label.left{left:10px;top:50%;transform:translateY(-50%)}
-.sw-dial-label.right{right:10px;top:50%;transform:translateY(-50%)}
-.sw-needle{position:absolute;bottom:50%;left:50%;width:4px;height:140px;background:var(--accent-red);transform-origin:bottom center;transform:translateX(-50%) rotate(0deg);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:3;border-radius:2px 2px 0 0;pointer-events:none}
-.sw-needle::before{content:'';position:absolute;bottom:-8px;left:-6px;width:16px;height:16px;background:var(--accent-red);border-radius:50%;border:3px solid var(--bg-card)}
+.sw-dial-labels{position:absolute;inset:0;pointer-events:none;z-index:6}
+.sw-dial-label{position:absolute;top:50%;transform:translateY(-50%);background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-pill);padding:.25rem .6rem;color:var(--text-primary);font-weight:800;font-size:1rem;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.sw-dial-label.left{left:0}
+.sw-dial-label.right{right:0}
+.sw-needle{position:absolute;bottom:50%;left:50%;width:4px;height:140px;background:var(--accent-red);transform-origin:bottom center;transform:translateX(-50%) rotate(-90deg);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:3;border-radius:2px 2px 0 0;pointer-events:none}
+.sw-needle::before{content:'';position:absolute;bottom:-8px;left:-6px;width:16px;height:16px;background:inherit;border-radius:50%;border:3px solid var(--bg-card)}
 .sw-target-zone{position:absolute;top:16px;left:16px;right:16px;bottom:16px;border-radius:50%;border:3px dashed transparent;transition:border-color .3s;z-index:1;pointer-events:none}
 .sw-target-zone.active{border-color:var(--accent-green);animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.sw-target-marker{position:absolute;bottom:50%;left:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--accent-gold);border:3px solid var(--bg-card);box-sizing:border-box;box-shadow:0 0 0 2px var(--accent-gold);transform:rotate(-90deg) translateY(-150px);opacity:0;z-index:5;pointer-events:none;transition:transform 1s cubic-bezier(.34,1.56,.64,1),opacity .35s}
+.sw-target-marker.show{opacity:1}
+/* الإبرتان في الكشف بأطوال مختلفة حتى لا تتراكب تماماً عند تشابه التخمين */
+#revealNeedle1{height:140px}
+#revealNeedle2{height:104px}
 .sw-dial-center{text-align:center;z-index:4;pointer-events:none}
 .sw-dial-value{font-size:2.5rem;font-weight:800;color:var(--accent-red-ink);font-variant-numeric:tabular-nums;font-family:'Changa',sans-serif}
 .sw-dial-unit{font-size:.9rem;color:var(--text-secondary);text-transform:uppercase}
@@ -73,8 +80,11 @@
 .sw-final-score{font-size:1.3rem;color:var(--text-secondary);margin-bottom:1.5rem}
 @media(max-width:600px){
     .sw-dial{width:280px;height:280px}
+    .sw-dial-wrap{height:280px}
     .sw-dial-inner{top:12px;left:12px;right:12px;bottom:12px}
     .sw-needle{height:120px}
+    #revealNeedle1{height:120px}
+    #revealNeedle2{height:90px}
     .sw-team-setup{grid-template-columns:1fr}
     .sw-team-area{grid-template-columns:1fr}
     .sw-answers{grid-template-columns:1fr}
@@ -124,12 +134,11 @@
 <span id="roundProgress"></span>
 </div>
 
-<div style="text-align:center;margin:1.5rem 0">
+<div class="sw-dial-wrap">
 <div class="sw-dial-labels">
 <span class="sw-dial-label left" id="labelLeft"></span>
 <span class="sw-dial-label right" id="labelRight"></span>
 </div>
-<div class="sw-dial-wrap">
 <div class="sw-dial" id="dial" tabindex="0" role="slider" aria-label="موقع الهدف السري" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
 <div class="sw-dial-bg"></div>
 <div class="sw-target-zone" id="targetZone"></div>
@@ -140,7 +149,6 @@
 </div>
 </div>
 <div class="sw-needle" id="needle"></div>
-</div>
 </div>
 </div>
 
@@ -158,12 +166,11 @@
 <span class="sw-round-label">التلميح: <span id="showClue" style="color:var(--accent-gold-ink)"></span></span>
 </div>
 
-<div style="text-align:center;margin:1.5rem 0">
+<div class="sw-dial-wrap">
 <div class="sw-dial-labels">
 <span class="sw-dial-label left" id="guessLabelLeft"></span>
 <span class="sw-dial-label right" id="guessLabelRight"></span>
 </div>
-<div class="sw-dial-wrap">
 <div class="sw-dial" id="guessDial" tabindex="0" role="slider" aria-label="توقع فريقك" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
 <div class="sw-dial-bg"></div>
 <div class="sw-dial-inner">
@@ -173,7 +180,6 @@
 </div>
 </div>
 <div class="sw-needle" id="guessNeedle"></div>
-</div>
 </div>
 </div>
 
@@ -189,6 +195,10 @@
 <div class="sw-title"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"></use></svg> كشف الهدف — الجولة <span id="revealRoundNum">1</span></div>
 
 <div class="sw-dial-wrap" style="margin-bottom:2rem">
+<div class="sw-dial-labels">
+<span class="sw-dial-label left" id="revealLabelLeft"></span>
+<span class="sw-dial-label right" id="revealLabelRight"></span>
+</div>
 <div class="sw-dial">
 <div class="sw-dial-bg"></div>
 <div class="sw-target-zone active" id="revealTargetZone"></div>
@@ -199,7 +209,8 @@
 </div>
 </div>
 <div class="sw-needle" id="revealNeedle1" style="background:var(--accent-red)"></div>
-<div class="sw-needle" id="revealNeedle2" style="background:var(--accent-blue);transform:translateX(-50%) rotate(0deg)"></div>
+<div class="sw-needle" id="revealNeedle2" style="background:var(--accent-blue)"></div>
+<div class="sw-target-marker" id="revealTargetMarker"></div>
 </div>
 </div>
 
@@ -262,14 +273,26 @@ const PAIRS = [
 // ===== Game State =====
 let redTeam=[], blueTeam=[], redScore=0, blueScore=0;
 let currentRound=0, maxRounds=10;
-let currentPair=null, targetValue=0, currentClueGiver=null, currentTeam='red';
+let currentPair=null, targetValue=50, currentClueGiver=null, currentTeam='red', clueTeam='red';
 let redGuess=50, blueGuess=50, clueText='';
 
 // ===== Dial Controllers =====
-const dialControllers = {
-    clue: null,
-    guess: null
-};
+const dialControllers = { clue:null, guess:null };
+
+// زاوية الإبرة: 0 = يسار (-90) ، 50 = أعلى (0) ، 100 = يمين (+90)
+function needleAngle(value){ return (value/100)*180 - 90; }
+
+// على الموبايل نمرّر الشاشة حتى يظهر العداد كاملاً عند تغيّر المرحلة
+function scrollPhaseIntoView(){
+    if(window.innerWidth>=600) return;
+    var el=null;
+    document.querySelectorAll('.sw-phase').forEach(function(e){
+        if(!el && getComputedStyle(e).display!=='none') el=e;
+    });
+    if(!el) return;
+    var y=el.getBoundingClientRect().top+window.scrollY-70;
+    window.scrollTo({top:Math.max(0,y), behavior:'smooth'});
+}
 
 // ===== Setup =====
 function addPlayerField(team){
@@ -299,10 +322,16 @@ function startGame(){
 
 function nextRound(){
     if(currentRound>=maxRounds){ showFinalResults(); return; }
+    // Clean up dial controllers from the previous round
+    if(dialControllers.clue){ dialControllers.clue.destroy(); dialControllers.clue=null; }
+    if(dialControllers.guess){ dialControllers.guess.destroy(); dialControllers.guess=null; }
+
     currentRound++;
     currentPair=PAIRS[Math.floor(Math.random()*PAIRS.length)];
-    targetValue=Math.floor(Math.random()*101);
+    targetValue=50; // الهدف يبدأ من وسط العداد ويحرّكه الملمح
     currentTeam=currentRound%2===1?'red':'blue';
+    clueTeam=currentTeam;
+    redGuess=50; blueGuess=50; clueText='';
     const team=currentTeam==='red'?redTeam:blueTeam;
     currentClueGiver=team[Math.floor(Math.random()*team.length)];
     document.getElementById('phaseClue').style.display='block';
@@ -310,6 +339,7 @@ function nextRound(){
     document.getElementById('phaseReveal').style.display='none';
     document.getElementById('phaseResults').style.display='none';
     setupCluePhase();
+    scrollPhaseIntoView();
 }
 
 function setupCluePhase(){
@@ -321,15 +351,15 @@ function setupCluePhase(){
     document.getElementById('labelRight').textContent=currentPair.right;
     document.getElementById('guessLabelLeft').textContent=currentPair.left;
     document.getElementById('guessLabelRight').textContent=currentPair.right;
-    document.getElementById('revealLabelLeft').textContent=currentPair.left;
-    document.getElementById('revealLabelRight').textContent=currentPair.right;
-    
+
+    targetValue=50;
+    document.getElementById('dialValue').textContent=50;
     // Initialize dial controllers
     initDialController('clue', 'dial', 'needle', 'dialValue', v=>{
         targetValue=v;
         document.getElementById('dialValue').textContent=v;
     }, true); // isCluePhase = true
-    
+
     document.getElementById('clueInput').value='';
     document.getElementById('clueHint').textContent='الملمح: اضغط/اسحب على العداد لتحريك الإبرة للموقع السري، ثم اكتب تلميحاً لفريقك';
     document.getElementById('targetZone').classList.remove('active');
@@ -340,41 +370,46 @@ function initDialController(key, dialId, needleId, valueId, onChange, isCluePhas
     if(dialControllers[key]){
         dialControllers[key].destroy();
     }
-    
+
     const dial=document.getElementById(dialId);
     const needle=document.getElementById(needleId);
     const valueEl=document.getElementById(valueId);
-    
+
     if(!dial || !needle){
         console.error('Dial elements not found:', dialId, needleId);
         return;
     }
-    
+
     let isDragging=false;
-    let animationFrame=null;
-    
+
     function getValueFromEvent(e){
         const rect=dial.getBoundingClientRect();
         const cx=rect.left+rect.width/2;
         const cy=rect.top+rect.height/2;
         const clientX=e.clientX!==undefined?e.clientX:e.touches[0].clientX;
         const clientY=e.clientY!==undefined?e.clientY:e.touches[0].clientY;
-        const x=clientX-cx;
-        const y=clientY-cy;
-        let angle=Math.atan2(y,x)*180/Math.PI+90;
-        if(angle<0) angle+=360;
-        // Clamp to 180 degree range (left to right semicircle)
-        if(angle>180) angle=180;
-        return Math.round((angle/180)*100);
+        const dx=clientX-cx, dy=clientY-cy;
+        let value;
+        if(Math.abs(dx)<1 && Math.abs(dy)<1){
+            value=50;
+        }else if(dy>0){
+            // النصف السفلي: إسقاط أفقي حتى لا تبقى منطقة ميتة على العداد
+            const r=rect.width/2;
+            value=Math.round(50 + 50*(dx/r));
+        }else{
+            // النصف العلوي: 180 = يسار ، 90 = أعلى ، 0 = يمين
+            const a=Math.atan2(-dy,dx)*180/Math.PI;
+            value=Math.round((180-a)/180*100);
+        }
+        return Math.max(0,Math.min(100,value));
     }
-    
+
     function updateNeedle(value){
-        const angle=(value/100)*180;
-        needle.style.transform=`translateX(-50%) rotate(${angle}deg)`;
+        needle.style.transform=`translateX(-50%) rotate(${needleAngle(value)}deg)`;
         valueEl.textContent=value;
         dial.setAttribute('aria-valuenow', value);
     }
-    
+
     function onMove(e){
         if(!isDragging) return;
         e.preventDefault();
@@ -382,18 +417,20 @@ function initDialController(key, dialId, needleId, valueId, onChange, isCluePhas
         updateNeedle(value);
         onChange(value);
     }
-    
+
     function onStart(e){
         isDragging=true;
+        dial.classList.add('dragging');
         dial.style.cursor='grabbing';
         onMove(e);
     }
-    
+
     function onEnd(){
         isDragging=false;
+        dial.classList.remove('dragging');
         dial.style.cursor='grab';
     }
-    
+
     // Click anywhere on dial to jump
     function onClick(e){
         if(isDragging) return;
@@ -401,7 +438,7 @@ function initDialController(key, dialId, needleId, valueId, onChange, isCluePhas
         updateNeedle(value);
         onChange(value);
     }
-    
+
     // Keyboard support
     function onKeyDown(e){
         if(e.key==='ArrowLeft' || e.key==='ArrowDown'){
@@ -416,10 +453,11 @@ function initDialController(key, dialId, needleId, valueId, onChange, isCluePhas
             onChange(value);
         }
     }
-    
+
     // Initial setup
     updateNeedle(50);
-    
+    if(typeof onChange==='function') onChange(50);
+
     // Attach listeners
     dial.addEventListener('mousedown', onStart);
     dial.addEventListener('touchstart', e=>{e.preventDefault(); onStart(e.touches[0])}, {passive:false});
@@ -429,7 +467,7 @@ function initDialController(key, dialId, needleId, valueId, onChange, isCluePhas
     document.addEventListener('touchmove', e=>{onMove(e.touches[0])}, {passive:false});
     document.addEventListener('mouseup', onEnd);
     document.addEventListener('touchend', onEnd);
-    
+
     // Store controller for cleanup
     dialControllers[key] = {
         dial,
@@ -442,6 +480,7 @@ function initDialController(key, dialId, needleId, valueId, onChange, isCluePhas
             document.removeEventListener('touchmove', onMove);
             document.removeEventListener('mouseup', onEnd);
             document.removeEventListener('touchend', onEnd);
+            dial.classList.remove('dragging');
         }
     };
 }
@@ -451,11 +490,11 @@ function setupGuessPhase(){
     document.getElementById('guessRoundNum').textContent=currentRound;
     document.getElementById('guessTeamName').textContent=currentTeam==='red'?'الأحمر 🔴':'الأزرق 🔵';
     document.getElementById('showClue').textContent=clueText;
-    redGuess=50; blueGuess=50;
-    
+    // لا نعيد ضبط التخمينات هنا — كل فريق يخمّن مرة واحدة في الجولة.
     initDialController('guess', 'guessDial', 'guessNeedle', 'guessDialValue', v=>{
         if(currentTeam==='red') redGuess=v; else blueGuess=v;
     });
+    scrollPhaseIntoView();
 }
 
 function submitClue(){
@@ -470,10 +509,11 @@ function submitClue(){
 }
 
 function submitGuess(){
-    if(currentTeam==='red') redGuess=parseInt(document.getElementById('guessDialValue').textContent);
-    else blueGuess=parseInt(document.getElementById('guessDialValue').textContent);
-    if(currentTeam==='red'){
-        currentTeam='blue';
+    const value=parseInt(document.getElementById('guessDialValue').textContent,10);
+    if(currentTeam==='red') redGuess=value; else blueGuess=value;
+    if(currentTeam===clueTeam){
+        // الفريق صاحب التلميح خمّن أولًا — الآن يأتي دور الفريق الآخر.
+        currentTeam=clueTeam==='red'?'blue':'red';
         setupGuessPhase();
     }else{
         showReveal();
@@ -486,21 +526,32 @@ function showReveal(){
     if(dialControllers.guess) dialControllers.guess.destroy();
     dialControllers.clue=null;
     dialControllers.guess=null;
-    
+
     document.getElementById('phaseGuess').style.display='none';
     document.getElementById('phaseReveal').style.display='block';
     document.getElementById('revealRoundNum').textContent=currentRound;
     document.getElementById('revealLabelLeft').textContent=currentPair.left;
     document.getElementById('revealLabelRight').textContent=currentPair.right;
-    
-    // Animate target needle
-    const targetNeedle=document.getElementById('revealNeedle1');
-    const angle=(targetValue/100)*180;
-    targetNeedle.style.transition='transform 1s cubic-bezier(.34,1.56,.64,1)';
-    targetNeedle.style.transform=`translateX(-50%) rotate(${angle}deg)`;
+    scrollPhaseIntoView();
+
+    // هدف الجولة يظهر في المنطقة الملوّنة ورقمه في المنتصف.
     document.getElementById('revealTargetValue').textContent=targetValue;
     document.getElementById('revealTargetZone').classList.add('active');
-    
+
+    function setNeedle(el,value){
+        el.style.transition='transform 1s cubic-bezier(.34,1.56,.64,1)';
+        el.style.transform=`translateX(-50%) rotate(${needleAngle(value)}deg)`;
+    }
+    setNeedle(document.getElementById('revealNeedle1'), redGuess);
+    setNeedle(document.getElementById('revealNeedle2'), blueGuess);
+
+    // مؤشر الهدف السري على حافة القرص
+    const marker=document.getElementById('revealTargetMarker');
+    const rdial=document.querySelector('#phaseReveal .sw-dial');
+    const radius=Math.max(60, Math.round(rdial.getBoundingClientRect().width/2)-10);
+    marker.style.transform=`rotate(${needleAngle(targetValue)}deg) translateY(-${radius}px)`;
+    marker.classList.add('show');
+
     const redDiff=Math.abs(redGuess-targetValue);
     const blueDiff=Math.abs(blueGuess-targetValue);
     let redPoints=Math.max(0,10-redDiff);
@@ -512,7 +563,7 @@ function showReveal(){
     }
     redScore+=redPoints;
     blueScore+=bluePoints;
-    
+
     const container=document.getElementById('answersDisplay');
     container.innerHTML=`
         <div class="sw-answer ${redDiff<=blueDiff?'match':''}">
@@ -526,26 +577,19 @@ function showReveal(){
             <div style="font-size:.9rem;color:var(--text-secondary);margin-top:.5rem">بعد ${blueDiff} — <strong>${bluePoints} نقطة</strong></div>
         </div>
     `;
-    
+
     let scoreText=``;
     if(sharedPoints>0) scoreText+=`🌊 <strong>موجة مشتركة!</strong> الفريقان قريبان من بعض — +3 لكل فريق<br>`;
-    if(redDiff<=blueDiff) scoreText+=`🔴 الأحمر كان أقرب (+${redPoints})`; else scoreText+=`🔵 الأزرق كان أقرب (+${bluePoints})`;
-    if(redDiff===blueDiff) scoreText=`🤝 <strong>تعادل تام!</strong> الفريقان على نفس المسافة — ${redPoints} لكل فريق`;
+    if(redDiff===blueDiff) scoreText+=`🤝 <strong>تعادل تام!</strong> الفريقان على نفس المسافة — ${redPoints} لكل فريق`;
+    else if(redDiff<blueDiff) scoreText+=`🔴 الأحمر كان أقرب (+${redPoints})`;
+    else scoreText+=`🔵 الأزرق كان أقرب (+${bluePoints})`;
     document.getElementById('scoreUpdate').innerHTML=scoreText;
-    
-    // Animate second needle
-    setTimeout(()=>{
-        const guessNeedle=document.getElementById('revealNeedle2');
-        const guessValue=currentTeam==='red'?blueGuess:redGuess;
-        const guessAngle=(guessValue/100)*180;
-        guessNeedle.style.transition='transform 1s cubic-bezier(.34,1.56,.64,1)';
-        guessNeedle.style.transform=`translateX(-50%) rotate(${guessAngle}deg)`;
-    },500);
 }
 
 function showFinalResults(){
     document.getElementById('phaseReveal').style.display='none';
     document.getElementById('phaseResults').style.display='block';
+    scrollPhaseIntoView();
     let winner, winnerName;
     if(redScore>blueScore){ winner='red'; winnerName='الأحمر 🔴'; }
     else if(blueScore>redScore){ winner='blue'; winnerName='الأزرق 🔵'; }
@@ -553,17 +597,6 @@ function showFinalResults(){
     document.getElementById('finalWinner').innerHTML=winner==='tie'?'🤝 تعادل!':`🏆 الفريق <span id="winnerTeamName" style="color:${winner==='red'?'var(--accent-red-ink)':'var(--accent-blue-ink)'}">${winnerName}</span> يفوز!`;
     document.getElementById('finalRedScore').textContent=redScore;
     document.getElementById('finalBlueScore').textContent=blueScore;
-}
-
-function nextRound(){
-    // Clean up dial controllers
-    if(dialControllers.clue) dialControllers.clue.destroy();
-    if(dialControllers.guess) dialControllers.guess.destroy();
-    dialControllers.clue=null;
-    dialControllers.guess=null;
-    
-    currentRound++;
-    nextRound();
 }
 
 function endGame(){

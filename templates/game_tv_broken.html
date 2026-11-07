@@ -34,7 +34,9 @@
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .tv-chain-step{font-size:.8rem;font-weight:800;color:var(--accent-purple-ink);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.5px}
 .tv-chain-content{font-size:1.1rem;color:var(--text-primary);white-space:pre-wrap;line-height:1.6}
-.tv-chain-img{max-width:100%;border-radius:var(--radius);margin-top:.5rem;border:1px solid var(--border-color);background:#fff}
+.tv-chain-img{display:block;width:auto;max-width:100%;height:auto;border-radius:var(--radius);margin:.5rem auto 0;border:1px solid var(--border-color);background:#fff}
+#chainDisplay .tv-chain-img{max-height:230px}
+.tv-chain-empty{display:flex;align-items:center;justify-content:center;min-height:120px;color:var(--text-secondary);font-weight:700}
 .tv-vote{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
 .tv-vote-btn{flex:1;min-width:120px;padding:.8rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-weight:700;cursor:pointer;transition:var(--transition)}
 .tv-vote-btn:hover,.tv-vote-btn.voted{border-color:var(--accent-gold);background:rgba(245,158,11,.15);color:var(--accent-gold-ink)}
@@ -65,6 +67,16 @@
 </div>
 <div class="tv-players" id="playersList"></div>
 <div class="tv-hint">الحد الأدنى 3 لاعبين، يفضل 4-8</div>
+<div style="display:flex;gap:.5rem;align-items:center;justify-content:center;margin:.6rem 0">
+<label for="roundsCount" style="font-size:.9rem;color:var(--text-secondary)">عدد الجولات:</label>
+<select id="roundsCount" class="tv-input" style="min-width:auto;padding:.4rem .8rem">
+<option value="1">1</option>
+<option value="2" selected>2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+</div>
 <button class="tv-btn primary" id="startGameBtn" onclick="startGame()" style="width:100%;margin-top:.5rem" disabled><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء اللعبة</button>
 </div>
 </div>
@@ -190,9 +202,10 @@ function renderPlayersList(){
 function removePlayer(i){ players.splice(i,1); renderPlayersList(); document.getElementById('startGameBtn').disabled=players.length<3; }
 
 function startGame(){
-    maxRounds=players.length;
+    var sel=document.getElementById('roundsCount');
+    maxRounds=Math.max(1, parseInt((sel&&sel.value)||'2',10)||2);
     currentRound=0;
-    phrases=[]; drawings=[]; guesses=[];
+    phrases=[]; drawings=[]; guesses=[]; votes={};
     turnOrder=[];
     startNextRound();
 }
@@ -232,56 +245,53 @@ function submitPhrase(){
 function startDrawingTurn(){
     updatePlayerTags('drawPlayers', currentPlayerIdx, currentPlayerIdx);
     document.getElementById('currentDrawer').textContent=players[currentPlayerIdx];
-    document.getElementById('phraseToDraw').textContent=phrases[currentPlayerIdx];
+    // تلفزيون خربان: كل لاعب يرسم جملة اللاعب الذي قبله (تمرير الدفتر).
+    var phraseIdx=(currentPlayerIdx+1)%players.length;
+    document.getElementById('phraseToDraw').textContent=phrases[phraseIdx]||'';
+    setTool('pen');
     clearCanvas();
 }
 
 function initCanvas(){
     const canvas=document.getElementById('drawCanvas');
-    // Fix canvas size to match CSS display size
+    // دقّة الرسم تتبع حجم الشاشة (وDPR) حتى لا يطلع الرسم مغبّرًا على الشاشات الكبيرة.
     const rect=canvas.getBoundingClientRect();
-    canvas.width=rect.width;
-    canvas.height=rect.height;
-    
+    const cssW=Math.round(rect.width)||800;
+    const cssH=Math.round(cssW*(window.innerWidth<600?3/4:9/16));
+    const dpr=Math.min(window.devicePixelRatio||1,1.5);
+    canvas.width=Math.round(cssW*dpr);
+    canvas.height=Math.round(cssH*dpr);
+
     drawingCtx=canvas.getContext('2d');
+    drawingCtx.setTransform(dpr,0,0,dpr,0,0); // نرسم بإحداثيات CSS
     drawingCtx.lineCap='round';
     drawingCtx.lineJoin='round';
     drawingCtx.strokeStyle=currentColor;
+    drawingCtx.fillStyle=currentColor;
     drawingCtx.lineWidth=brushSize;
-    
-    // Remove old listeners first
-    canvas.removeEventListener('mousedown',startDraw);
-    canvas.removeEventListener('mousemove',draw);
-    canvas.removeEventListener('mouseup',stopDraw);
-    canvas.removeEventListener('mouseout',stopDraw);
-    canvas.removeEventListener('touchstart',touchStartHandler);
-    canvas.removeEventListener('touchmove',touchMoveHandler);
-    canvas.removeEventListener('touchend',stopDraw);
-    
-    canvas.addEventListener('mousedown',startDraw);
-    canvas.addEventListener('mousemove',draw);
-    canvas.addEventListener('mouseup',stopDraw);
-    canvas.addEventListener('mouseout',stopDraw);
-    const touchStartHandler=e=>{e.preventDefault();startDraw(e.touches[0])};
-    const touchMoveHandler=e=>{e.preventDefault();draw(e.touches[0])};
-    canvas.addEventListener('touchstart',touchStartHandler,{passive:false});
-    canvas.addEventListener('touchmove',touchMoveHandler,{passive:false});
-    canvas.addEventListener('touchend',stopDraw);
-    
-    // Store handlers for cleanup
-    canvas._touchStart=touchStartHandler;
-    canvas._touchMove=touchMoveHandler;
+    drawingCtx.globalAlpha=1;
+    drawingCtx.globalCompositeOperation='source-over';
+
+    // Using on* properties replaces any previous handler (no duplicate listeners).
+    canvas.onmousedown=startDraw;
+    canvas.onmousemove=draw;
+    canvas.onmouseup=stopDraw;
+    canvas.onmouseleave=stopDraw;
+    canvas.ontouchstart=function(e){ e.preventDefault(); startDraw(e.touches[0]); };
+    canvas.ontouchmove=function(e){ e.preventDefault(); if(isDrawing) draw(e.touches[0]); };
+    canvas.ontouchend=stopDraw;
+    canvas.ontouchcancel=stopDraw;
+
+    clearCanvas();
 }
 
 function getCoords(e){
     const canvas=document.getElementById('drawCanvas');
     const rect=canvas.getBoundingClientRect();
-    // Scale coordinates to canvas internal resolution
-    const scaleX=canvas.width/rect.width;
-    const scaleY=canvas.height/rect.height;
+    // إحداثيات CSS — تحويل الدقّة (DPR) محفور في سياق الرسم
     return {
-        x:(e.clientX-rect.left)*scaleX,
-        y:(e.clientY-rect.top)*scaleY
+        x:e.clientX-rect.left,
+        y:e.clientY-rect.top
     };
 }
 
@@ -304,13 +314,14 @@ function draw(e){
     
     if(currentTool==='spray'){
         // Spray effect
-        const density=brushSize*2;
+        const density=brushSize*3;
+        const spread=brushSize*1.4;
         for(let i=0;i<density;i++){
             const angle=Math.random()*Math.PI*2;
-            const dist=Math.random()*brushSize;
+            const dist=Math.random()*spread;
             const sx=c.x+Math.cos(angle)*dist;
             const sy=c.y+Math.sin(angle)*dist;
-            drawingCtx.fillRect(sx,sy,1,1);
+            drawingCtx.fillRect(sx,sy,1.6,1.6);
         }
     }else{
         drawingCtx.lineTo(c.x,c.y);
@@ -321,44 +332,59 @@ function draw(e){
 
 function stopDraw(){ isDrawing=false; }
 
+function applyToolStyle(){
+    if(!drawingCtx) return;
+    drawingCtx.globalAlpha=1;
+    if(currentTool==='eraser'){
+        drawingCtx.globalCompositeOperation='destination-out';
+        drawingCtx.strokeStyle='rgba(0,0,0,1)';
+        drawingCtx.fillStyle='rgba(0,0,0,1)';
+        drawingCtx.lineWidth=brushSize*3; // الممحاة أكبر من القلم
+    }else if(currentTool==='brush'){
+        drawingCtx.globalCompositeOperation='source-over';
+        drawingCtx.strokeStyle=currentColor;
+        drawingCtx.fillStyle=currentColor;
+        drawingCtx.lineWidth=brushSize*2.2;
+        drawingCtx.globalAlpha=.55; // الفرشاة أنعم من القلم
+    }else{
+        drawingCtx.globalCompositeOperation='source-over';
+        drawingCtx.strokeStyle=currentColor;
+        drawingCtx.fillStyle=currentColor;
+        drawingCtx.lineWidth=brushSize;
+    }
+}
+
 function setTool(tool){
     currentTool=tool;
     document.querySelectorAll('.tv-tool[data-tool]').forEach(b=>{
         b.classList.toggle('active',b.dataset.tool===tool);
         b.classList.toggle('eraser',b.dataset.tool==='eraser');
     });
-    if(tool==='eraser'){
-        drawingCtx.globalCompositeOperation='destination-out';
-        drawingCtx.strokeStyle='rgba(0,0,0,1)';
-        drawingCtx.lineWidth=brushSize*3; // Eraser bigger
-    }else{
-        drawingCtx.globalCompositeOperation='source-over';
-        drawingCtx.strokeStyle=currentColor;
-        drawingCtx.lineWidth=brushSize;
-        drawingCtx.fillStyle=currentColor;
-    }
+    applyToolStyle();
 }
 
 function updateBrushSize(){
-    brushSize=parseInt(document.getElementById('brushSize').value);
-    if(currentTool!=='eraser'){
-        drawingCtx.lineWidth=brushSize;
-        drawingCtx.fillStyle=currentColor;
-    }else{
-        drawingCtx.lineWidth=brushSize*3;
-    }
+    brushSize=parseInt(document.getElementById('brushSize').value)||3;
+    applyToolStyle();
 }
 
 function clearCanvas(){
-    drawingCtx.clearRect(0,0,drawingCtx.canvas.width,drawingCtx.canvas.height);
+    if(!drawingCtx) return;
+    var c=drawingCtx.canvas;
+    drawingCtx.save();
+    drawingCtx.setTransform(1,0,0,1,0,0);
+    drawingCtx.globalCompositeOperation='source-over';
+    drawingCtx.globalAlpha=1;
+    drawingCtx.clearRect(0,0,c.width,c.height);
+    drawingCtx.fillStyle='#ffffff';
+    drawingCtx.fillRect(0,0,c.width,c.height);
+    drawingCtx.restore();
 }
 
 function updateColor(){
     currentColor=document.getElementById('colorPicker').value;
-    if(currentTool!=='eraser'){
-        drawingCtx.strokeStyle=currentColor;
-        drawingCtx.fillStyle=currentColor;
-    }
+    if(!drawingCtx) return;
+    if(currentTool!=='eraser') applyToolStyle();
 }
 
 function submitDrawing(){
@@ -378,9 +404,17 @@ function submitDrawing(){
 function startGuessingTurn(){
     updatePlayerTags('guessPlayers', currentPlayerIdx, currentPlayerIdx);
     document.getElementById('currentGuesser').textContent=players[currentPlayerIdx];
+    // كل لاعب يخمّن الرسمة التي وصلته من اللاعب السابق.
+    var drawIdx=(currentPlayerIdx+1)%players.length;
     const img=document.getElementById('drawingToGuess');
-    img.src=drawings[currentPlayerIdx];
-    img.style.display='block';
+    const src=drawings[drawIdx];
+    if(src){
+        img.src=src;
+        img.style.display='block';
+    }else{
+        img.removeAttribute('src');
+        img.style.display='none';
+    }
     document.getElementById('guessInput').value='';
     document.getElementById('guessInput').focus();
 }
@@ -403,38 +437,36 @@ function showReveal(){
     showPhase('reveal');
     const container=document.getElementById('chainDisplay');
     container.innerHTML='';
-    
-    // Build chain from turnOrder
-    turnOrder.forEach((turn,i)=>{
-        const div=document.createElement('div');
+    const n=players.length;
+
+    // كل سلسلة تبدأ من جملة لاعب واحد، ثم رسم اللاعب الذي قبله، ثم تخمين اللاعب الذي قبله.
+    for(var p=0;p<n;p++){
+        var drawerIdx=(p-1+n)%n;   // من رسم جملة اللاعب p
+        var guesserIdx=(p-2+n)%n;  // من خمّن تلك الرسمة
+        var drawSrc=drawings[drawerIdx];
+        var drawHtml=drawSrc
+            ? '<img class="tv-chain-img" src="'+drawSrc+'" alt="رسم '+players[drawerIdx]+'">'
+            : '<div class="tv-chain-img tv-chain-empty">لا توجد رسمة — اللاعب لم يرسم</div>';
+        var div=document.createElement('div');
         div.className='tv-chain-item';
-        let stepLabel='', content='', imgHtml='';
-        
-        if(turn.type==='phrase'){
-            stepLabel='الجملة الأصلية';
-            content=turn.data;
-        }else if(turn.type==='draw'){
-            stepLabel='الرسم';
-            content='';
-            imgHtml=`<img class="tv-chain-img" src="${turn.data}">`;
-        }else if(turn.type==='guess'){
-            stepLabel='التخمين';
-            content=turn.data;
-        }
-        
-        div.innerHTML=`
-            <div class="tv-chain-step">${stepLabel}</div>
-            <div class="tv-chain-content">${content}</div>
-            ${imgHtml}
-            <div style="font-size:.8rem;color:var(--text-secondary);margin-top:.5rem">— ${players[turn.playerIdx]}</div>
-        `;
+        div.innerHTML=
+            '<div class="tv-chain-step">الجملة الأصلية — '+players[p]+'</div>'+
+            '<div class="tv-chain-content">'+escapeHtml(phrases[p]||'—')+'</div>'+
+            '<div class="tv-chain-step" style="margin-top:.9rem">الرسم — '+players[drawerIdx]+'</div>'+
+            drawHtml+
+            '<div class="tv-chain-step" style="margin-top:.9rem">التخمين — '+players[guesserIdx]+'</div>'+
+            '<div class="tv-chain-content">'+escapeHtml(guesses[guesserIdx]||'—')+'</div>';
         container.appendChild(div);
-    });
-    
+    }
+
     const voteContainer=document.getElementById('voteButtons');
-    voteContainer.innerHTML=players.map((p,i)=>`<button class="tv-vote-btn" onclick="vote(${i})">${p}</button>`).join('');
+    voteContainer.innerHTML=players.map((p,i)=>`<button class="tv-vote-btn" onclick="vote(${i})">${escapeHtml(p)} (${votes[i]||0})</button>`).join('');
     document.getElementById('nextRoundBtn').style.display='none';
     document.getElementById('endGameBtn').style.display='none';
+}
+
+function escapeHtml(s){
+    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function vote(idx){
@@ -446,6 +478,7 @@ function vote(idx){
     document.getElementById('nextRoundBtn').style.display='inline-flex';
     document.getElementById('endGameBtn').style.display='inline-flex';
 }
+
 
 function goNextRound(){
     startNextRound();
