@@ -930,7 +930,7 @@ function setBoardNotice(msg) {
 }
 
 function loadQuestions() {
-    fetch('/api/questions?game=letters&per_page=5000')
+    fetch('/api/questions?game=letters&per_page=10000')
         .then(function (r) { return r.json(); })
         .then(function (data) {
             questionsByLetter = {};

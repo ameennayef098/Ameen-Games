@@ -348,7 +348,7 @@ def list_questions():
     search = request.args.get('search', '').strip()
     sort = request.args.get('sort', 'newest')
     page = max(1, int(request.args.get('page', 1)))
-    per_page = min(5000, max(1, int(request.args.get('per_page', 50))))
+    per_page = min(20000, max(1, int(request.args.get('per_page', 50))))
     include_archived = request.args.get('include_archived', '0') == '1'
 
     out = load_bank()

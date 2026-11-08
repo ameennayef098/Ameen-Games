@@ -1,0 +1,876 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+/* ===== AMEEN FEUD ===== */
+:root {
+  --feud-bg: #10152B;
+  --feud-bg2: #19213D;
+  --feud-accent: #3978FF;
+  --feud-gold: #F4C542;
+  --feud-green: #22c55e;
+  --feud-red: #ef4444;
+  --feud-white: #ffffff;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--feud-bg); color: var(--feud-white); font-family: 'Cairo', system-ui; }
+.game-container { max-width: 900px; margin: 0 auto; padding: var(--space-4); }
+
+/* Screens */
+.screen { display: none; }
+.screen.on { display: block; animation: fadeIn .4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity:1; transform: none;}}
+
+/* Start screen */
+.start-wrap { text-align: center; padding: var(--space-8) 0; }
+.start-logo { font-size: 3.2rem; font-weight: 900; letter-spacing: .04em; background: linear-gradient(135deg, var(--feud-accent), var(--feud-gold)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 40px rgba(57,120,255,.25); }
+.start-sub { font-size: 1.1rem; color: #a5b4c7; margin-top: .5rem; }
+.start-btns { margin-top: 2rem; display: flex; flex-direction: column; gap: .8rem; align-items: center; }
+.btn { padding: .9rem 2rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-weight: 800; cursor: pointer; transition: var(--transition); font-family: inherit; font-size: 1rem; min-width: 240px; }
+.btn:hover { border-color: var(--feud-accent); color: var(--feud-accent); transform: translateY(-2px); }
+.btn-primary { background: linear-gradient(135deg, var(--feud-accent), #2563eb); color: #fff; border-color: transparent; }
+.btn-primary:hover { color: #fff; box-shadow: 0 8px 30px rgba(57,120,255,.35); }
+.btn-gold { background: linear-gradient(135deg, var(--feud-gold), #eab308); color: #1a1a1a; border-color: transparent; }
+.btn-gold:hover { color: #1a1a1a; box-shadow: 0 8px 30px rgba(244,197,66,.35); }
+
+/* Setup */
+.setup-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-5); display: grid; gap: var(--space-3); }
+.form-row { display: grid; gap: .4rem; }
+.form-row label { font-size: .85rem; color: #a5b4c7; font-weight: 700; }
+.form-row input, .form-row select { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: .6rem .9rem; border-radius: var(--radius); font-family: inherit; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* ===== بطاقات أسماء الفرق ===== */
+.team-name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+@media (max-width: 560px) { .team-name-grid { grid-template-columns: 1fr; } }
+.team-name-card { display: grid; gap: .6rem; padding: var(--space-4); border-radius: var(--radius-lg); border: 1px solid var(--border-color); background: linear-gradient(160deg, var(--bg-secondary), var(--bg-card)); transition: var(--transition); }
+.team-name-card.team-a { --tnc-accent: var(--feud-accent); }
+.team-name-card.team-b { --tnc-accent: var(--feud-gold); }
+.team-name-card:focus-within { border-color: var(--tnc-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tnc-accent) 26%, transparent); transform: translateY(-2px); }
+.tnc-head { display: flex; align-items: center; gap: .6rem; }
+.tnc-badge { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 12px; display: grid; place-items: center; font-weight: 900; font-size: 1.15rem; color: #fff; background: linear-gradient(135deg, var(--tnc-accent), color-mix(in srgb, var(--tnc-accent) 55%, #000)); box-shadow: 0 4px 14px color-mix(in srgb, var(--tnc-accent) 42%, transparent); transition: transform .2s ease; }
+.team-name-card:focus-within .tnc-badge { transform: scale(1.08) rotate(-4deg); }
+.tnc-label { flex: 1; font-size: .85rem; font-weight: 800; color: var(--text-secondary); }
+.tnc-clear { width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; border: 1px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: .8rem; line-height: 1; transition: var(--transition); }
+.tnc-clear:hover { border-color: var(--feud-red); color: var(--feud-red); transform: rotate(90deg); }
+.tnc-input { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: .75rem 1rem; border-radius: var(--radius); font-family: inherit; font-size: 1.2rem; font-weight: 800; text-align: center; letter-spacing: 0; transition: var(--transition); }
+.tnc-input::placeholder { color: var(--text-secondary); font-weight: 600; font-size: .95rem; }
+.tnc-input:focus { outline: none; border-color: var(--tnc-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tnc-accent) 20%, transparent); }
+.tnc-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .72rem; color: var(--text-secondary); }
+.tnc-count { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--tnc-accent); }
+.tnc-preview { display: flex; align-items: center; justify-content: center; gap: .8rem; margin-top: var(--space-3); padding: .7rem 1rem; border-radius: var(--radius); border: 1px dashed var(--border-color); background: var(--bg-secondary); font-weight: 900; }
+.tnc-preview .pv-name { max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tnc-preview .pv-vs { color: var(--feud-gold); font-size: .85rem; }
+.tnc-preview .pv-team-a { color: var(--feud-accent); }
+.tnc-preview .pv-team-b { color: var(--feud-gold); }
+
+/* HUD */
+.hud { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) 0; }
+.hud-center { font-weight: 900; font-size: 1.1rem; color: var(--feud-gold); }
+.team-card { flex: 1; padding: var(--space-2) var(--space-3); background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius); text-align: center; transition: var(--transition); position: relative; }
+.team-card.is-turn { border-color: var(--feud-gold); box-shadow: 0 0 0 3px rgba(244,197,66,.25); }
+.team-card .t-name { font-weight: 800; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.team-card .t-avatar { width: 34px; height: 34px; margin: 0 auto .25rem; border-radius: 11px; display: grid; place-items: center; font-weight: 900; font-size: 1.1rem; color: #fff; background: linear-gradient(135deg, var(--feud-accent), #2563eb); box-shadow: 0 4px 12px rgba(57,120,255,.35); }
+#cardB .t-avatar { background: linear-gradient(135deg, var(--feud-gold), #eab308); color: #1a1a1a; box-shadow: 0 4px 12px rgba(244,197,66,.35); }
+.team-card .t-score { font-size: 1.6rem; font-weight: 900; color: var(--feud-gold); }
+.team-card .t-round { font-size: .75rem; color: #a5b4c7; }
+.team-card .x-marks { display: inline-flex; gap: .2rem; margin-top: .3rem; }
+.team-card .x-mark { width: 18px; height: 18px; border-radius: 50%; background: var(--feud-red); color: #fff; font-size: .65rem; font-weight: 900; display: inline-grid; place-items: center; }
+
+/* Question */
+.q-card { background: linear-gradient(135deg, rgba(57,120,255,.15), rgba(25,33,61,.8)); border: 1px solid rgba(57,120,255,.3); border-radius: var(--radius-lg); padding: var(--space-4); text-align: center; margin: var(--space-3) 0; font-size: 1.2rem; font-weight: 800; }
+
+/* Board */
+.board { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+@media (max-width: 480px) { .board { grid-template-columns: 1fr; } }
+.tile { position: relative; background: linear-gradient(180deg, #1e2a4a, #16203a); border: 1px solid #2a3a5e; border-radius: var(--radius); padding: var(--space-3); min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem; transition: var(--transition); overflow: hidden; }
+.tile.revealed { background: linear-gradient(135deg, rgba(34,197,94,.12), rgba(25,33,61,.7)); border-color: rgba(34,197,94,.35); }
+.tile .t-num { position: absolute; top: .4rem; right: .6rem; font-size: .7rem; color: #6b7a94; font-weight: 900; }
+.tile .t-text { font-weight: 900; font-size: 1.05rem; text-align: center; }
+.tile .t-pts { font-weight: 900; font-size: .9rem; color: var(--feud-gold); }
+.tile .t-hidden { font-size: 1.4rem; letter-spacing: .15em; color: #3a4a6e; font-weight: 900; }
+.tile.reveal-anim { animation: flipTile .5s ease; }
+@keyframes flipTile { 0% { transform: rotateX(0);} 50% { transform: rotateX(90deg);} 100% { transform: rotateX(0);} }
+
+/* Input */
+.input-row { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.input-row input { flex: 1; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: .7rem 1rem; border-radius: var(--radius); font-family: inherit; font-size: 1rem; }
+.input-row button { padding: .7rem 1.2rem; border-radius: var(--radius); border: none; background: var(--feud-accent); color: #fff; font-weight: 900; cursor: pointer; font-family: inherit; }
+.input-row button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Strike flash */
+.strike-flash { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 50; }
+.strike-x { font-size: 8rem; font-weight: 900; color: var(--feud-red); opacity: 0; animation: strikeAnim .8s ease forwards; text-shadow: 0 0 60px rgba(239,68,68,.6); }
+@keyframes strikeAnim { 0% { opacity: 0; transform: scale(.3);} 30% { opacity: 1; transform: scale(1.2);} 100% { opacity: 0; transform: scale(1);} }
+
+/* Steal banner */
+.steal-banner { background: linear-gradient(135deg, rgba(239,68,68,.15), rgba(244,197,66,.15)); border: 1px solid rgba(244,197,66,.4); border-radius: var(--radius-lg); padding: var(--space-3); text-align: center; margin: var(--space-2) 0; animation: fadeIn .4s ease; }
+.steal-banner h3 { color: var(--feud-gold); margin: 0; }
+
+/* Round end / match end */
+.result-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-5); text-align: center; }
+.result-card .big { font-size: 2.4rem; font-weight: 900; color: var(--feud-gold); }
+.winner-crown { font-size: 3rem; animation: bounce 1s ease infinite; }
+@keyframes bounce { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-12px);}}
+
+/* Confetti */
+.confetti { position: fixed; width: 8px; height: 8px; top: -10px; border-radius: 2px; animation: fall 2.5s linear forwards; pointer-events: none; z-index: 100; }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; }}
+
+/* Modal overlay */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; z-index: 40; padding: var(--space-4); }
+.overlay.on { display: flex; }
+.modal { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-5); max-width: 420px; width: 100%; text-align: center; }
+
+/* Judge panel */
+.judge-row { display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
+.judge-row button { padding: .5rem 1rem; border-radius: var(--radius); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-weight: 800; cursor: pointer; font-family: inherit; }
+.judge-row button.yes { background: var(--feud-green); color: #fff; border-color: transparent; }
+.judge-row button.no { background: var(--feud-red); color: #fff; border-color: transparent; }
+
+/* Sound toggle */
+.sound-toggle { position: fixed; bottom: 1rem; right: 1rem; z-index: 30; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer; display: grid; place-items: center; font-size: 1.1rem; }
+
+/* Category chips */
+.cat-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+.cat-chip { padding: .25rem .7rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-secondary); font-size: .8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.cat-chip.sel { background: var(--feud-accent); color: #fff; border-color: transparent; }
+
+.hidden { display: none !important; }
+</style>
+
+<!-- ==================== START SCREEN ==================== -->
+<div id="screenStart" class="screen on">
+  <div class="start-wrap">
+    <div class="start-logo">AMEEN FEUD</div>
+    <div class="start-sub">أمين فيود — هل تستطيع تخمين إجابات الجمهور؟</div>
+    <div class="start-btns">
+      <button class="btn btn-primary" onclick="showSetup()">ابدأ اللعب</button>
+      <button class="btn" onclick="showHow()">طريقة اللعب</button>
+      <button class="btn" onclick="showSettings()">الإعدادات</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== HOW TO PLAY ==================== -->
+<div id="screenHow" class="screen">
+  <div class="result-card">
+    <button class="btn" onclick="showStart()" style="margin-bottom:1rem">رجوع</button>
+    <h2>طريقة اللعب</h2>
+    <div style="text-align:right;line-height:2;color:#a5b4c7;max-height:60vh;overflow:auto;padding:0 .5rem">
+      <p>1. اختر إعدادات المباراة ثم ابدأ.</p>
+      <p>2. في المواجهة، يخمن كل فريق لاعبًا الإجابة الأعلى ترتيبًا.</p>
+      <p>3. الفريق الفائز يلعب ويحاول كشف الإجابات المخفية.</p>
+      <p>4. 3 أخطاء = فرصة سرقة للفريق المنافس.</p>
+      <p>5. في السرقة: إجابة صحيحة = الفريق المنافس يأخذ كامل نقاط الجولة.</p>
+      <p>6. الجولات المضاعفة: 2x أو 3x النقاط.</p>
+      <p>7. الفريق صاحب أعلى مجموع نقاط يفوز بالمباراة.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SETTINGS ==================== -->
+<div id="screenSettings" class="screen">
+  <div class="result-card">
+    <button class="btn" onclick="showStart()" style="margin-bottom:1rem">رجوع</button>
+    <h2>الإعدادات</h2>
+    <div class="form-row" style="margin-top:1rem">
+      <label>الصوت</label>
+      <button class="btn" id="settingsSoundBtn" onclick="toggleSound()">🔊 الصوت مفعّل</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SETUP ==================== -->
+<div id="screenSetup" class="screen">
+  <div class="game-container">
+    <h2 style="text-align:center;color:var(--feud-gold)">إعداد المباراة</h2>
+    <div class="setup-card" style="margin-top:1rem">
+      <div class="team-name-grid">
+        <div class="team-name-card team-a">
+          <div class="tnc-head">
+            <span class="tnc-badge" id="badgeA">أ</span>
+            <span class="tnc-label">الفريق الأول</span>
+            <button class="tnc-clear" id="clearA" type="button" title="مسح الاسم" aria-label="مسح اسم الفريق الأول">✕</button>
+          </div>
+          <input id="teamA" class="tnc-input" value="الفريق أ" maxlength="24" placeholder="اكتب اسم الفريق الأول" autocomplete="off">
+          <div class="tnc-foot"><span>سيظهر الاسم في شاشة اللعب</span><span class="tnc-count" id="countA">6 / 24</span></div>
+        </div>
+        <div class="team-name-card team-b">
+          <div class="tnc-head">
+            <span class="tnc-badge" id="badgeB">ب</span>
+            <span class="tnc-label">الفريق الثاني</span>
+            <button class="tnc-clear" id="clearB" type="button" title="مسح الاسم" aria-label="مسح اسم الفريق الثاني">✕</button>
+          </div>
+          <input id="teamB" class="tnc-input" value="الفريق ب" maxlength="24" placeholder="اكتب اسم الفريق الثاني" autocomplete="off">
+          <div class="tnc-foot"><span>سيظهر الاسم في شاشة اللعب</span><span class="tnc-count" id="countB">6 / 24</span></div>
+        </div>
+      </div>
+      <div class="tnc-preview">
+        <span class="pv-name pv-team-a" id="pvA">الفريق أ</span>
+        <span class="pv-vs">ضد</span>
+        <span class="pv-name pv-team-b" id="pvB">الفريق ب</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>عدد الجولات</label><select id="rounds"><option>3</option><option selected>5</option><option>7</option></select></div>
+        <div class="form-row"><label>نقاط الجولة</label><select id="mult"><option>1x</option><option>2x</option><option>3x</option></select></div>
+      </div>
+      <div class="form-row">
+        <label>التصنيف</label>
+        <div class="cat-chips" id="catChips"></div>
+      </div>
+      <button class="btn btn-gold" onclick="startMatch()" style="width:100%;margin-top:.5rem">ابدأ المباراة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== COIN TOSS ==================== -->
+<div id="screenToss" class="screen">
+  <div class="game-container">
+    <div class="result-card">
+      <h2 style="color:var(--feud-gold)">قرعة الدور</h2>
+      <p style="color:#a5b4c7;margin-top:.5rem">من يبدأ المواجهة؟</p>
+      <div style="font-size:4rem;margin:2rem 0;animation:spin 1s ease" id="tossIcon">🪙</div>
+      <style>@keyframes spin{0%{transform:rotateY(0)}100%{transform:rotateY(1800deg)}}</style>
+      <div id="tossResult" style="font-weight:900;font-size:1.3rem;color:var(--feud-white);margin-bottom:1rem"></div>
+      <button class="btn btn-gold hidden" id="tossNext" onclick="afterToss()" style="width:100%">ابدأ الجولة الأولى</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GAME ==================== -->
+<div id="screenGame" class="screen">
+  <div class="game-container">
+    <div class="hud">
+      <div class="team-card" id="cardA"><div class="t-avatar" id="avatarA">أ</div><div class="t-name" id="nameA">الفريق أ</div><div class="t-score" id="scoreA">0</div><div class="t-round" id="roundA">0</div><div class="x-marks" id="xA"></div></div>
+      <div class="hud-center">
+        <div id="roundLabel">الجولة 1</div>
+        <div class="toss-controls" style="margin-top:.3rem">
+          <button class="btn" id="passBtn" onclick="passTurn()" style="padding:.3rem .7rem;font-size:.75rem;border-radius:999px">🏮 تمرير</button>
+          <button class="btn" id="adminToggle" onclick="toggleAdmin()" style="padding:.3rem .7rem;font-size:.75rem;border-radius:999px">🛡️ أدمن</button>
+        </div>
+        <div id="timerBar" style="margin-top:.4rem;height:8px;background:var(--bg-secondary);border-radius:999px;overflow:hidden;border:1px solid var(--border-color)">
+          <div id="timerFill" style="width:100%;height:100%;background:var(--feud-green);transition:width .3s linear"></div>
+        </div>
+        <div id="timerText" style="font-weight:900;font-size:.85rem;color:var(--feud-gold);margin-top:.2rem">30</div>
+      </div>
+      <div class="team-card" id="cardB"><div class="t-avatar" id="avatarB">ب</div><div class="t-name" id="nameB">الفريق ب</div><div class="t-score" id="scoreB">0</div><div class="t-round" id="roundB">0</div><div class="x-marks" id="xB"></div></div>
+    </div>
+
+    <div class="q-card" id="qCard">...</div>
+
+    <div class="board" id="board"></div>
+
+    <div class="input-row" id="inputRow">
+      <button class="btn" id="modeBtn" onclick="toggleMode()" style="padding:.5rem .8rem;font-size:.8rem">🎤</button>
+      <input id="answerInput" type="text" placeholder="اكتب إجابتك هنا..." autocomplete="off">
+      <button id="sendBtn" onclick="submitAnswer()">إرسال</button>
+    </div>
+
+    <div id="judgeArea" class="hidden" style="margin-top:.8rem;text-align:center">
+      <div style="color:#a5b4c7;font-size:.85rem">إجابة مشبوهة — قرارك؟</div>
+      <div class="judge-row">
+        <button class="yes" onclick="judge(true)">✅ صحيحة</button>
+        <button class="no" onclick="judge(false)">❌ خاطئة</button>
+      </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden" style="margin-top:1rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:var(--space-3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+        <h3 style="color:var(--feud-gold);margin:0;font-size:1rem">🛡️ لوحة الأدمن</h3>
+        <button class="btn" onclick="toggleAdmin()" style="padding:.2rem .6rem;font-size:.75rem">إغلاق</button>
+      </div>
+      <div id="adminBoard" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ROUND END ==================== -->
+<div id="screenRoundEnd" class="screen">
+  <div class="game-container">
+    <div class="result-card">
+      <div class="winner-crown">🏆</div>
+      <h2 id="roundWinner">نهاية الجولة</h2>
+      <div class="big" id="roundScore">0</div>
+      <p id="roundDetail" style="color:#a5b4c7"></p>
+      <button class="btn btn-gold" id="nextRoundBtn" onclick="nextRound()" style="margin-top:1rem">الجولة التالية</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MATCH END ==================== -->
+<div id="screenMatchEnd" class="screen">
+  <div class="game-container">
+    <div class="result-card">
+      <div class="winner-crown" id="matchCrown">🏆</div>
+      <h2 id="matchTitle">نهاية المباراة</h2>
+      <div class="big" id="matchScore">0 - 0</div>
+      <p id="matchStats" style="color:#a5b4c7"></p>
+      <div style="display:flex;gap:.8rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="restartMatch()">إعادة المباراة</button>
+        <button class="btn" onclick="showStart()">القائمة الرئيسية</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Judge overlay for manual answers -->
+<div class="overlay" id="judgeOverlay">
+  <div class="modal">
+    <h3 style="color:var(--feud-gold)">إجابة مشبوهة</h3>
+    <p id="judgeText" style="margin-top:.5rem;color:#a5b4c7"></p>
+    <div class="judge-row">
+      <button class="yes" onclick="resolveJudge(true)">✅ قبول</button>
+      <button class="no" onclick="resolveJudge(false)">❌ رفض</button>
+    </div>
+  </div>
+</div>
+
+<div class="strike-flash" id="strikeFlash" style="display:none"><div class="strike-x">✕</div></div>
+
+<button class="sound-toggle" id="soundBtn" onclick="toggleSound()" title="الصوت">🔊</button>
+
+<script>
+/* ===== STATE ===== */
+let S = {
+  teamA: 'الفريق أ', teamB: 'الفريق ب',
+  rounds: 5, mult: 1,
+  cats: [],
+  sound: true,
+  questions: [],
+  roundIdx: 0,
+  turn: 0, // 0=A, 1=B
+  scores: [0, 0],
+  roundScores: [0, 0],
+  strikes: [0, 0],
+  revealed: new Set(),
+  pending: null, // answer waiting for judge
+  faceoff: null,
+  steal: null, // {team} when in steal mode
+  roundHistory: [],
+  timer: null,
+  timeLeft: 30,
+  inputMode: 'text', // text | voice
+  adminOpen: false,
+};
+
+const $ = (sel) => {
+  if (sel.startsWith('.')) return document.querySelector(sel);
+  if (sel.startsWith('#')) return document.getElementById(sel.slice(1));
+  return document.getElementById(sel);
+};
+const $$ = sel => document.querySelectorAll(sel);
+const norm = s => (s||'').trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/[^؀-ۿa-zA-Z0-9\s]/g,'').replace(/\s+/g,' ');
+
+/* ===== SCREENS ===== */
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); $(id).classList.add('on'); }
+function showStart() { show('screenStart'); }
+function showSetup() { show('screenSetup'); }
+function showHow() { show('screenHow'); }
+function showSettings() { show('screenSettings'); }
+function showGame() { show('screenGame'); }
+function showRoundEnd() { show('screenRoundEnd'); }
+function showMatchEnd() { show('screenMatchEnd'); }
+
+/* ===== SETUP ===== */
+// بطاقات أسماء الفرق: شارة الحرف الأول + عدّاد + مسح + معاينة حية
+function bindTeamName(inputId, badgeId, countId, clearId, pvId, fallback) {
+  var inp = $(inputId), badge = $(badgeId), cnt = $(countId), pv = $(pvId);
+  function firstChar(s) {
+    s = (s || '').trim();
+    if (s.length > 3 && s.slice(0, 2) === 'ال') s = s.slice(2);
+    return s.charAt(0) || '؟';
+  }
+  function sync() {
+    var v = inp.value.trim();
+    var shown = v || fallback;
+    badge.textContent = firstChar(shown);
+    cnt.textContent = inp.value.length + ' من ' + inp.maxLength;
+    pv.textContent = shown;
+  }
+  inp.addEventListener('input', sync);
+  $(clearId).addEventListener('click', function () { inp.value = ''; inp.focus(); sync(); });
+  sync();
+}
+bindTeamName('teamA', 'badgeA', 'countA', 'clearA', 'pvA', 'الفريق أ');
+bindTeamName('teamB', 'badgeB', 'countB', 'clearB', 'pvB', 'الفريق ب');
+
+function renderCats() {
+  const cats = [...new Set((S.questions||[]).map(q => q.cat))];
+  const wrap = $('catChips');
+  wrap.innerHTML = cats.map(c => `<button class="cat-chip sel" type="button" data-cat="${c}" onclick="this.classList.toggle('sel')">${c}</button>`).join('');
+}
+function getSelectedCats() {
+  return Array.from(document.querySelectorAll('#catChips .cat-chip.sel')).map(b => b.dataset.cat);
+}
+function toggleSound() {
+  S.sound = !S.sound;
+  $('soundBtn').textContent = S.sound ? '🔊' : '🔇';
+  $('settingsSoundBtn').textContent = S.sound ? '🔊 الصوت مفعّل' : '🔇 الصوت مغلّف';
+}
+
+/* ===== START ===== */
+async function showSetup() {
+  if (!S.questions.length) {
+    S.questions = await fetch('/api/feud/questions').then(r => r.json()).then(d => d.questions || []);
+    if (!S.questions.length) { alert('لا توجد أسئلة'); return; }
+  }
+  renderCats();
+  show('screenSetup');
+}
+
+/* ===== AUDIO ===== */
+let actx;
+function beep(freq=440, dur=.15, type='square', vol=.08) {
+  if (!S.sound) return;
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.value = vol;
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  } catch(e) {}
+}
+const SFX = {
+  reveal: () => beep(660, .12, 'sine', .12),
+  wrong: () => { beep(180, .4, 'sawtooth', .1); setTimeout(()=>beep(140, .4, 'sawtooth', .1), 120); },
+  steal: () => { [0,100,200,300].forEach((d,i)=>setTimeout(()=>beep(520+i*60, .1, 'square', .1), d)); },
+  win: () => { [0,80,160,240,320].forEach((d,i)=>setTimeout(()=>beep(500+i*80, .15, 'sine', .12), d)); },
+  click: () => beep(800, .05, 'sine', .05),
+};
+
+/* ===== MATCH ===== */
+async function startMatch() {
+  S.teamA = $('teamA').value.trim() || 'الفريق أ';
+  S.teamB = $('teamB').value.trim() || 'الفريق ب';
+  S.rounds = parseInt($('rounds').value) || 5;
+  S.mult = parseInt($('mult').value) || 1;
+  S.cats = getSelectedCats();
+  S.roundIdx = 0;
+  S.scores = [0, 0];
+  clearTimer();
+  show('screenToss');
+  // animated coin toss
+  const icon = $('tossIcon');
+  const res = $('tossResult');
+  const btn = $('tossNext');
+  icon.style.animation = 'none';
+  void icon.offsetWidth;
+  icon.style.animation = 'spin 1s ease';
+  setTimeout(() => {
+    S.turn = Math.random() < .5 ? 0 : 1;
+    const who = S.turn === 0 ? S.teamA : S.teamB;
+    res.textContent = 'يبدأ ' + who;
+    btn.classList.remove('hidden');
+  }, 1100);
+}
+
+function afterToss() {
+  nextRound();
+}
+
+/* ===== PASS TURN ===== */
+function passTurn() {
+  if (S.steal) return; // cannot pass during steal
+  const prev = S.turn;
+  S.turn = 1 - S.turn;
+  S.strikes[prev] = 0;
+  updateTurn();
+  updateScores();
+  SFX.click();
+}
+
+/* ===== TIMER ===== */
+function startTimer() {
+  clearTimer();
+  S.timeLeft = 30;
+  updateTimerUI();
+  S.timer = setInterval(() => {
+    S.timeLeft--;
+    updateTimerUI();
+    if (S.timeLeft <= 0) {
+      clearTimer();
+      // Time's up = wrong answer
+      const ti = S.turn;
+      S.strikes[ti]++;
+      updateScores();
+      SFX.wrong();
+      showStrike();
+      if (S.strikes[ti] >= 3) startSteal();
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (S.timer) { clearInterval(S.timer); S.timer = null; }
+}
+
+function updateTimerUI() {
+  const fill = $('timerFill');
+  const txt = $('timerText');
+  if (!fill || !txt) return;
+  const pct = Math.max(0, S.timeLeft / 30 * 100);
+  fill.style.width = pct + '%';
+  txt.textContent = S.timeLeft + 's';
+  if (S.timeLeft <= 10) fill.style.background = 'var(--feud-red)';
+  else if (S.timeLeft <= 20) fill.style.background = 'var(--feud-gold)';
+  else fill.style.background = 'var(--feud-green)';
+}
+
+function addTime(sec) {
+  S.timeLeft = Math.min(30, S.timeLeft + sec);
+  updateTimerUI();
+}
+
+/* ===== INPUT MODE ===== */
+function toggleMode() {
+  S.inputMode = S.inputMode === 'text' ? 'voice' : 'text';
+  const btn = $('modeBtn');
+  const inp = $('answerInput');
+  if (S.inputMode === 'voice') {
+    btn.textContent = '⌨️';
+    inp.placeholder = 'اضغط للتحدث...';
+    inp.readOnly = true;
+    startVoice();
+  } else {
+    btn.textContent = '🎤';
+    inp.placeholder = 'اكتب إجابتك هنا...';
+    inp.readOnly = false;
+    stopVoice();
+  }
+}
+
+function startVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('المتصفح لا يدعم التعرف على الصوت');
+    toggleMode();
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  S._rec = new SR();
+  S._rec.lang = 'ar-SA';
+  S._rec.continuous = true;
+  S._rec.interimResults = true;
+  S._rec.onresult = (e) => {
+    let text = '';
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    $('answerInput').value = text;
+  };
+  S._rec.onerror = () => { stopVoice(); };
+  S._rec.start();
+  $('inputRow').style.borderColor = 'var(--feud-accent)';
+}
+
+function stopVoice() {
+  if (S._rec) { try { S._rec.stop(); } catch(e){} S._rec = null; }
+  $('inputRow').style.borderColor = '';
+}
+
+/* ===== ADMIN PANEL ===== */
+function toggleAdmin() {
+  S.adminOpen = !S.adminOpen;
+  $('adminPanel').classList.toggle('hidden', !S.adminOpen);
+  $('adminToggle').style.background = S.adminOpen ? 'var(--feud-accent)' : '';
+  $('adminToggle').style.color = S.adminOpen ? '#fff' : '';
+  if (S.adminOpen) renderAdminBoard();
+}
+
+function renderAdminBoard() {
+  const q = S._q;
+  if (!q) return;
+  const board = $('adminBoard');
+  board.innerHTML = q.a.map((ans, i) => {
+    const revealed = S.revealed.has(i);
+    return '<div style="padding:.5rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius);display:flex;align-items:center;justify-content:space-between;gap:.5rem">' +
+      '<div><div style="font-weight:900;font-size:.9rem">' + ans.t + '</div><div style="font-size:.75rem;color:var(--feud-gold)">' + ans.p + ' نقطة</div></div>' +
+      '<div style="display:flex;gap:.3rem">' +
+        '<button class="yes" onclick="adminReveal(' + i + ')" ' + (revealed ? 'disabled' : '') + ' style="padding:.25rem .5rem;font-size:.75rem">✅</button>' +
+        '<button class="no" onclick="adminHide(' + i + ')" ' + (!revealed ? 'disabled' : '') + ' style="padding:.25rem .5rem;font-size:.75rem">↩️</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function adminReveal(idx) {
+  if (S.revealed.has(idx)) return;
+  revealAnswer(idx);
+  renderAdminBoard();
+}
+
+function adminHide(idx) {
+  // Undo reveal (rare, but allowed)
+  S.revealed.delete(idx);
+  const q = S._q;
+  const pts = q.a[idx].p;
+  const ti = S.turn;
+  S.roundScores[ti] = Math.max(0, S.roundScores[ti] - pts);
+  S.scores[ti] = Math.max(0, S.scores[ti] - pts);
+  S.roundHistory = S.roundHistory.filter(h => h.idx !== idx);
+  const tile = $('tile' + idx);
+  tile.classList.remove('revealed', 'reveal-anim');
+  tile.querySelector('.t-hidden').classList.remove('hidden');
+  tile.querySelector('.t-text').classList.add('hidden');
+  tile.querySelector('.t-text').textContent = '';
+  tile.querySelector('.t-pts').classList.add('hidden');
+  tile.querySelector('.t-pts').textContent = '';
+  updateScores();
+  renderAdminBoard();
+}
+
+/* ===== SCREENS ===== */
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); $(id).classList.add('on'); }
+function showStart() { show('screenStart'); }
+function showSetup() { show('screenSetup'); }
+function showHow() { show('screenHow'); }
+function showSettings() { show('screenSettings'); }
+function showGame() { show('screenGame'); }
+function showRoundEnd() { show('screenRoundEnd'); }
+function showMatchEnd() { show('screenMatchEnd'); }
+
+function nextRound() {
+  if (S.roundIdx >= S.rounds) { endMatch(); return; }
+  S.roundIdx++;
+  S.roundScores = [0, 0];
+  S.strikes = [0, 0];
+  S.revealed = new Set();
+  S.steal = null;
+  S.pending = null;
+  S.roundHistory = [];
+
+  // pick question
+  let pool = S.questions.filter(q => S.cats.includes(q.cat));
+  if (!pool.length) pool = S.questions;
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  S._q = q;
+
+  // update UI
+  $('nameA').textContent = S.teamA;
+  $('nameB').textContent = S.teamB;
+  $('avatarA').textContent = S.teamA.trim().charAt(0) || 'أ';
+  $('avatarB').textContent = S.teamB.trim().charAt(0) || 'ب';
+  $('roundLabel').textContent = 'الجولة ' + S.roundIdx;
+  updateScores();
+  $('qCard').textContent = q.q;
+  $('answerInput').value = '';
+  $('judgeArea').classList.add('hidden');
+  $('inputRow').classList.remove('hidden');
+
+  renderBoard(q);
+  updateTurn();
+  showGame();
+  SFX.click();
+  startTimer();
+}
+
+function renderBoard(q) {
+  const board = $('board');
+  board.innerHTML = '';
+  q.a.forEach((ans, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.id = 'tile' + i;
+    tile.innerHTML = `<span class="t-num">#${i+1}</span><div class="t-hidden">••••••</div><div class="t-text hidden"></div><div class="t-pts hidden"></div>`;
+    tile.onclick = () => revealAnswer(i);
+    board.appendChild(tile);
+  });
+}
+
+function updateScores() {
+  $('scoreA').textContent = S.scores[0];
+  $('scoreB').textContent = S.scores[1];
+  $('roundA').textContent = S.roundScores[0];
+  $('roundB').textContent = S.roundScores[1];
+  $('xA').innerHTML = Array(S.strikes[0]).fill('<span class="x-mark">✕</span>').join('');
+  $('xB').innerHTML = Array(S.strikes[1]).fill('<span class="x-mark">✕</span>').join('');
+}
+
+function updateTurn() {
+  const ai = S.turn;
+  $('cardA').classList.toggle('is-turn', ai === 0);
+  $('cardB').classList.toggle('is-turn', ai === 1);
+}
+
+/* ===== ANSWER LOGIC ===== */
+function matchAnswer(input, ansObj) {
+  const n = norm(input);
+  if (!n) return false;
+  // exact primary
+  if (n === norm(ansObj.t)) return true;
+  // synonyms
+  for (const syn of ansObj.s) {
+    if (n === norm(syn)) return true;
+  }
+  // partial: input is contained in primary or vice versa (length > 2)
+  if (n.length > 2 && norm(ansObj.t).includes(n)) return true;
+  for (const syn of ansObj.s) {
+    if (n.length > 2 && norm(syn).includes(n)) return true;
+  }
+  return false;
+}
+
+function submitAnswer() {
+  const raw = $('answerInput').value.trim();
+  if (!raw || S.pending) return;
+  startTimer(); // restart timer on each attempt
+  const q = S._q;
+  let matched = null, idx = -1;
+  for (let i = 0; i < q.a.length; i++) {
+    if (S.revealed.has(i)) continue;
+    if (matchAnswer(raw, q.a[i])) { matched = q.a[i]; idx = i; break; }
+  }
+  if (!matched) {
+    // wrong
+    SFX.wrong();
+    const ti = S.turn;
+    S.strikes[ti]++;
+    updateScores();
+    showStrike();
+    if (S.strikes[ti] >= 3) {
+      startSteal();
+    }
+  } else {
+    revealAnswer(idx);
+  }
+  $('answerInput').value = '';
+}
+
+function revealAnswer(idx) {
+  if (S.revealed.has(idx)) return;
+  const q = S._q;
+  const ans = q.a[idx];
+  S.revealed.add(idx);
+  const pts = Math.round(ans.p * S.mult);
+  addTime(5); // +5s on correct
+  const ti = S.turn;
+  S.roundScores[ti] += pts;
+  S.scores[ti] += pts;
+  S.roundHistory.push({idx, text: ans.t, pts});
+
+  // animate tile
+  const tile = $('tile' + idx);
+  tile.classList.add('reveal-anim', 'revealed');
+  tile.querySelector('.t-hidden').classList.add('hidden');
+  const txt = tile.querySelector('.t-text');
+  const p = tile.querySelector('.t-pts');
+  txt.textContent = ans.t; txt.classList.remove('hidden');
+  p.textContent = '+' + pts; p.classList.remove('hidden');
+  SFX.reveal();
+
+  // check if all revealed or team reached enough points
+  updateScores();
+  if (S.revealed.size >= q.a.length || S.roundScores[ti] >= 80) {
+    setTimeout(endRound, 600);
+  }
+}
+
+function startSteal() {
+  clearTimer();
+  const ti = S.turn;
+  const other = 1 - ti;
+  S.steal = { team: other };
+  S.turn = other;
+  S.strikes[other] = 0;
+  updateTurn();
+  updateScores();
+  // show banner
+  const banner = document.createElement('div');
+  banner.className = 'steal-banner';
+  banner.id = 'stealBanner';
+  banner.innerHTML = '<h3>🚨 فرصة السرقة! — ' + (other === 0 ? S.teamA : S.teamB) + '</h3><p style="color:#a5b4c7">إجابة واحدة فقط</p>';
+  $('qCard').after(banner);
+  SFX.steal();
+  $('answerInput').value = '';
+}
+
+function judge(accept) {
+  if (!S.pending) return;
+  const {idx, input} = S.pending;
+  S.pending = null;
+  $('judgeArea').classList.add('hidden');
+  if (accept) {
+    revealAnswer(idx);
+  } else {
+    // treat as wrong
+    const ti = S.turn;
+    S.strikes[ti]++;
+    updateScores();
+    SFX.wrong();
+    showStrike();
+    if (S.strikes[ti] >= 3) startSteal();
+  }
+}
+
+function showStrike() {
+  const f = $('strikeFlash');
+  f.style.display = 'grid';
+  const x = f.querySelector('.strike-x');
+  x.style.animation = 'none';
+  void x.offsetWidth;
+  x.style.animation = 'strikeAnim .8s ease forwards';
+  setTimeout(() => f.style.display = 'none', 900);
+}
+
+/* ===== ROUND END ===== */
+function endRound() {
+  clearTimer();
+  const banner = $('stealBanner');
+  if (banner) banner.remove();
+  const winnerIdx = S.roundScores[0] >= S.roundScores[1] ? 0 : 1;
+  const winner = winnerIdx === 0 ? S.teamA : S.teamB;
+  const score = Math.max(S.roundScores[0], S.roundScores[1]);
+  $('roundWinner').textContent = 'فاز ' + winner + ' بهذه الجولة';
+  $('roundScore').textContent = score + ' نقطة';
+  $('roundDetail').textContent = S.roundHistory.map(h => h.text + ' (' + h.pts + ')').join(' • ') || 'لا توجد إجابات';
+  $('nextRoundBtn').textContent = S.roundIdx >= S.rounds ? 'عرض النتيجة النهائية' : 'الجولة التالية';
+  $('nextRoundBtn').onclick = () => { if (S.roundIdx >= S.rounds) endMatch(); else nextRound(); };
+  S.turn = winnerIdx;
+  showRoundEnd();
+  SFX.win();
+}
+
+/* ===== MATCH END ===== */
+function endMatch() {
+  const a = S.scores[0], b = S.scores[1];
+  let title = 'تعادل!';
+  if (a > b) title = 'فاز ' + S.teamA + '!';
+  else if (b > a) title = 'فاز ' + S.teamB + '!';
+  $('matchTitle').textContent = title;
+  $('matchScore').textContent = a + ' - ' + b;
+  const totalCorrect = S.roundHistory.length;
+  const totalStrikes = S.strikes[0] + S.strikes[1];
+  $('matchStats').textContent = 'إجابات صحيحة: ' + totalCorrect + ' | أخطاء: ' + totalStrikes;
+  showMatchEnd();
+  if (a !== b) spawnConfetti();
+  SFX.win();
+}
+
+function restartMatch() { startMatch(); }
+
+/* ===== CONFETTI ===== */
+function spawnConfetti() {
+  const colors = ['#3978FF','#F4C542','#22c55e','#ef4444','#fff'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay = Math.random() * 1.5 + 's';
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+/* ===== KEYBOARD ===== */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if ($('screenGame').classList.contains('on')) submitAnswer();
+  }
+});
+
+/* ===== INIT ===== */
+(async () => {
+  S.questions = await fetch('/api/feud/questions').then(r => r.json()).then(d => d.questions || []);
+})();
+</script>
+{% endblock %}
