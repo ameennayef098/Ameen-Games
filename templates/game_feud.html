@@ -646,8 +646,8 @@ function nextRound() {
   // update UI
   $('nameA').textContent = S.teamA;
   $('nameB').textContent = S.teamB;
-  $('avatarA').textContent = S.teamA.trim().charAt(0) || 'أ';
-  $('avatarB').textContent = S.teamB.trim().charAt(0) || 'ب';
+  $('avatarA').textContent = (S.teamA.trim().length > 3 && S.teamA.trim().slice(0, 2) === 'ال' ? S.teamA.trim().slice(2) : S.teamA.trim()).charAt(0) || 'أ';
+  $('avatarB').textContent = (S.teamB.trim().length > 3 && S.teamB.trim().slice(0, 2) === 'ال' ? S.teamB.trim().slice(2) : S.teamB.trim()).charAt(0) || 'ب';
   $('roundLabel').textContent = 'الجولة ' + S.roundIdx;
   updateScores();
   $('qCard').textContent = q.q;
