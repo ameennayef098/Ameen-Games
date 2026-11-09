@@ -45,6 +45,45 @@
 .cn-result{text-align:center;padding:2rem 1rem}
 .cn-result h2{font-size:2.2rem;margin-bottom:.5rem}
 .cn-result p{color:var(--text-secondary);margin-bottom:1.5rem}
+
+/* ==== الكلمات المترابطة ==== */
+.cn-link-wrap{display:flex;flex-direction:column;align-items:center;gap:.45rem}
+.cn-link-opts{display:none;align-items:center;gap:.4rem;flex-wrap:wrap;justify-content:center;padding:.55rem .8rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius)}
+.cn-link-opts.open{display:flex;animation:cnFade .25s ease}
+.cn-link-label{font-size:.8rem;font-weight:700;color:var(--text-secondary)}
+.cn-chip{padding:.32rem .75rem;border-radius:999px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-secondary);font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--transition)}
+.cn-chip:hover{border-color:var(--accent-blue);color:var(--text-primary)}
+.cn-chip.on{background:var(--accent-blue);border-color:transparent;color:#fff}
+/* ==== دليل الألوان ==== */
+.cn-legend{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;font-size:.82rem;color:var(--text-secondary);font-weight:700}
+.cn-legend span{display:inline-flex;align-items:center;gap:.35rem}
+.cn-legend .dot{width:11px;height:11px;border-radius:3px;display:inline-block;border:1px solid var(--border-color)}
+.cn-legend .dot.red{background:rgba(239,68,68,.55);border-color:var(--accent-red)}
+.cn-legend .dot.blue{background:rgba(59,130,246,.55);border-color:var(--accent-blue)}
+.cn-legend .dot.neutral{background:rgba(148,163,184,.5);border-color:#64748b}
+.cn-legend .dot.killer{background:#1a1a2e;border-color:#e11d48}
+/* ==== بطاقة القاتل تظهر بوضوح في الوضعين ==== */
+.cn-card.cn-killer-mark{position:relative;background:#1a1a2e;border-color:#e11d48;color:#ff5c7a;box-shadow:0 0 0 3px rgba(225,29,72,.22),0 6px 18px rgba(225,29,72,.28)}
+.cn-card.cn-killer-mark::after{content:'💀';position:absolute;top:3px;left:5px;font-size:.7rem;line-height:1}
+.cn-card.revealed.cn-killer{background:#1a1a2e;border-color:#e11d48;color:#ff5c7a;box-shadow:0 0 0 3px rgba(225,29,72,.3),0 8px 22px rgba(225,29,72,.35);background-image:radial-gradient(circle at 50% 42%,rgba(225,29,72,.42),rgba(26,26,46,1) 72%)}
+.cn-card.revealed.cn-killer::after{content:'💀';position:absolute;top:4px;left:6px;font-size:.75rem;line-height:1}
+.cn-board.cn-reveal .cn-card.cn-killer{background:#1a1a2e;border-color:#e11d48;color:#ff5c7a;box-shadow:0 0 0 3px rgba(225,29,72,.22)}
+.cn-board.cn-reveal .cn-card.cn-killer::after{content:'💀';position:absolute;top:3px;left:5px;font-size:.7rem;line-height:1}
+/* ==== انفجار القنبلة ==== */
+.cn-boom{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-50%);text-align:center}
+.cn-bomb{font-size:56px;line-height:1;animation:cnBombDrop .62s cubic-bezier(.34,1.4,.64,1) forwards;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}
+.cn-blast{font-size:130px;line-height:1;opacity:0;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3)}
+.cn-boom.cn-go .cn-bomb{opacity:0;transition:opacity .08s}
+.cn-boom.cn-go .cn-blast{animation:cnExplode 1.05s ease-out forwards}
+.cn-flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9998;animation:cnFlash .55s ease-out}
+.cn-board.cn-shake{animation:cnShake .55s ease}
+@keyframes cnBombDrop{0%{transform:translateY(-140%) scale(.35) rotate(-14deg);opacity:0}18%{opacity:1}62%{transform:translateY(0) scale(1) rotate(0)}78%{transform:translateY(-9%) scale(1.06)}100%{transform:translateY(0) scale(1)}}
+@keyframes cnExplode{0%{opacity:1;transform:translate(-50%,-50%) scale(.3) rotate(-8deg)}45%{opacity:1;transform:translate(-50%,-50%) scale(2.4) rotate(6deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(3.6) rotate(0)}}
+@keyframes cnFlash{0%{opacity:.9}100%{opacity:0}}
+@keyframes cnShake{0%,100%{transform:translate(0,0)}18%{transform:translate(-11px,7px)}36%{transform:translate(10px,-8px)}54%{transform:translate(-8px,-6px)}72%{transform:translate(7px,6px)}88%{transform:translate(-3px,2px)}}
+@keyframes cnFade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.cn-result h2{animation:cnPop .5s cubic-bezier(.34,1.5,.64,1)}
+@keyframes cnPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 @media(max-width:600px){.cn-board{gap:5px}.cn-card{font-size:.85rem;min-height:55px;padding:8px 4px}}
 </style>
 <h1 style="text-align:center;margin:.5rem 0">🕵️ كود نيمز</h1>
@@ -63,12 +102,22 @@
 </details>
 <div class="cn-topbar">
 <button class="cn-btn" id="cnSpymasterBtn" onclick="toggleSpymaster()">👁️ قيادة الفريق</button>
-<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:700;background:var(--bg-card);padding:.4rem .9rem;border-radius:var(--radius);border:1px solid var(--border-color);color:var(--text-primary)">🔗 ربط الكلمات للتلميح <select id="cnSmartRel" onchange="newGame()" style="background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:var(--radius);padding:.35rem .5rem;font-family:inherit;font-weight:700;cursor:pointer"><option value="0">بدون</option><option value="2">قليل (2)</option><option value="4" selected>40% (4 كلمات)</option><option value="6">عالي (6)</option><option value="8">كامل الفريق (8)</option></select></label>
+<div class="cn-link-wrap">
+<button class="cn-btn" id="cnLinkBtn" onclick="toggleLink()" aria-pressed="false">🔗 الكلمات المترابطة</button>
+<div class="cn-link-opts" id="cnLinkOpts">
+<span class="cn-link-label">نسبة الربط لكل فريق:</span>
+<button class="cn-chip" data-link="2" onclick="setLinkSize(2)">2 كلمات</button>
+<button class="cn-chip on" data-link="4" onclick="setLinkSize(4)">4 كلمات (40%)</button>
+<button class="cn-chip" data-link="6" onclick="setLinkSize(6)">6 كلمات</button>
+<button class="cn-chip" data-link="8" onclick="setLinkSize(8)">كل الفريق</button>
+</div>
+</div>
 <button class="cn-btn" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
 </div>
 <div style="text-align:center;margin-bottom:1rem"><span class="cn-turn red" id="cnTurn">الدور: الفريق الأحمر</span></div>
 <div class="cn-scores">
 <div class="cn-score-box red">🔴<span class="num" id="cnRedCount">9</span>بطاقات متبقية</div>
+<div class="cn-legend"><span><i class="dot red"></i>الفريق الأحمر</span><span><i class="dot blue"></i>الفريق الأزرق</span><span><i class="dot neutral"></i>محايد</span><span><i class="dot killer"></i>القاتل (يخسر فوراً)</span></div>
 <div class="cn-score-box blue">🔵<span class="num" id="cnBlueCount">8</span>بطاقات متبقية</div>
 </div>
 <div class="cn-hint-area" id="cnHintArea">
@@ -159,12 +208,28 @@ function cnBuildCluster(pool,n,exclude){
   return best;
 }
 
+// ===== الكلمات المترابطة: تفعيل يدوي =====
+var cnLinkOn=false,cnLinkSize=4;
+function toggleLink(){
+  cnLinkOn=!cnLinkOn;
+  var btn=document.getElementById('cnLinkBtn');
+  btn.className='cn-btn'+(cnLinkOn?' active':'');
+  btn.setAttribute('aria-pressed',cnLinkOn?'true':'false');
+  document.getElementById('cnLinkOpts').className='cn-link-opts'+(cnLinkOn?' open':'');
+  initCodenames();
+}
+function setLinkSize(n){
+  cnLinkSize=n;
+  var chips=document.querySelectorAll('#cnLinkOpts .cn-chip');
+  for(var i=0;i<chips.length;i++)chips[i].className='cn-chip'+(parseInt(chips[i].getAttribute('data-link'),10)===n?' on':'');
+  if(!cnLinkOn)toggleLink();else initCodenames();
+}
+
 async function initCodenames(){
   var r=await fetch('/api/content/codenames?status=approved&per_page=2000');
   var d=await r.json();var pool=d.items||[];
   if(pool.length<25){alert('لا توجد كلمات كافية في المكتبة');return;}
-  var linkSize=parseInt((document.getElementById('cnSmartRel')||{}).value,10);
-  if(isNaN(linkSize))linkSize=4;
+  var linkSize=cnLinkOn?cnLinkSize:0;
   var poolShuffled=cnShuffle([...pool]);
   var first=Math.random()<.5?'red':'blue';
   var redCount=first==='red'?9:8, blueCount=first==='red'?8:9;
@@ -203,6 +268,7 @@ b.innerHTML=cnBoard.map(function(c,i){
 var cls='cn-card';
 if(c.revealed)cls+=' revealed cn-'+c.type;
 else if(cnSpymasterOn)cls+=' cn-'+c.type;
+if(c.type==='killer'&&!c.revealed)cls+=' cn-killer-mark';
 return '<div class="'+cls+'" onclick="guessCard('+i+')">'+c.word+'</div>';
 }).join('');
 }
@@ -236,7 +302,10 @@ if(cnGameOver||cnBoard[i].revealed)return;
 cnBoard[i].revealed=true;cnGuessesLeft--;
 var c=cnBoard[i];
 var teamName=cnCurrentTeam==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631':'\u0627\u0644\u0623\u0632\u0631\u0642';
-if(c.type==='killer'){log('\u{1F480} \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0627\u062e\u062a\u0627\u0631 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0642\u0627\u062a\u0644! \u00AB'+c.word+'\u00BB');endGame(cnCurrentTeam==='red'?'blue':'red','\u0627\u062e\u062a\u0627\u0631 \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0642\u0627\u062a\u0644 \u{1F480}');return}
+if(c.type==='killer'){
+log('💀 الفريق '+teamName+' اختار بطاقة القاتل! «'+c.word+'»');
+cnExplodeAt(i,function(){endGame(cnCurrentTeam==='red'?'blue':'red','اختار الفريق '+teamName+' بطاقة القاتل 💀',cnCurrentTeam)});
+return}
 if(c.type===cnCurrentTeam){
 if(cnCurrentTeam==='red')cnRedRemaining--;else cnBlueRemaining--;
 log('\u2705 \u0627\u0644\u0641\u0631\u064a\u0642 '+teamName+' \u0623\u0635\u0627\u0628! \u00AB'+c.word+'\u00BB');
@@ -258,13 +327,41 @@ document.getElementById('cnHintWord').value='';
 document.getElementById('cnHintNum').value='1';
 updateUI();
 }
-function endGame(winner,reason){
+// قنبلة + انفجار + اهتزاز ثم إظهار النتيجة
+function cnExplodeAt(i,cb){
+  var cards=document.querySelectorAll('#cnBoard .cn-card');
+  var card=cards[i];if(!card){if(cb)cb();return}
+  var r=card.getBoundingClientRect();
+  var wrap=document.createElement("div");
+  wrap.className='cn-boom';
+  wrap.style.left=(r.left+r.width/2)+'px';
+  wrap.style.top=(r.top+r.height/2)+'px';
+  wrap.innerHTML='<div class="cn-bomb">💣</div><div class="cn-blast">💥</div>';
+  document.body.appendChild(wrap);
+  var board=document.getElementById('cnBoard');
+  board.classList.add('cn-shake');
+  var flash=document.createElement('div');
+  flash.className='cn-flash';
+  document.body.appendChild(flash);
+  setTimeout(function(){wrap.classList.add('cn-go')},680);
+  setTimeout(function(){wrap.remove();flash.remove();board.classList.remove('cn-shake');if(cb)cb()},1850);
+}
+function endGame(winner,reason,loser){
 cnGameOver=true;
-var wName=winner==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631 \u{1F534}':'\u0627\u0644\u0623\u0632\u0631\u0642 \u{1F535}';
-document.getElementById('cnWinnerText').textContent='\u{1F3C6} \u0627\u0644\u0641\u0631\u064a\u0642 '+wName+' \u064a\u0641\u0648\u0632!';
-document.getElementById('cnWinnerText').style.color=winner==='red'?'#ef4444':'#3b82f6';
-document.getElementById('cnWinnerReason').textContent=reason;
-document.getElementById('cnResult').style.display='block';
+var wName=winner==='red'?'الفريق الأحمر 🔴':'الفريق الأزرق 🔵';
+  var title,tColor;
+  if(loser){
+    var lName=loser==='red'?'الفريق الأحمر 🔴':'الفريق الأزرق 🔵';
+    title='💥 لقد خسرت يا '+lName+'!';
+    tColor=loser==='red'?'#ef4444':'#3b82f6';
+  }else{
+    title='🏆 الفريق '+wName+' يفوز!';
+    tColor=winner==='red'?'#ef4444':'#3b82f6';
+  }
+  document.getElementById('cnWinnerText').textContent=title;
+  document.getElementById('cnWinnerText').style.color=tColor;
+  document.getElementById('cnWinnerReason').textContent='الفائز هو '+wName+(reason?' — '+reason:'');
+  document.getElementById('cnResult').style.display='block';
 document.getElementById('cnLog').style.display='none';
 document.getElementById('cnHintArea').style.display='none';
 document.getElementById('cnEndTurnBtn').style.display='none';
