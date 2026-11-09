@@ -198,6 +198,12 @@
   box-shadow:0 3px 8px rgba(5,150,105,.3);
 }
 
+.rm-turn-label{
+  font-size:.82rem;font-weight:800;opacity:.9;
+  background:rgba(255,255,255,.28);padding:.28rem .7rem;border-radius:999px;
+}
+.rm-turn-name{font-size:1.4rem;font-weight:900;letter-spacing:-.01em}
+
 /* كروت اليد */
 .rm-hand{gap:.7rem}
 .rm-card{
@@ -228,8 +234,8 @@
 }
 
 .rm-turn{
-  display:flex;align-items:center;justify-content:center;gap:.6rem;
-  font-size:1.2rem;font-weight:900;padding:1rem;border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;gap:.8rem;
+  font-size:1.2rem;font-weight:900;padding:.9rem 1rem;border-radius:var(--radius);
   background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(16,185,129,.04)),var(--bg-card);
   border:2px solid var(--accent-green);color:var(--accent-green-ink);
   margin-bottom:1.1rem;box-shadow:0 6px 18px rgba(16,185,129,.16);
@@ -276,7 +282,7 @@
 
 <!-- Game Phase -->
 <div id="gamePhase" style="display:none">
-<div class="rm-turn" id="turnDisplay">الدور: <span id="currentPlayerName"></span></div>
+<div class="rm-turn" id="turnDisplay"><span class="rm-turn-label">الدور</span><span class="rm-turn-name" id="currentPlayerName"></span></div>
 
 <div class="rm-scores">
 <div class="rm-score"><div class="rm-score-name">كروت في اليد</div><div class="rm-score-val" id="cardsCount">0</div></div>
