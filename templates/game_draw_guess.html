@@ -574,7 +574,8 @@ function dgStart() {
   document.getElementById('dgHandoff').style.display = 'none';
   dgSyncScorebar();
   try { localStorage.removeItem(DG_SESSION_KEY); } catch (e) {}
-  dgBeginTurn();
+  dgHandoffBeforeTurn('أعطِ الجهاز للرسّام: <strong>' + dgEsc(dgDrawer(dgTeamIdx())) +
+    '</strong><br>ثم اضغط «أنا الرسّام» لاختيار الكلمة السرية.');
 }
 
 function dgTeamIdx() { return DG.turn % 2; }
@@ -596,11 +597,14 @@ function dgSyncScorebar() {
 }
 
 /* --- شاشة تسليم الجهاز للرسّام --- */
+var dgHandoffPending = false;
+
 function dgIamDrawer() {
   document.getElementById('dgHandoff').style.display = 'none';
-  showToast('🎨 أنت الرسّام — جهّز إعدادات الجولة');
-  var setup = document.getElementById('dgSetup');
-  if (setup && setup.scrollIntoView) setup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (dgHandoffPending) {
+    dgHandoffPending = false;
+    dgBeginTurn();
+  }
 }
 
 function dgShowHandoff(text) {
@@ -611,6 +615,12 @@ function dgShowHandoff(text) {
     if (p) p.innerHTML = text;
   }
   h.style.display = 'grid';
+}
+
+/* يُظهر نافذة التسليم ويربط زر «أنا الرسّام» ببداية الدور */
+function dgHandoffBeforeTurn(text) {
+  dgHandoffPending = true;
+  dgShowHandoff(text);
 }
 
 function dgSetPhase(text, secondHalf) {
@@ -640,6 +650,7 @@ function dgBeginTurn() {
   DG.stealOpen = false;
   DG.word = null;
   DG.wordShown = false;
+  dgOffers = [];
 
   document.getElementById('dgResult').style.display = 'none';
   document.getElementById('dgControls').style.display = 'none';
@@ -658,6 +669,17 @@ function dgBeginTurn() {
   dgSetPhase('🎨 اختر الكلمة السرية', false);
   dgSetRing(100, DG.setup.duration);
   dgSaveSession();          // نحفظ من بداية الدور حتى يمكن الاستكمال حتى أثناء اختيار الكلمة
+
+  // إذا لم يكن بنك الكلمات جاهزاً بعد (أول تحميل)، ننتظره بدل فتح اختيار فارغ.
+  if (!dgBank || !dgBank.length) {
+    document.getElementById('dgPick').style.display = 'none';
+    document.getElementById('dgTimerLabel').textContent = '⏳ جارٍ تحميل الكلمات...';
+    dgSetPhase('⏳ تحميل الكلمات', false);
+    dgLoadBank().then(function () {
+      if (DG && DG.phase === 'pick' && (!dgOffers || !dgOffers.length)) dgBeginTurn();
+    });
+    return;
+  }
 
   var offers = dgOfferWords(3);
   dgOffers = offers;
@@ -903,7 +925,10 @@ function dgNext() {
   if (DG.turn >= DG.totalTurns - 1) { dgEnd(); return; }
   DG.turn++;
   dgSyncScorebar();
-  dgBeginTurn();
+  dgHandoffBeforeTurn('الدور ' + (DG.turn + 1) + ' من ' + DG.totalTurns +
+    ' — <strong>' + dgEsc(DG.teams[dgTeamIdx()].name) + '</strong><br>' +
+    'أعطِ الجهاز للرسّام: <strong>' + dgEsc(dgDrawer(dgTeamIdx())) +
+    '</strong><br>ثم اضغط «أنا الرسّام» لاختيار الكلمة السرية.');
 }
 
 /* --- النهاية --- */
@@ -936,7 +961,8 @@ function dgNewSession() {
   DG = null;
   dgStopTimer();
   clearInterval(dgPickTimerId);
-  dgShowHandoff('الفريقان يشاهدان الشاشة من بعيد.<br>أعطِ الجهاز للرسّام ثم اضغط «أنا الرسّام».');
+  dgHandoffPending = false;
+  document.getElementById('dgHandoff').style.display = 'none';
 }
 
 /* --- حفظ/استكمال الجلسة --- */
@@ -978,7 +1004,9 @@ function dgResume() {
   document.getElementById('dgPlay').style.display = 'block';
   dgSyncScorebar();
   showToast('▶️ تم الاستكمال من الدور ' + (DG.turn + 1));
-  dgBeginTurn();
+  dgHandoffBeforeTurn('استكمال الدور ' + (DG.turn + 1) + ' من ' + DG.totalTurns +
+    ' — <strong>' + dgEsc(DG.teams[dgTeamIdx()].name) + '</strong><br>' +
+    'أعطِ الجهاز للرسّام: <strong>' + dgEsc(dgDrawer(dgTeamIdx())) + '</strong>.');
 }
 
 /* ---------------- التهيئة ---------------- */
@@ -1119,10 +1147,8 @@ document.addEventListener('DOMContentLoaded', function () {
         ((saved.turn || 0) + 1) + ' · النتيجة: ' +
         (saved.scores ? saved.scores[0] + ' - ' + saved.scores[1] : '0 - 0');
       document.getElementById('dgResumeModal').style.display = 'grid';
-    } else if (!TOURNI) {
-      // أول شي: تسليم الجهاز للرسّام
-      dgShowHandoff();
     }
+    // لا نعرض نافذة تسليم الجهاز عند فتح الصفحة — تظهر فقط قبل بدء كل دور.
   });
 });
 </script>
@@ -1167,7 +1193,8 @@ document.addEventListener('DOMContentLoaded', function () {
       // شبكة أمان: قد تصلنا نافذة الاستكمال من تهيئة اللعبة بعد dgStart
       try {
         document.getElementById('dgResumeModal').style.display = 'none';
-        document.getElementById('dgHandoff').style.display = 'none';
+        // في وضع البطولة نبدأ الدور مباشرة بلا شاشة تسليم الجهاز
+        dgIamDrawer();
       } catch (e) {}
       // الرقعة جاهزة — نُعلن الجاهزية فيختفي مكان التحميل
       AmeenTournament.ready();

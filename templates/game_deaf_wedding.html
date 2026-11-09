@@ -196,11 +196,11 @@ function removePlayer(i){ players.splice(i,1); renderPlayersList(); document.get
 function startGame(){
     maxRounds=players.length;
     currentRound=0;
-    answers={}; votes={};
-    nextRound();
+    answers={}; votes={}; usedPairs=[];
+    startRound();
 }
 
-function nextRound(){
+function startRound(){
     if(currentRound>=maxRounds){ showFinalResults(); return; }
     currentRound++;
     // Pick deaf player (rotate)
@@ -337,8 +337,7 @@ function renderScores(containerId){
 }
 
 function continueGame(){
-    currentRound++;
-    nextRound();
+    startRound();
 }
 
 function endGame(){

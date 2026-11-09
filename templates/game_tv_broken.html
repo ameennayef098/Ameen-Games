@@ -171,8 +171,12 @@
 
 <div class="tv-container">
 <div class="tv-hero">
-  <div class="tv-hero-emoji">📺</div>
-  <h1>تلفزيون خربان</h1>
+  <div class="tv-hero-glow"></div>
+  <div class="tv-hero-top">
+    <span class="tv-hero-emoji">📺</span>
+    <span class="tv-hero-badge">لعبة جماعية · 3-8 لاعبين</span>
+  </div>
+  <h1>تلفزيون <span class="tv-hero-accent">خربان</span></h1>
   <p>اكتب ← ارسم ← خمّن ← اضحك! سلسلة تليفون مرسومة تنتهي بتصويت مضحك</p>
 </div>
 
@@ -220,14 +224,18 @@
 <div class="tv-hint" style="background:rgba(139,92,246,.1);padding:.8rem;border-radius:var(--radius);border:1px solid rgba(139,92,246,.3)"><strong>الجملة:</strong> <span id="phraseToDraw"></span></div>
 <div class="tv-canvas-wrap">
 <canvas class="tv-canvas" id="drawCanvas" width="800" height="450"></canvas>
+<div class="tv-canvas-hint" id="canvasHint"><span class="tv-hint-emoji">✏️</span><span>ارسم هنا</span><small>باليد أو بالفأرة أو بالقلم</small></div>
 </div>
 <div class="tv-tools">
+<div class="tv-tool-group">
 <button class="tv-tool active" data-tool="pen" onclick="setTool('pen')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><path d="M4 20h3.2L19 8.2 15.8 5 4 16.8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg> قلم</button>
 <button class="tv-tool" data-tool="brush" onclick="setTool('brush')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><path d="M12 3v5M9 6h6M7 10h10M6 14h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> فرشاة</button>
 <button class="tv-tool" data-tool="spray" onclick="setTool('spray')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><circle cx="8" cy="8" r="1" fill="currentColor"/><circle cx="14" cy="6" r="1" fill="currentColor"/><circle cx="10" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="12" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg> بخاخ</button>
 <button class="tv-tool eraser" data-tool="eraser" onclick="setTool('eraser')"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><path d="M20 6.3l-2.3-2.3a1 1 0 0 0-1.4 0l-5 5 5 5a1 1 0 0 0 1.4 0l2.3-2.3a1 1 0 0 0 0-1.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M17 17l5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="7" y="7" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg> ممحاة</button>
 <button class="tv-tool" data-tool="undo" onclick="undoDraw()"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><path d="M4 10h7a4 4 0 1 1 0 8H8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 6l-3 4 3 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> تراجع</button>
 <button class="tv-tool" data-tool="clear" onclick="clearCanvas()"><svg class="ico" aria-hidden="true"><use href="#i-trash"></use></svg> مسح الكل</button>
+</div>
+<div class="tv-tool-group tv-props">
 <div class="tv-swatches" id="tvSwatches"></div>
 <div class="tv-brush-size">
 <label>الحجم:</label>
@@ -235,7 +243,8 @@
 </div>
 <input type="color" class="tv-color-picker" id="colorPicker" value="#1a1a2e" onchange="updateColor()">
 <span style="color:var(--text-secondary);font-size:.85rem">اللون</span>
-<button class="tv-btn primary" onclick="submitDrawing()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> انتهى الرسم</button>
+</div>
+<button class="tv-btn primary tv-finish" onclick="submitDrawing()"><svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> انتهى الرسم</button>
 </div>
 </div>
 </div>
@@ -407,6 +416,8 @@ function initCanvas(){
     clearCanvas();
     snapshotCanvas();
     buildSwatches();
+    var hint=document.getElementById('canvasHint');
+    if(hint) hint.classList.remove('off');
 }
 
 function snapshotCanvas(){
@@ -474,6 +485,8 @@ function startDraw(e){
         try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
     }
     snapshotCanvas();
+    var hint=document.getElementById('canvasHint');
+    if(hint) hint.classList.add('off');
     isDrawing=true;
     const c=getCoords(e);
     lastX=c.x; lastY=c.y;

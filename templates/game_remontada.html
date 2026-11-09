@@ -149,7 +149,11 @@
 
 <div class="rm-container">
 <div class="rm-hero">
-  <div class="rm-hero-emoji">⚽</div>
+  <div class="rm-hero-glow"></div>
+  <div class="rm-hero-top">
+    <span class="rm-hero-emoji">⚽</span>
+    <span class="rm-hero-badge">لعبة جماعية · 2-6 لاعبين</span>
+  </div>
   <h1>ريمونتادا</h1>
   <p>تخلص من كروتك بمطابقة لاعب حقيقي مع شرطين من ثلاثة — أول من يفرغ يده يفوز!</p>
 </div>
@@ -177,8 +181,8 @@
 
 <!-- Center Conditions -->
 <div class="rm-center">
-<div style="text-align:center;margin-bottom:1rem;color:var(--text-secondary);font-weight:700">الشروط الحالية (يكفي تطابق شرطين من الثلاثة)</div>
-<div style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center" id="conditionsDisplay"></div>
+<div class="rm-conditions-title"><span class="dot"></span> شروط الجولة — يكفي تطابق شرطين من الثلاثة</div>
+<div style="display:flex;flex-direction:column;gap:.5rem;align-items:stretch" id="conditionsDisplay"></div>
 </div>
 
 <!-- Player Hand -->
@@ -383,9 +387,9 @@ function newConditions(){
 function renderConditions(){
     const container=document.getElementById('conditionsDisplay');
     container.innerHTML=`
-        <span class="rm-condition"><span class="rm-condition-icon">🏟️</span> النادي: <strong>${currentConditions.club}</strong></span>
-        <span class="rm-condition"><span class="rm-condition-icon">🌍</span> الجنسية: <strong>${currentConditions.nation}</strong></span>
-        <span class="rm-condition"><span class="rm-condition-icon">${currentConditions.ucl?'🏆':'🚫'}</span> ${currentConditions.ucl?'فاز بدوري الأبطال':'لم يفز بدوري الأبطال'}</span>
+        <div class="rm-condition"><span class="rm-condition-icon">🏟️</span><span>النادي: <strong>${currentConditions.club}</strong></span></div>
+        <div class="rm-condition"><span class="rm-condition-icon">🌍</span><span>الجنسية: <strong>${currentConditions.nation}</strong></span></div>
+        <div class="rm-condition"><span class="rm-condition-icon">${currentConditions.ucl?'🏆':'🚫'}</span><span>${currentConditions.ucl?'فاز بدوري الأبطال':'لم يفز بدوري الأبطال'}</span></div>
     `;
 }
 
