@@ -1347,14 +1347,21 @@ def import_save():
         cached['cached'] = True
         return jsonify(cached)
 
+    # تدقيق المكررات: علامة العميل لا تكفي، نعيد الحساب على الخادم قبل الكتابة.
+    # المكرر داخل الدفعة يُلغى دائماً، والمكرر المخزني يُلغى ما لم يُطلب الاحتفاظ به.
+    if mode == 'replace':
+        store_keys = set()
+    else:
+        store_keys, _store_answers = _import_existing_keys(game, target)
+
     accepted, rejected = [], []
+    batch_keys = set()
+    dup_cancelled = []
     for rec in records:
         if not isinstance(rec, dict):
             rejected.append({'idx': None, 'question': '', 'reason': 'سجل غير صالح'})
             continue
         if rec.get('excluded'):
-            continue
-        if rec.get('duplicate') and rec.get('idx') not in keep_dups:
             continue
         item, ok, err = qi.validate_and_build(game, rec, target)
         if not ok:
@@ -1364,6 +1371,18 @@ def import_save():
                                 or item.get('word') or '')[:120],
                 'reason': err})
             continue
+        qtext = str(item.get('question') or item.get('name')
+                    or item.get('word') or '')[:120]
+        key = qi.record_key(game, rec)
+        if key in batch_keys:
+            dup_cancelled.append({'idx': rec.get('idx'), 'question': qtext,
+                                  'why': 'مكرر داخل الدفعة نفسها'})
+            continue
+        if key in store_keys and rec.get('idx') not in keep_dups:
+            dup_cancelled.append({'idx': rec.get('idx'), 'question': qtext,
+                                  'why': 'موجود مسبقاً في المخزن'})
+            continue
+        batch_keys.add(key)
         accepted.append(item)
 
     # لا معاملة حقيقية في مخزن JSON، لذا القاعدة: تحقق قبل الكتابة + كتابة
@@ -1390,12 +1409,15 @@ def import_save():
               'saved': saved, 'skipped': skipped, 'deleted': deleted,
               'failed': len(failed) + len(rejected),
               'rejected': rejected + failed,
-              'duplicates_kept': len(keep_dups)}
+              'duplicates_kept': len(keep_dups),
+              'duplicates_cancelled': len(dup_cancelled),
+              'duplicates_audit': dup_cancelled[:50]}
     _import_log({'id': gen_id(), 'at': now(), 'game': game, 'target': target,
                  'mode': mode, 'scope': scope, 'deleted': deleted,
                  'requested': len(records), 'saved': saved,
                  'excluded': len(records) - len(accepted),
-                 'duplicates_kept': len(keep_dups), 'ok': True})
+                 'duplicates_kept': len(keep_dups),
+                 'duplicates_cancelled': len(dup_cancelled), 'ok': True})
     if idem:
         IMPORT_JOBS[idem] = result
         if len(IMPORT_JOBS) > 200:

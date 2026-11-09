@@ -190,8 +190,8 @@
                         </div>
                         <div class="form-group" style="margin:0;display:flex;align-items:flex-end">
                             <label style="display:flex;align-items:center;gap:.5rem;font-weight:500;cursor:pointer">
-                                <input type="checkbox" id="impAutoSkipDupes" onchange="impModeChanged()">
-                                <span>إلغاء المكررات تلقائياً</span>
+                                <input type="checkbox" id="impAutoSkipDupes" checked onchange="impModeChanged()">
+                                <span>إلغاء المكررات تلقائياً (موصى به)</span>
                             </label>
                         </div>
                     </div>
@@ -2536,6 +2536,14 @@ function impShowResult(d) {
                     ' ثم أُضيفت الدفعة مكانه.';
         }
         if (d.skipped) html += '<br>تخطّى المكرر داخل الدفعة: ' + d.skipped + '.';
+        if (d.duplicates_cancelled) {
+            html += '<br><b>تدقيق المكررات:</b> أُلغي ' + d.duplicates_cancelled +
+                    ' سؤالاً مكرراً ولم يُحفظ.';
+            (d.duplicates_audit || []).forEach(function (x) {
+                html += '<br><span class="imp-reject">سجل ' + ((x.idx || 0) + 1) + ': ' +
+                        esc(x.question || '') + ' — ' + esc(x.why || 'مكرر') + '</span>';
+            });
+        }
         if (d.cached) html += '<br><b>هذه الدفعة حُفظت من قبل</b> — لم تُضف نسخة ثانية.';
         html += '</div>';
     } else {
