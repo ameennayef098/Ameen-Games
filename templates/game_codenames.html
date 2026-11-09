@@ -268,7 +268,7 @@ b.innerHTML=cnBoard.map(function(c,i){
 var cls='cn-card';
 if(c.revealed)cls+=' revealed cn-'+c.type;
 else if(cnSpymasterOn)cls+=' cn-'+c.type;
-if(c.type==='killer'&&!c.revealed)cls+=' cn-killer-mark';
+if(c.type==='killer'&&!c.revealed&&cnSpymasterOn)cls+=' cn-killer-mark';
 return '<div class="'+cls+'" onclick="guessCard('+i+')">'+c.word+'</div>';
 }).join('');
 }
@@ -304,6 +304,7 @@ var c=cnBoard[i];
 var teamName=cnCurrentTeam==='red'?'\u0627\u0644\u0623\u062d\u0645\u0631':'\u0627\u0644\u0623\u0632\u0631\u0642';
 if(c.type==='killer'){
 log('💀 الفريق '+teamName+' اختار بطاقة القاتل! «'+c.word+'»');
+renderBoard();updateUI();
 cnExplodeAt(i,function(){endGame(cnCurrentTeam==='red'?'blue':'red','اختار الفريق '+teamName+' بطاقة القاتل 💀',cnCurrentTeam)});
 return}
 if(c.type===cnCurrentTeam){
