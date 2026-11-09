@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>لعبة لودو الأسئلة والكروت — ألعاب أمين</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+  <!-- خط Tajawal من Google Fonts — عند غياب الإنترنت تُستخدم خطوط النظام العربية تلقائيًا -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/game/ludo/style.css">
+</head>
+<body>
+
+  <!-- ═══════ ترويسة الموقع — عدّل الروابط حسب موقعك ═══════ -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a class="logo" href="#">
+        <span class="logo-badge">🎮</span>
+        ألعاب <span class="logo-accent">أمين</span>
+      </a>
+      <div class="nav-links">
+        <a href="#">الرئيسية</a>
+        <a href="#">ألعاب مميزة</a>
+        <a href="#">ألعاب ذكاء</a>
+        <a href="#">ألعاب ورق</a>
+        <a href="#">اتصل بنا</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════ عنوان اللعبة داخل الصفحة ═══════ -->
+  <div class="page-head">
+    <h1 class="page-title">🎲 لودو الأسئلة والكروت</h1>
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <span class="game-tag">لعبة طاولة • لاعبان أو أكثر على نفس الجهاز</span>
+      <button id="new-game-btn" class="btn small-btn hidden" type="button">قائمة جديدة</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ شاشة الإعداد ═══════════ -->
+  <div id="setup-screen" class="setup">
+    <div class="setup-head">
+      <h1>لعبة <span class="accent">لودو</span> الأسئلة والكروت</h1>
+      <p>جاوب على السؤال لتتحرك… واجمع الكروت الخاصة لتنقلب اللعبة!</p>
+    </div>
+
+    <div class="box">
+      <p class="box-title box-title-lg">عدد اللاعبين (على نفس الجهاز):</p>
+      <div id="count-seg" class="seg">
+        <button type="button" data-n="2">2 لاعبين</button>
+        <button type="button" data-n="3">3 لاعبين</button>
+        <button type="button" data-n="4">4 لاعبين</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <label class="row no-margin">
+        <span>⏱ مؤقت السؤال (20 ثانية)</span>
+        <button id="timer-toggle" class="toggle" type="button" aria-pressed="false" aria-label="تشغيل مؤقت السؤال"></button>
+      </label>
+    </div>
+
+    <div class="center">
+      <button id="start-btn" class="btn big" type="button">ابدأ اللعب 🚀</button>
+    </div>
+
+    <div class="rules">
+      <p class="rt">تذكير سريع بالقواعس:</p>
+      <p>• كل رمية نرد يتبعها سؤال — جاوب صح لتتحرك بعدد النرد.</p>
+      <p>• تحتاج 6 لإخراج حجر من القاعدة، ورمية 6 تمنحك رمية إضافية.</p>
+      <p>• بعد كل إجابة صحيحة فرصة كرت خاص: 15% أو 30% تتحدد كل دور.</p>
+      <p>• الكروت تبقى معك (4 كحد أقصى) وتستخدمها ببداية دورك.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ شاشة اللعب ═══════════ -->
+  <div id="game-screen" class="hidden">
+    <div class="layout">
+      <section aria-label="رقعة اللعب">
+        <div id="board" class="board"></div>
+      </section>
+
+      <aside class="side">
+        <div class="box" id="turn-box"></div>
+        <div class="box" id="cards-box"></div>
+        <div class="box" id="players-box"></div>
+        <div class="box" id="log-box"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- حاوية النوافذ المنبثقة -->
+  <div id="modal-root"></div>
+
+  <!-- ═══════ تذييل الموقع ═══════ -->
+  <footer class="footer">
+    © <b>ألعاب أمين</b> — جميع الحقوق محفوظة
+  </footer>
+
+  <script src="/game/ludo/questions-data.js"></script>
+  <script src="/game/ludo/game.js"></script>
+</body>
+</html>
