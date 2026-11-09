@@ -14,7 +14,9 @@
   --mafia-white: #ffffff;
 }
 * { box-sizing: border-box; }
-html, body { background: var(--mafia-bg); color: var(--mafia-white); font-family: 'Cairo', system-ui; }
+body { background: var(--mafia-bg); color: var(--mafia-white); }
+/* الخط داخل اللعبة فقط — لا يتسرّب إلى ترويسة الموقع */
+.game-container, .role-reveal, .host-message, .pass-device { font-family: 'Cairo', system-ui; }
 .game-container { max-width: 1000px; margin: 0 auto; padding: var(--space-4); }
 
 /* Screens */
@@ -27,14 +29,14 @@ html, body { background: var(--mafia-bg); color: var(--mafia-white); font-family
 .start-logo { font-size: 3rem; font-weight: 900; letter-spacing: .04em; background: linear-gradient(135deg, var(--mafia-accent), var(--mafia-gold)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 40px rgba(233,69,96,.3); }
 .start-sub { font-size: 1.1rem; color: #a5b4c7; margin-top: .5rem; }
 .start-btns { margin-top: 2rem; display: flex; flex-direction: column; gap: .8rem; align-items: center; }
-.btn { padding: .9rem 2rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-weight: 800; cursor: pointer; transition: var(--transition); font-family: inherit; font-size: 1rem; min-width: 240px; }
-.btn:hover { border-color: var(--mafia-accent); color: var(--mafia-accent); transform: translateY(-2px); }
-.btn-primary { background: linear-gradient(135deg, var(--mafia-accent), #c6284a); color: #fff; border-color: transparent; }
-.btn-primary:hover { color: #fff; box-shadow: 0 8px 30px rgba(233,69,96,.35); }
-.btn-gold { background: linear-gradient(135deg, var(--mafia-gold), #e6c200); color: #1a1a1a; border-color: transparent; }
-.btn-gold:hover { color: #1a1a1a; box-shadow: 0 8px 30px rgba(255,215,0,.35); }
-.btn-purple { background: linear-gradient(135deg, var(--mafia-purple), #8b2ce6); color: #fff; border-color: transparent; }
-.btn-purple:hover { color: #fff; box-shadow: 0 8px 30px rgba(176,60,255,.35); }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn { padding: .9rem 2rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-weight: 800; cursor: pointer; transition: var(--transition); font-family: inherit; font-size: 1rem; min-width: 240px; }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn:hover { border-color: var(--mafia-accent); color: var(--mafia-accent); transform: translateY(-2px); }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn-primary { background: linear-gradient(135deg, var(--mafia-accent), #c6284a); color: #fff; border-color: transparent; }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn-primary:hover { color: #fff; box-shadow: 0 8px 30px rgba(233,69,96,.35); }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn-gold { background: linear-gradient(135deg, var(--mafia-gold), #e6c200); color: #1a1a1a; border-color: transparent; }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn-gold:hover { color: #1a1a1a; box-shadow: 0 8px 30px rgba(255,215,0,.35); }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn-purple { background: linear-gradient(135deg, var(--mafia-purple), #8b2ce6); color: #fff; border-color: transparent; }
+.game-container .btn, .role-reveal .btn, .host-message .btn, .pass-device .btn-purple:hover { color: #fff; box-shadow: 0 8px 30px rgba(176,60,255,.35); }
 
 /* Setup */
 .setup-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-5); display: grid; gap: var(--space-3); }
