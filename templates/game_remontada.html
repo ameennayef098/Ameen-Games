@@ -44,7 +44,6 @@
     .rm-card-name{font-size:.85rem}
     .rm-btn{width:100%;justify-content:center}
 }
-</style>
 
 /* ═══════════ التصميم المحسّن ═══════════ */
 .rm-container{max-width:1000px;margin:0 auto;padding:0 1rem}
@@ -147,6 +146,111 @@
   .rm-hero h1{font-size:1.6rem}
 }
 
+/* ═══════════ تحسينات التصميم ═══════════ */
+.rm-hero{
+  text-align:center;color:#fff;padding:2rem 1.4rem 1.7rem;margin-bottom:1.3rem;
+  background:linear-gradient(135deg,#022c22 0%,#047857 45%,#10b981 82%,#a3e635 135%);
+  border-radius:var(--radius-xl);box-shadow:0 18px 40px rgba(4,120,87,.32);
+}
+.rm-hero-glow{
+  position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:
+    radial-gradient(circle at 78% 12%,rgba(255,255,255,.26),transparent 46%),
+    radial-gradient(circle at 14% 92%,rgba(255,255,255,.16),transparent 42%);
+}
+.rm-hero-top{position:relative;display:flex;align-items:center;justify-content:center;gap:.7rem;margin-bottom:.7rem;flex-wrap:wrap}
+.rm-hero-emoji{font-size:2.1rem;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.rm-hero-badge{
+  font-size:.74rem;font-weight:800;padding:.28rem .75rem;border-radius:999px;
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(6px);
+}
+.rm-hero h1{
+  position:relative;margin:0 0 .55rem;font-size:clamp(1.8rem,5vw,2.5rem);font-weight:900;
+  letter-spacing:-.02em;line-height:1.15;
+  background:linear-gradient(120deg,#fff,#d1fae5 55%,#fef08a);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,.25));
+}
+.rm-hero p{position:relative;margin:0;font-size:.98rem;opacity:.95;max-width:44rem;margin-inline:auto;line-height:1.7}
+
+/* شروط الجولة */
+.rm-center{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(16,185,129,.09),rgba(16,185,129,0) 60%),var(--bg-card);
+  border:1px solid rgba(16,185,129,.28);border-radius:var(--radius-lg);
+  padding:1.2rem;margin-bottom:1.1rem;box-shadow:0 8px 24px rgba(15,23,42,.07);
+}
+.rm-conditions-title{
+  text-align:center;margin-bottom:.9rem;font-weight:900;color:var(--text-primary);
+  font-size:1rem;display:flex;align-items:center;justify-content:center;gap:.45rem;
+}
+.rm-conditions-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent-green);box-shadow:0 0 0 4px rgba(16,185,129,.18)}
+.rm-condition{
+  display:inline-flex;align-items:center;gap:.55rem;width:100%;
+  background:linear-gradient(180deg,#ecfdf5,#d1fae5);border:1.5px solid rgba(16,185,129,.35);
+  border-radius:var(--radius);padding:.75rem 1rem;font-weight:800;font-size:1rem;color:#065f46;
+  box-shadow:0 3px 10px rgba(16,185,129,.12);
+}
+.rm-condition-icon{
+  width:32px;height:32px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#059669,#34d399);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem;
+  box-shadow:0 3px 8px rgba(5,150,105,.3);
+}
+
+/* كروت اليد */
+.rm-hand{gap:.7rem}
+.rm-card{
+  position:relative;background:linear-gradient(180deg,#fff,#f8fafc);
+  border-radius:14px;padding:1rem 1.05rem;min-width:158px;text-align:center;
+  box-shadow:0 6px 16px rgba(15,23,42,.16);border:2px solid rgba(15,23,42,.07);
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.rm-card:hover{transform:translateY(-5px);box-shadow:0 14px 28px rgba(15,23,42,.22);border-color:rgba(16,185,129,.45)}
+.rm-card.selected{
+  border-color:#f59e0b;background:linear-gradient(180deg,#fffbeb,#fef3c7);
+  box-shadow:0 12px 26px rgba(245,158,11,.32);transform:translateY(-5px);
+}
+.rm-card-name{font-weight:900;font-size:1.05rem;color:#0f172a;margin-bottom:.5rem;line-height:1.35}
+.rm-card-club{
+  font-size:.8rem;color:#334155;font-weight:800;display:inline-flex;align-items:center;gap:.25rem;
+  background:#f1f5f9;border-radius:999px;padding:.16rem .55rem;margin-bottom:.3rem;
+}
+.rm-card-nation{font-size:.75rem;color:#64748b;font-weight:700}
+.rm-card.used{opacity:.35;pointer-events:none;filter:grayscale(1)}
+.rm-card.match{border-color:rgba(16,185,129,.6);box-shadow:0 8px 20px rgba(16,185,129,.22)}
+.rm-card.match:hover{box-shadow:0 14px 28px rgba(16,185,129,.3)}
+.rm-match-badge{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);z-index:2;
+  background:linear-gradient(135deg,#059669,#10b981);color:#fff;
+  font-size:.66rem;font-weight:900;padding:.16rem .5rem;border-radius:999px;
+  box-shadow:0 3px 9px rgba(16,185,129,.45);white-space:nowrap;
+}
+
+.rm-turn{
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  font-size:1.2rem;font-weight:900;padding:1rem;border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(16,185,129,.04)),var(--bg-card);
+  border:2px solid var(--accent-green);color:var(--accent-green-ink);
+  margin-bottom:1.1rem;box-shadow:0 6px 18px rgba(16,185,129,.16);
+}
+.rm-score{
+  position:relative;border:1px solid var(--border-color);
+  background:linear-gradient(180deg,#fff,#f8fafc);
+  box-shadow:0 6px 18px rgba(15,23,42,.08);
+}
+.rm-score-val{background:linear-gradient(135deg,#059669,#10b981);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rm-log{
+  background:linear-gradient(180deg,#fff,#f8fafc);
+  border:1px solid var(--border-color);box-shadow:0 6px 18px rgba(15,23,42,.06);
+}
+.rm-log-line:first-child{font-weight:800;color:var(--text-primary)}
+@media(max-width:600px){
+  .rm-card{min-width:calc(50% - .4rem);flex:1 1 calc(50% - .4rem);padding:.8rem}
+  .rm-card-name{font-size:.95rem}
+  .rm-hero{padding:1.5rem 1rem 1.3rem}
+}
+</style>
 <div class="rm-container">
 <div class="rm-hero">
   <div class="rm-hero-glow"></div>
@@ -407,13 +511,17 @@ function updateUI(){
 function renderHand(player){
     const container=document.getElementById('handDisplay');
     const hand=hands[player];
-    container.innerHTML=hand.map((card,i)=>`
-        <div class="rm-card ${i===selectedCardIdx?'selected':''} ${card.used?'used':''}" onclick="selectCard(${i})" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter')selectCard(${i})">
+    container.innerHTML=hand.map((card,i)=>{
+        const ok=checkMatch(card);
+        return `
+        <div class="rm-card ${i===selectedCardIdx?'selected':''} ${card.used?'used':''} ${ok?'match':''}" onclick="selectCard(${i})" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter')selectCard(${i})">
+            ${ok?'<span class="rm-match-badge">✓ مطابق</span>':''}
             <div class="rm-card-name">${card.name}</div>
             <div class="rm-card-club">🏟️ ${card.club}</div>
             <div class="rm-card-nation">🌍 ${card.nation} ${card.ucl?'🏆':''}</div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function selectCard(idx){

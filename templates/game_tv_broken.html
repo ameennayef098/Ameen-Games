@@ -53,7 +53,6 @@
     .tv-tools{justify-content:center}
     .tv-brush-size{display:none}
 }
-</style>
 
 /* ═══════════ التصميم المحسّن ═══════════ */
 .tv-container{max-width:960px;margin:0 auto;padding:0 1rem}
@@ -169,6 +168,83 @@
   .tv-hero h1{font-size:1.6rem}
 }
 
+/* ═══════════ تحسينات التصميم ═══════════ */
+.tv-hero{
+  text-align:center;color:#fff;padding:2rem 1.4rem 1.7rem;margin-bottom:1.3rem;
+  background:linear-gradient(135deg,#3b0764 0%,#6d28d9 42%,#a21caf 78%,#db2777 100%);
+  border-radius:var(--radius-xl);box-shadow:0 18px 40px rgba(76,29,149,.34);
+}
+.tv-hero-glow{
+  position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:
+    radial-gradient(circle at 78% 12%,rgba(255,255,255,.28),transparent 46%),
+    radial-gradient(circle at 14% 92%,rgba(255,255,255,.16),transparent 42%);
+}
+.tv-hero-top{position:relative;display:flex;align-items:center;justify-content:center;gap:.7rem;margin-bottom:.7rem;flex-wrap:wrap}
+.tv-hero-emoji{font-size:2.1rem;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.tv-hero-badge{
+  font-size:.74rem;font-weight:800;padding:.28rem .75rem;border-radius:999px;
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(6px);
+}
+.tv-hero h1{position:relative;margin:0 0 .55rem;font-size:clamp(1.8rem,5vw,2.5rem);font-weight:900;letter-spacing:-.02em;line-height:1.15}
+.tv-hero-accent{
+  background:linear-gradient(120deg,#fde68a,#fbbf24 45%,#f472b6);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,.25));
+}
+.tv-hero p{position:relative;margin:0;font-size:.98rem;opacity:.95;max-width:44rem;margin-inline:auto;line-height:1.7}
+
+/* لوحة الرسم */
+.tv-canvas-wrap{
+  position:relative;border:2px solid rgba(139,92,246,.32);border-radius:var(--radius-lg);
+  background:#fff;overflow:hidden;
+  box-shadow:0 10px 26px rgba(15,23,42,.1), inset 0 0 0 1px rgba(0,0,0,.03);
+}
+.tv-canvas{
+  border-radius:var(--radius);display:block;cursor:crosshair;touch-action:none;width:100%;height:auto;
+  background-image:radial-gradient(circle, rgba(139,92,246,.16) 1px, transparent 1px);
+  background-size:22px 22px;background-position:center;
+}
+.tv-canvas-hint{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.4rem;pointer-events:none;color:#a78bfa;font-weight:900;font-size:1.5rem;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.tv-canvas-hint small{font-size:.82rem;font-weight:700;color:#c4b5fd}
+.tv-hint-emoji{font-size:2.6rem;opacity:.75}
+.tv-canvas-hint.off{opacity:0;transform:scale(.94)}
+
+/* شريط الأدوات */
+.tv-tools{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem;align-items:center}
+.tv-tool-group{
+  display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;
+  background:#f8fafc;border:1px solid rgba(15,23,42,.1);
+  border-radius:var(--radius);padding:.45rem;
+  box-shadow:0 2px 8px rgba(15,23,42,.05);
+}
+.tv-props{
+  margin-inline-start:auto;background:#f8fafc;
+  border:1px solid rgba(15,23,42,.1);padding:.45rem;gap:.6rem;
+  box-shadow:0 2px 8px rgba(15,23,42,.05);
+}
+.tv-tool{padding:.6rem .85rem;font-size:.86rem;border-width:1.5px}
+.tv-tool.active{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(124,58,237,.32)}
+.tv-tool.active:hover{color:#fff}
+.tv-swatches{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center}
+.tv-swatch{width:28px;height:28px}
+.tv-brush-size{display:flex;align-items:center;gap:.55rem;flex:1;min-width:180px}
+.tv-brush-size label{white-space:nowrap;font-size:.85rem;color:var(--text-secondary);font-weight:800}
+.tv-brush-size input{flex:1;min-width:90px;accent-color:var(--accent-purple)}
+.tv-color-picker{flex-shrink:0}
+.tv-finish{margin-inline-start:.4rem;box-shadow:0 8px 20px rgba(124,58,237,.34)}
+@media(max-width:600px){
+  .tv-tools{gap:.5rem}
+  .tv-tool-group{width:100%}
+  .tv-props{margin-inline-start:0}
+  .tv-finish{width:100%;margin-inline-start:0;margin-top:.5rem}
+  .tv-hero{padding:1.5rem 1rem 1.3rem}
+}
+</style>
 <div class="tv-container">
 <div class="tv-hero">
   <div class="tv-hero-glow"></div>
