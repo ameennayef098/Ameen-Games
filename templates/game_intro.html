@@ -62,6 +62,13 @@
     </div>
     {% endif %}
 
+    {% if online %}
+    <div class="gi-tip" style="border-color:rgba(139,92,246,.35);background:rgba(139,92,246,.08)">
+        <svg class="ico" aria-hidden="true"><use href="#i-link"></use></svg>
+        <p style="margin:0">{{ online }}</p>
+    </div>
+    {% endif %}
+
     <div class="gi-actions">
         <button class="btn btn-primary btn-lg" type="button" onclick="introNext()">التالي ←</button>
         <button class="btn btn-secondary" type="button" onclick="introSkipOne()">لا تظهر الشرح لهذه اللعبة فقط</button>

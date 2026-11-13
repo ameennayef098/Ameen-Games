@@ -280,6 +280,47 @@
 </div>
 </div>
 
+<!-- غرفة أونلاين -->
+<div class="tv-card" style="border-style:dashed;border-color:rgba(139,92,246,.45)">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-link"></use></svg> أو العب مع أصدقاء أونلاين</div>
+<div class="tv-input-group">
+<input type="text" class="tv-input" id="onlineName" placeholder="اسمك في الغرفة" autocomplete="off" maxlength="24">
+<button class="tv-btn primary" onclick="createRoom()"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg> إنشاء غرفة</button>
+</div>
+<div class="tv-input-group">
+<input type="text" class="tv-input" id="joinCode" placeholder="رمز الغرفة (مثال: ABC123)" autocomplete="off" maxlength="8" style="text-transform:uppercase;letter-spacing:.12em;font-weight:800">
+<button class="tv-btn success" onclick="joinRoom()"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg> انضمام برمز</button>
+</div>
+<div class="tv-hint">تجربة أولى للعب عن بُعد — من 3 إلى 8 لاعبين، كل لاعب على جهازه</div>
+</div>
+</div>
+
+<!-- Phase 1b: Online Lobby -->
+<div class="tv-phase" id="phaseLobby">
+<div class="tv-card">
+<div class="tv-title"><svg class="ico" aria-hidden="true"><use href="#i-link"></use></svg> غرفة أونلاين</div>
+<div style="text-align:center;margin-bottom:1rem">
+<div style="font-size:.85rem;color:var(--text-secondary);font-weight:700">رمز الغرفة — أرسله لأصدقائك</div>
+<div id="roomCodeDisplay" style="font-size:2.3rem;font-weight:900;letter-spacing:.2em;color:var(--accent-purple-ink);font-family:ui-monospace,monospace;margin:.3rem 0">------</div>
+<button class="tv-btn" onclick="copyRoomCode()"><svg class="ico" aria-hidden="true"><use href="#i-external"></use></svg> نسخ الرمز</button>
+</div>
+<div class="tv-players" id="lobbyPlayers"></div>
+<div id="lobbyRoundsWrap" style="display:flex;gap:.5rem;align-items:center;justify-content:center;margin:.7rem 0">
+<label for="lobbyRounds" style="font-size:.9rem;color:var(--text-secondary);font-weight:700">عدد الجولات:</label>
+<select id="lobbyRounds" class="tv-input" style="min-width:auto;padding:.4rem .8rem">
+<option value="1">1</option>
+<option value="2" selected>2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+</div>
+<button class="tv-btn primary" id="lobbyStartBtn" onclick="onlineStart()" style="width:100%;margin-top:.4rem;display:none"><svg class="ico" aria-hidden="true"><use href="#i-bolt"></use></svg> بدء اللعبة</button>
+<div class="tv-hint" id="lobbyHint">بانتظار انضمام اللاعبين…</div>
+<button class="tv-btn danger" onclick="leaveRoom()" style="width:100%;margin-top:.8rem">مغادرة الغرفة</button>
+</div>
+</div>
+
 <!-- Phase 2: Writing -->
 <div class="tv-phase" id="phaseWrite">
 <div class="tv-card">
@@ -430,6 +471,7 @@ function startNextRound(){
 }
 
 function submitPhrase(){
+    if(ON){ onlineSubmitPhrase(); return; }
     const text=document.getElementById('phraseInput').value.trim();
     if(!text){ alert('اكتب جملة أولاً'); return; }
     phrases[currentPlayerIdx]=text;
@@ -657,6 +699,7 @@ function updateColor(){
 }
 
 function submitDrawing(){
+    if(ON){ onlineSubmitDrawing(); return; }
     const canvas=document.getElementById('drawCanvas');
     drawings[currentPlayerIdx]=canvas.toDataURL('image/png');
     turnOrder.push({type:'draw', playerIdx:currentPlayerIdx, data:drawings[currentPlayerIdx]});
@@ -689,6 +732,7 @@ function startGuessingTurn(){
 }
 
 function submitGuess(){
+    if(ON){ onlineSubmitGuess(); return; }
     const text=document.getElementById('guessInput').value.trim();
     if(!text){ alert('اكتب تخمينك أولاً'); return; }
     guesses[currentPlayerIdx]=text;
@@ -739,6 +783,7 @@ function escapeHtml(s){
 }
 
 function vote(idx){
+    if(ON){ onlineVote(idx); return; }
     votes[idx]=(votes[idx]||0)+1;
     document.querySelectorAll('.tv-vote-btn').forEach((b,i)=>{
         b.classList.toggle('voted',i===idx);
@@ -750,10 +795,12 @@ function vote(idx){
 
 
 function goNextRound(){
+    if(ON){ onlineNextRound(); return; }
     startNextRound();
 }
 
 function endGame(){
+    if(ON){ onlineEndGame(); return; }
     showResults();
 }
 
@@ -764,6 +811,321 @@ function showResults(){
     scores.sort((a,b)=>b.score-a.score);
     container.innerHTML=scores.map((s,i)=>`<div class="tv-score-item"><div class="tv-score-name">${i===0?'🥇 ':''}${i===1?'🥈 ':''}${i===2?'🥉 ':''}${s.name}</div><div class="tv-score-val">${s.score} تصويت</div></div>`).join('');
 }
+
+// ═══════════ الغرف الأونلاين ═══════════
+// التجربة الأولى للعب عن بُعد: كل لاعب على جهازه، والسيرفر يجمع الخطوات.
+// النقل بالتصويت كل 1.5 ثانية (لا اعتماد جديد).
+var ON = null;              // {code, pid, timer}
+var ON_LAST_PHASE = null;
+var ON_LAST_DRAW = null;
+
+function _onPost(url, body){
+    return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body||{})})
+        .then(function(r){ return r.json().catch(function(){ return {ok:false, error:'رد غير صالح'}; }); });
+}
+function _onGet(url){
+    return fetch(url).then(function(r){ return r.json().catch(function(){ return {ok:false}; }); });
+}
+
+function createRoom(){
+    var name=(document.getElementById('onlineName').value||'').trim();
+    if(!name){ alert('اكتب اسمك أولاً'); return; }
+    _onPost('/api/rooms', {name:name}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر إنشاء الغرفة'); return; }
+        ON={code:d.code, pid:d.pid, timer:null};
+        ON_LAST_PHASE=null; ON_LAST_DRAW=null;
+        _saveRoom(d.code, d.pid);
+        showPhase('lobby');
+        renderLobby(d.state);
+        startPolling();
+    }).catch(function(e){ alert('خطأ في الاتصال: '+e); });
+}
+
+function joinRoom(){
+    var name=(document.getElementById('onlineName').value||'').trim();
+    var code=(document.getElementById('joinCode').value||'').trim().toUpperCase();
+    if(!name){ alert('اكتب اسمك أولاً'); return; }
+    if(code.length<4){ alert('اكتب رمز الغرفة'); return; }
+    _onPost('/api/rooms/'+encodeURIComponent(code)+'/join', {name:name}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر الانضمام'); return; }
+        ON={code:d.code, pid:d.pid, timer:null};
+        ON_LAST_PHASE=null; ON_LAST_DRAW=null;
+        _saveRoom(d.code, d.pid);
+        showPhase('lobby');
+        renderLobby(d.state);
+        startPolling();
+    }).catch(function(e){ alert('خطأ في الاتصال: '+e); });
+}
+
+function leaveRoom(){
+    if(!ON) return;
+    var code=ON.code, pid=ON.pid;
+    stopPolling();
+    ON=null; ON_LAST_PHASE=null; ON_LAST_DRAW=null;
+    try{ sessionStorage.removeItem('tv_room'); }catch(e){}
+    _onPost('/api/rooms/'+encodeURIComponent(code)+'/leave', {pid:pid}).catch(function(){});
+    showPhase('setup');
+}
+
+function _saveRoom(code, pid){
+    try{ sessionStorage.setItem('tv_room', JSON.stringify({code:code, pid:pid})); }catch(e){}
+}
+
+function startPolling(){
+    stopPolling();
+    if(ON) ON.timer=setInterval(pollRoom, 1500);
+    pollRoom();
+}
+function stopPolling(){ if(ON&&ON.timer){ clearInterval(ON.timer); ON.timer=null; } }
+
+function pollRoom(){
+    if(!ON) return;
+    var code=ON.code, pid=ON.pid;
+    _onGet('/api/rooms/'+encodeURIComponent(code)+'/state?pid='+encodeURIComponent(pid)).then(function(d){
+        if(!ON || ON.code!==code) return;
+        if(!d.ok){
+            if((d.error||'').indexOf('غير موجودة')>=0 || (d.error||'').indexOf('لست في هذه الغرفة')>=0){
+                stopPolling(); ON=null; ON_LAST_PHASE=null;
+                try{ sessionStorage.removeItem('tv_room'); }catch(e){}
+                alert('أُغلقت الغرفة'); showPhase('setup');
+            }
+            return;
+        }
+        renderOnline(d.state);
+    }).catch(function(){});
+}
+
+function onlineStart(){
+    var mr=parseInt((document.getElementById('lobbyRounds').value||'2'),10)||2;
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'start', max_rounds:mr}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر البدء'); return; }
+        renderOnline(d.state);
+    });
+}
+
+function onlineSubmitPhrase(){
+    var text=document.getElementById('phraseInput').value.trim();
+    if(!text){ alert('اكتب جملة أولاً'); return; }
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'phrase', text:text}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر الإرسال'); return; }
+        renderOnline(d.state);
+    });
+}
+function onlineSubmitDrawing(){
+    var data=document.getElementById('drawCanvas').toDataURL('image/png');
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'drawing', data:data}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر الإرسال'); return; }
+        renderOnline(d.state);
+    });
+}
+function onlineSubmitGuess(){
+    var text=document.getElementById('guessInput').value.trim();
+    if(!text){ alert('اكتب تخمينك أولاً'); return; }
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'guess', text:text}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر الإرسال'); return; }
+        renderOnline(d.state);
+    });
+}
+function onlineVote(idx){
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'vote', target:idx}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر التصويت'); return; }
+        renderOnline(d.state);
+    });
+}
+function onlineNextRound(){
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'next_round'}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر الانتقال'); return; }
+        renderOnline(d.state);
+    });
+}
+function onlineEndGame(){
+    _onPost('/api/rooms/'+encodeURIComponent(ON.code)+'/action',
+            {pid:ON.pid, type:'end_game'}).then(function(d){
+        if(!d.ok){ alert(d.error||'تعذّر الإنهاء'); return; }
+        renderOnline(d.state);
+    });
+}
+
+function copyRoomCode(){
+    var code=(ON&&ON.code)||'';
+    if(!code) return;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(code).then(function(){
+            alert('تم نسخ رمز الغرفة: '+code);
+        }, function(){ prompt('انسخ رمز الغرفة:', code); });
+    }else{
+        prompt('انسخ رمز الغرفة:', code);
+    }
+}
+
+function _onNames(st){
+    var m={};
+    (st.players||[]).forEach(function(p){ m[p.id]=p.name; });
+    return m;
+}
+
+function renderOnline(st){
+    if(!ON) return;
+    var phase=st.phase;
+    if(phase!==ON_LAST_PHASE){
+        ON_LAST_PHASE=phase;
+        ON_LAST_DRAW=null;
+        if(phase==='write'){ /* لا شيء — يُجهَّز في العرض */ }
+    }
+    if(phase==='lobby'){ showPhase('lobby'); renderLobby(st); return; }
+    if(phase==='write'){ showPhase('write'); renderOnlineWrite(st); return; }
+    if(phase==='draw'){ showPhase('draw'); renderOnlineDraw(st); return; }
+    if(phase==='guess'){ showPhase('guess'); renderOnlineGuess(st); return; }
+    if(phase==='reveal'){ showPhase('reveal'); renderOnlineReveal(st); return; }
+    if(phase==='results'){ showPhase('results'); renderOnlineResults(st); return; }
+}
+
+function renderLobby(st){
+    document.getElementById('roomCodeDisplay').textContent=st.code;
+    var names=_onNames(st);
+    document.getElementById('lobbyPlayers').innerHTML=(st.players||[]).map(function(p){
+        var cls='tv-player-tag'+(p.is_host?' current':'');
+        var dot=p.online?'<span title="متصل">🟢</span>':'<span title="غير متصل">⚪</span>';
+        return '<span class="'+cls+'">'+escapeHtml(p.name)+(p.is_host?' 👑':'')+' '+dot+'</span>';
+    }).join('');
+    var isHost=(st.host===st.me);
+    var btn=document.getElementById('lobbyStartBtn');
+    btn.style.display=isHost?'inline-flex':'none';
+    btn.disabled=(st.players||[]).length<3;
+    document.getElementById('lobbyRoundsWrap').style.display=isHost?'flex':'none';
+    var hostName=names[st.host]||'المضيف';
+    document.getElementById('lobbyHint').innerHTML=isHost
+        ? ((st.players||[]).length<3 ? 'تحتاج <strong>3 لاعبين</strong> على الأقل — شارك الرمز مع أصدقائك'
+                                     : 'جاهز — اضغط <strong>بدء اللعبة</strong> عندما يكتمل اللاعبون')
+        : 'أنت لست صاحب الغرفة — بانتظار <strong>'+escapeHtml(hostName)+'</strong>';
+}
+
+function _onPlayerTags(st){
+    return (st.players||[]).map(function(p){
+        var cls='tv-player-tag'+(p.submitted?' done':'');
+        return '<span class="'+cls+'">'+escapeHtml(p.name)+(p.submitted?' ✓':'')+'</span>';
+    }).join('');
+}
+
+function renderOnlineWrite(st){
+    var me=(st.players||[]).filter(function(p){ return p.id===st.me; })[0]||{};
+    document.getElementById('currentWriter').textContent=me.name||'أنت';
+    var html=_onPlayerTags(st);
+    if(st.submitted) html+='<div class="tv-hint" style="width:100%">تم إرسال جملتك ✓ — بانتظار باقي اللاعبين</div>';
+    document.getElementById('writePlayers').innerHTML=html;
+    document.getElementById('phraseInput').style.display=st.submitted?'none':'';
+    var btn=document.querySelector('#phaseWrite .tv-btn.primary');
+    if(btn) btn.style.display=st.submitted?'none':'';
+}
+
+function renderOnlineDraw(st){
+    var me=(st.players||[]).filter(function(p){ return p.id===st.me; })[0]||{};
+    document.getElementById('currentDrawer').textContent=me.name||'أنت';
+    document.getElementById('phraseToDraw').textContent=st.phrase_to_draw||'';
+    var html=_onPlayerTags(st);
+    if(st.submitted) html+='<div class="tv-hint" style="width:100%">تم إرسال رسمك ✓ — بانتظار باقي اللاعبين</div>';
+    document.getElementById('drawPlayers').innerHTML=html;
+    var tools=document.querySelector('#phaseDraw .tv-tools');
+    var finish=document.querySelector('#phaseDraw .tv-finish');
+    if(st.submitted){
+        if(tools) tools.style.display='none';
+        if(finish) finish.style.display='none';
+    }else{
+        if(tools) tools.style.display='';
+        if(finish) finish.style.display='';
+        if(ON_LAST_PHASE!=='draw' || !drawingCtx){ initCanvas(); }
+        clearCanvas();
+        setTool('pen');
+    }
+}
+
+function renderOnlineGuess(st){
+    var me=(st.players||[]).filter(function(p){ return p.id===st.me; })[0]||{};
+    document.getElementById('currentGuesser').textContent=me.name||'أنت';
+    var img=document.getElementById('drawingToGuess');
+    if(st.drawing_to_guess){
+        if(ON_LAST_DRAW!==st.drawing_to_guess){
+            img.src=st.drawing_to_guess;
+            ON_LAST_DRAW=st.drawing_to_guess;
+        }
+        img.style.display='block';
+    }else{
+        img.removeAttribute('src');
+        img.style.display='none';
+    }
+    var html=_onPlayerTags(st);
+    if(st.submitted) html+='<div class="tv-hint" style="width:100%">تم إرسال تخمينك ✓ — بانتظار باقي اللاعبين</div>';
+    document.getElementById('guessPlayers').innerHTML=html;
+    document.getElementById('guessInput').style.display=st.submitted?'none':'';
+    var btn=document.querySelector('#phaseGuess .tv-btn.primary');
+    if(btn) btn.style.display=st.submitted?'none':'';
+}
+
+function renderOnlineReveal(st){
+    var names=_onNames(st);
+    var chains=st.chains||[];
+    var container=document.getElementById('chainDisplay');
+    container.innerHTML=chains.map(function(ch){
+        var img=ch.drawing
+            ? '<img class="tv-chain-img" src="'+ch.drawing+'" alt="رسم '+escapeHtml(names[ch.drawer]||'')+'">'
+            : '<div class="tv-chain-img tv-chain-empty">لا توجد رسمة — اللاعب لم يرسم</div>';
+        return '<div class="tv-chain-item">'
+            +'<div class="tv-chain-step">الجملة الأصلية — '+escapeHtml(names[ch.phrase_author]||'—')+'</div>'
+            +'<div class="tv-chain-content">'+escapeHtml(ch.phrase||'—')+'</div>'
+            +'<div class="tv-chain-step" style="margin-top:.9rem">الرسم — '+escapeHtml(names[ch.drawer]||'—')+'</div>'
+            +img
+            +'<div class="tv-chain-step" style="margin-top:.9rem">التخمين — '+escapeHtml(names[ch.guesser]||'—')+'</div>'
+            +'<div class="tv-chain-content">'+escapeHtml(ch.guess||'—')+'</div>'
+            +'</div>';
+    }).join('');
+
+    var counts=st.vote_counts||{};
+    document.getElementById('voteButtons').innerHTML=chains.map(function(ch){
+        return '<button class="tv-vote-btn'+(st.my_vote===ch.idx?' voted':'')+'" onclick="vote('+ch.idx+')">'
+            +escapeHtml(names[ch.phrase_author]||'—')+' ('+(counts[ch.idx]||0)+')</button>';
+    }).join('');
+
+    var isHost=(st.host===st.me);
+    document.getElementById('nextRoundBtn').style.display=isHost?'inline-flex':'none';
+    document.getElementById('endGameBtn').style.display=isHost?'inline-flex':'none';
+}
+
+function renderOnlineResults(st){
+    var container=document.getElementById('finalScores');
+    container.innerHTML=(st.scores||[]).map(function(s,i){
+        var medal=i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+        return '<div class="tv-score-item"><div class="tv-score-name">'+medal+escapeHtml(s.name)+'</div>'
+            +'<div class="tv-score-val">'+s.score+' تصويت</div></div>';
+    }).join('');
+}
+
+// رمز الغرفة من الرابط (?room=ABC123) يُعبأ تلقائياً
+(function(){
+    var m=location.search.match(/[?&]room=([A-Z0-9]{4,8})/i);
+    if(m){ var el=document.getElementById('joinCode'); if(el) el.value=m[1].toUpperCase(); }
+})();
+
+// استعادة الغرفة بعد إعادة تحميل الصفحة — عمداً بلا beacon عند الإغلاق،
+// حتى لا يُطرد اللاعب من الغرفة إذا حدّث الصفحة.
+(function(){
+    var raw=null;
+    try{ raw=sessionStorage.getItem('tv_room'); }catch(e){}
+    if(!raw) return;
+    var saved=null;
+    try{ saved=JSON.parse(raw); }catch(e){}
+    if(!saved||!saved.code||!saved.pid) return;
+    ON={code:saved.code, pid:saved.pid, timer:null};
+    ON_LAST_PHASE=null; ON_LAST_DRAW=null;
+    showPhase('lobby');
+    startPolling();
+})();
 
 document.getElementById('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
 </script>

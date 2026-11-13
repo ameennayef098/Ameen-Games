@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+{% set title = 'ألعاب أونلاين' %}
+{% block content %}
+<style>
+.on-wrap{max-width:1080px;margin:0 auto;padding:20px 18px 60px}
+.on-head{text-align:center;margin:18px 0 26px}
+.on-head h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:0 0 8px}
+.on-head p{margin:0;color:var(--text-secondary);font-size:1rem}
+.on-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.on-field{margin-bottom:18px}
+.on-field label,.on-box label{display:block;font-size:.9rem;color:var(--text-secondary);margin-bottom:6px}
+.on-field input,.on-box input,.on-box select,.on-chat-row input{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font:inherit;font-size:1rem}
+.on-box input:focus,.on-box select:focus,.on-field input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.on-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.on-cols{grid-template-columns:1fr}}
+.on-box{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px}
+.on-box h2{margin:0 0 12px;font-size:1.15rem}
+.on-box .on-desc{font-size:.9rem;color:var(--text-secondary);margin:8px 0 14px;min-height:2.4em}
+.on-box .on-limit{font-size:.85rem;color:var(--accent);margin:0 0 14px}
+.on-btn{width:100%;padding:13px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);
+  font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.on-btn:hover{filter:brightness(1.08)}
+.on-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.on-btn.sm{width:auto;padding:9px 16px;font-size:.9rem}
+.on-btn:disabled{opacity:.5;cursor:not-allowed}
+.on-err{color:#f87171;font-size:.9rem;min-height:1.2em;margin:12px 0 0}
+.on-room-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;
+  padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.on-code{font-size:1rem}
+.on-code b{letter-spacing:2px;color:var(--accent);font-size:1.15rem}
+.on-room-meta{display:flex;gap:10px;flex-wrap:wrap}
+.on-chip{background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.85rem}
+.on-grid{display:grid;grid-template-columns:280px 1fr;gap:18px}
+@media(max-width:860px){.on-grid{grid-template-columns:1fr}}
+.on-players{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px}
+.on-players h3{margin:0 0 10px;font-size:.95rem;color:var(--text-secondary)}
+.on-player{display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:10px;font-size:.95rem}
+.on-player+.on-player{border-top:1px solid var(--border)}
+.on-player .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;flex:none}
+.on-player.dead .dot{background:#6b7280}
+.on-player .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.on-player.dead .nm{text-decoration:line-through;color:var(--text-secondary)}
+.on-player .tag{font-size:.72rem;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:2px 8px}
+.on-main{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px;min-height:220px}
+.on-main h3{margin:0 0 12px;font-size:1.2rem}
+.on-main .on-phase-sub{color:var(--text-secondary);font-size:.92rem;margin:0 0 16px}
+.on-targets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.on-tgt{padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font:inherit;cursor:pointer;font-size:.92rem}
+.on-tgt:hover{border-color:var(--accent)}
+.on-tgt.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.on-tgt:disabled{opacity:.45;cursor:not-allowed}
+.on-result{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;
+  font-size:1.05rem;text-align:center;margin-bottom:14px}
+.on-log{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;
+  max-height:150px;overflow:auto;font-size:.85rem;color:var(--text-secondary)}
+.on-log div{padding:2px 0}
+.on-chat{margin-top:18px;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px}
+.on-chat h3{margin:0 0 10px;font-size:.95rem;color:var(--text-secondary)}
+#onChatList{height:190px;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.on-msg{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:.9rem}
+.on-msg .who{font-weight:700;color:var(--accent);font-size:.8rem;display:block}
+.on-msg.sys{background:transparent;border-style:dashed;color:var(--text-secondary);text-align:center;font-size:.82rem}
+.on-chat-row{display:flex;gap:8px}
+.on-chat-row input{flex:1}
+.on-winner{text-align:center;padding:20px}
+.on-winner .big{font-size:2.6rem;display:block;margin-bottom:10px}
+.on-winner h2{margin:0 0 8px;font-size:1.6rem}
+.on-note{font-size:.85rem;color:var(--text-secondary);text-align:center;margin-top:10px}
+</style>
+
+<div class="on-wrap">
+  <header class="on-head">
+    <h1>🎮 ألعاب أونلاين</h1>
+    <p>أنشئ غرفة، شارك رمزها مع أصدقائك، والعبوا من أجهزتكم — بلا تسجيل.</p>
+  </header>
+
+  <section id="onEntry" class="on-card">
+    <div class="on-field">
+      <label for="onName">اسمك في الغرفة</label>
+      <input id="onName" maxlength="24" placeholder="اكتب اسمك" autocomplete="off">
+    </div>
+    <div class="on-cols">
+      <div class="on-box">
+        <h2>إنشاء غرفة جديدة</h2>
+        <label for="onGame">اللعبة</label>
+        <select id="onGame">
+          <option value="tv_broken">تلفزيون خربان — جملة ← رسم ← تخمين</option>
+          <option value="mafia">مافيا — أدوار مخفية في ليل ونهار</option>
+        </select>
+        <p class="on-desc" id="onGameDesc"></p>
+        <p class="on-limit" id="onGameLimit"></p>
+        <button class="on-btn" id="onCreateBtn">إنشاء الغرفة</button>
+      </div>
+      <div class="on-box">
+        <h2>انضمام إلى غرفة</h2>
+        <label for="onCode">رمز الغرفة</label>
+        <input id="onCode" maxlength="6" placeholder="مثال: K7X2PQ" autocomplete="off" style="letter-spacing:3px;font-weight:700">
+        <p class="on-desc">اسأل صديقك عن رمز الغرفة الذي يظهر له بعد الإنشاء.</p>
+        <button class="on-btn ghost" id="onJoinBtn">انضمام</button>
+      </div>
+    </div>
+    <p class="on-err" id="onErr"></p>
+  </section>
+
+  <section id="onRoom" class="on-card" hidden>
+    <div class="on-room-head">
+      <div>
+        <span class="on-code">الغرفة: <b id="onRoomCode">—</b></span>
+        <button class="on-btn ghost sm" id="onCopyBtn">نسخ الرمز</button>
+      </div>
+      <div class="on-room-meta">
+        <span class="on-chip" id="onRoomGame">—</span>
+        <span class="on-chip" id="onRoomPhase">—</span>
+      </div>
+      <button class="on-btn ghost sm" id="onLeaveBtn">مغادرة</button>
+    </div>
+
+    <div class="on-grid">
+      <div class="on-players">
+        <h3>اللاعبون <span id="onCount"></span></h3>
+        <div id="onPlayers"></div>
+      </div>
+      <div class="on-main" id="onMain"></div>
+    </div>
+
+    <div class="on-chat">
+      <h3>الشات</h3>
+      <div id="onChatList"></div>
+      <div class="on-chat-row">
+        <input id="onChatText" maxlength="200" placeholder="اكتب رسالتك..." autocomplete="off">
+        <button class="on-btn sm" id="onChatSend">إرسال</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var ON = {code: null, pid: null, timer: null, state: null};
+  var GAMES = {
+    tv_broken: {name: 'تلفزيون خربان', min: 3, max: 8,
+                desc: 'جملة تكتبها ← صديقك يرسمها ← صديق ثالث يخمّنها. صوّتوا على أفضل رسمة.'},
+    mafia: {name: 'مافيا', min: 5, max: 12,
+            desc: 'أدوار مخفية: مافيا تقتل ليلاً، والطبيب ينقذ، والمحقق يفحص، والأهالي يصوّبون نهاراً.'}
+  };
+  var PHASE_NAMES = {lobby: 'بانتظار البدء', write: 'كتابة الجمل', draw: 'الرسم',
+                     guess: 'التخمين', reveal: 'التصويت', results: 'النتائج',
+                     night: 'الليل', day: 'النهار', ended: 'انتهت اللعبة'};
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); }
+  function save() { try { localStorage.setItem('ameen_online_room', JSON.stringify({code: ON.code, pid: ON.pid})); } catch (e) {} }
+  function clearSave() { try { localStorage.removeItem('ameen_online_room'); } catch (e) {} }
+  function restore() {
+    try {
+      var r = JSON.parse(localStorage.getItem('ameen_online_room') || 'null');
+      if (r && r.code && r.pid) { ON.code = r.code; ON.pid = r.pid; return true; }
+    } catch (e) {}
+    return false;
+  }
+  function err(msg) { $('onErr').textContent = msg || ''; }
+
+  async function api(path, body) {
+    try {
+      var res = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'},
+                               body: JSON.stringify(body || {})});
+      var data = await res.json().catch(function () { return {}; });
+      return data;
+    } catch (e) { return {error: 'تعذر الاتصال بالخادم'}; }
+  }
+
+  async function createRoom() {
+    var name = $('onName').value.trim();
+    if (!name) { err('اكتب اسمك أولاً'); return; }
+    err('');
+    var data = await api('/api/rooms', {name: name, game: $('onGame').value});
+    if (!data.ok) { err(data.error || 'تعذر إنشاء الغرفة'); return; }
+    ON.code = data.code; ON.pid = data.pid;
+    save();
+    startPolling();
+  }
+
+  async function joinRoom() {
+    var name = $('onName').value.trim();
+    var code = $('onCode').value.trim().toUpperCase();
+    if (!name) { err('اكتب اسمك أولاً'); return; }
+    if (!code) { err('اكتب رمز الغرفة'); return; }
+    err('');
+    var data = await api('/api/rooms/' + code + '/join', {name: name});
+    if (!data.ok) { err(data.error || 'تعذر الانضمام'); return; }
+    ON.code = data.code; ON.pid = data.pid;
+    save();
+    startPolling();
+  }
+
+  async function act(body) {
+    var data = await api('/api/rooms/' + ON.code + '/action', Object.assign({pid: ON.pid}, body));
+    if (!data.ok) { err(data.error || 'إجراء غير صالح'); return null; }
+    err('');
+    ON.state = data.state;
+    render();
+    return data.state;
+  }
+
+  async function poll() {
+    try {
+      var res = await fetch('/api/rooms/' + ON.code + '/state?pid=' + ON.pid);
+      var data = await res.json().catch(function () { return {}; });
+      if (!data.ok) { leave(true); return; }
+      ON.state = data.state;
+      render();
+    } catch (e) {}
+  }
+
+  function startPolling() {
+    if (ON.timer) clearInterval(ON.timer);
+    $('onEntry').hidden = true;
+    $('onRoom').hidden = false;
+    poll();
+    ON.timer = setInterval(poll, 1500);
+  }
+
+  function leave(silent) {
+    if (ON.timer) { clearInterval(ON.timer); ON.timer = null; }
+    if (!silent && ON.code && ON.pid) { api('/api/rooms/' + ON.code + '/leave', {pid: ON.pid}); }
+    ON.code = null; ON.pid = null; ON.state = null;
+    clearSave();
+    $('onRoom').hidden = true;
+    $('onEntry').hidden = false;
+  }
+
+  /* ---------- الرسم ---------- */
+  function render() {
+    var s = ON.state;
+    if (!s) return;
+    var g = GAMES[s.game] || GAMES.tv_broken;
+    $('onRoomCode').textContent = s.code;
+    $('onRoomGame').textContent = g.name;
+    $('onRoomPhase').textContent = PHASE_NAMES[s.phase] || s.phase || '';
+    renderPlayers(s);
+    if (s.game === 'mafia') renderMafia(s);
+    else renderTV(s);
+    renderChat(s.chat || []);
+  }
+
+  function renderPlayers(s) {
+    var list = s.players || [];
+    $('onCount').textContent = '(' + list.length + '/' + (s.max_players || g_max(s)) + ')';
+    $('onPlayers').innerHTML = list.map(function (p) {
+      var cls = 'on-player' + (p.alive === false ? ' dead' : '');
+      var tag = (p.pid === s.host) ? '<span class="tag">المضيف</span>' : '';
+      var role = p.role ? '<span class="tag">' + esc(roleName(p.role)) + '</span>' : '';
+      return '<div class="' + cls + '"><span class="dot"></span><span class="nm">' + esc(p.name) +
+             '</span>' + role + tag + '</div>';
+    }).join('');
+  }
+
+  function g_max(s) { return (GAMES[s.game] || GAMES.tv_broken).max; }
+
+  function roleName(r) {
+    return {mafia: 'مافيا', doctor: 'الطبيب', detective: 'المحقق', host: 'الهوست', citizen: 'مواطن'}[r] || r;
+  }
+
+  function renderChat(chat) {
+    var el = $('onChatList');
+    el.innerHTML = chat.map(function (c) {
+      if (c.sys) return '<div class="on-msg sys">' + esc(c.text) + '</div>';
+      var mine = c.pid === ON.pid ? ' (أنت)' : '';
+      return '<div class="on-msg"><span class="who">' + esc(c.name) + mine + '</span>' + esc(c.text) + '</div>';
+    }).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+
+  /* ---------- تلفزيون خربان ---------- */
+  function renderTV(s) {
+    var m = $('onMain');
+    if (s.phase === 'lobby') {
+      m.innerHTML = '<h3>بانتظار بدء اللعبة</h3>' +
+        '<p class="on-phase-sub">شارك رمز الغرفة مع أصدقائك. يحتاج 3 لاعبين على الأقل.</p>' +
+        hostStartBtn(s, 'start', 'بدء اللعبة') +
+        '<p class="on-note">بعد البدء ستنتقل إلى صفحة اللعبة نفسها مع بقية اللاعبين.</p>';
+      bindStart(s);
+      return;
+    }
+    m.innerHTML = '<h3>اللعبة جارية</h3>' +
+      '<p class="on-phase-sub">المرحلة الحالية: ' + esc(PHASE_NAMES[s.phase] || s.phase) + '</p>' +
+      '<a class="on-btn" href="/game/tv_broken?room=' + s.code + '" style="display:block;text-align:center;text-decoration:none">ادخل اللعبة</a>' +
+      '<p class="on-note">إن فاتتك مرحلة ستلحق بها في المرحلة التالية.</p>';
+  }
+
+  function hostStartBtn(s, type, label) {
+    var isHost = s.host === ON.pid;
+    var n = (s.players || []).length;
+    var min = s.min_players || 3;
+    if (!isHost) return '<p class="on-note">المضيف هو من يبدأ اللعبة.</p>';
+    if (n < min) return '<p class="on-note">بقي ' + (min - n) + ' لاعبين على الأقل للبدء.</p>';
+    return '<button class="on-btn" data-start="' + type + '">' + esc(label) + '</button>';
+  }
+
+  function bindStart(s) {
+    var btn = document.querySelector('[data-start]');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var type = btn.getAttribute('data-start');
+      var body = {type: type};
+      if (type === 'start' && s.game === 'tv_broken') body.max_rounds = 2;
+      act(body);
+    });
+  }
+
+  /* ---------- مافيا ---------- */
+  function renderMafia(s) {
+    var m = $('onMain');
+    var mine = null;
+    (s.players || []).forEach(function (p) { if (p.pid === ON.pid) mine = p; });
+
+    if (s.phase === 'lobby') {
+      m.innerHTML = '<h3>بانتظار بدء اللعبة</h3>' +
+        '<p class="on-phase-sub">الأدوار تُوزَّع عشوائياً: مافيا، طبيب، محقق، وهوست. يحتاج 5 لاعبين على الأقل.</p>' +
+        hostStartBtn(s, 'start', 'بدء اللعبة');
+      bindStart(s);
+      return;
+    }
+
+    if (s.phase === 'ended') {
+      var w = s.winner === 'mafia' ? '🔴 فازت المافيا' : '🏆 فاز الأهالي';
+      m.innerHTML = '<div class="on-winner"><span class="big">' + (s.winner === 'mafia' ? '🔴' : '🏆') + '</span>' +
+        '<h2>' + w + '</h2>' +
+        '<p class="on-phase-sub">تبقى ' + aliveCount(s) + ' لاعباً حياً.</p>' +
+        hostStartBtn(s, 'play_again', 'جولة جديدة') + '</div>';
+      bindStart(s);
+      return;
+    }
+
+    if (s.phase === 'reveal') {
+      m.innerHTML = '<h3>النتيجة</h3><div class="on-result">' + esc(s.last_result || '') + '</div>' +
+        '<p class="on-note">المرحلة التالية تبدأ تلقائياً...</p>' + renderLog(s);
+      return;
+    }
+
+    var html = '';
+    if (s.phase === 'night') {
+      html += '<h3>🌙 الليلة ' + (s.day + 1) + '</h3>';
+      html += '<p class="on-phase-sub">القرية نائمة. الأدوار الليلية تختار إجراءاتها.</p>';
+      html += '<div class="on-result">شخصيتك: ' + esc(roleName(s.my_role)) + '</div>';
+      html += nightActions(s, mine);
+    } else {
+      html += '<h3>🌞 النهار ' + s.day + '</h3>';
+      html += '<p class="on-phase-sub">ناقشوا في الشات ثم صوّتوا لمن تشكون فيه.</p>';
+      html += dayVote(s, mine);
+    }
+    html += renderLog(s);
+    m.innerHTML = html;
+    bindMafia(s, mine);
+  }
+
+  function aliveCount(s) {
+    return (s.players || []).filter(function (p) { return p.alive !== false; }).length;
+  }
+
+  function nightActions(s, mine) {
+    if (!mine || mine.alive === false) return '<p class="on-note">أنت ميت — تتابع الأحداث فقط.</p>';
+    var role = s.my_role;
+    if (role === 'citizen') return '<p class="on-note">أنت مواطن: لا إجراء ليلي لك. بانتظار الأدوار الأخرى...</p>';
+    if (role === 'host') {
+      var done = (s.my_night && s.my_night.host_done);
+      return '<button class="on-btn" data-act="night_action" ' + (done ? 'disabled' : '') + '>' +
+             (done ? 'تم إنهاء إجراءاتك' : 'إنهاء إجراءات الهوست') + '</button>';
+    }
+    var targets = (s.players || []).filter(function (p) {
+      if (p.alive === false) return false;
+      if (role === 'doctor') return true;
+      if (p.pid === ON.pid) return false;
+      if (role === 'mafia' && p.role === 'mafia' && p.role) return false;
+      return true;
+    });
+    var sel = (s.my_night && s.my_night.target) || '';
+    var label = role === 'mafia' ? 'اختر ضحية' : (role === 'doctor' ? 'اختر من تحميه' : 'اختر من تفحصه');
+    var btns = targets.map(function (p) {
+      return '<button class="on-tgt' + (sel === p.pid ? ' sel' : '') + '" data-act="night_pick" data-pid="' + p.pid + '">' +
+             esc(p.name) + '</button>';
+    }).join('');
+    var canConfirm = !!sel;
+    return '<p class="on-phase-sub">' + label + '</p><div class="on-targets">' + btns + '</div>' +
+           '<button class="on-btn" data-act="night_action" ' + (canConfirm ? '' : 'disabled') + '>تأكيد</button>';
+  }
+
+  function dayVote(s, mine) {
+    if (!mine || mine.alive === false) return '<p class="on-note">أنت ميت — تتابع الأحداث فقط.</p>';
+    var targets = (s.players || []).filter(function (p) { return p.alive !== false && p.pid !== ON.pid; });
+    var sel = s.votes.filter(function (v) { return v.pid === ON.pid; })[0];
+    var selT = sel ? sel.target : null;
+    var btns = targets.map(function (p) {
+      return '<button class="on-tgt' + (selT === p.pid ? ' sel' : '') + '" data-act="vote_pick" data-pid="' + p.pid + '">' +
+             esc(p.name) + '</button>';
+    }).join('');
+    var abstain = '<button class="on-tgt' + (selT === null && sel ? ' sel' : '') + '" data-act="vote_pick" data-pid="">امتناع</button>';
+    return '<div class="on-targets">' + btns + abstain + '</div>' +
+           '<button class="on-btn" data-act="vote" ' + (sel ? '' : 'disabled') + '>تأكيد التصويت</button>' +
+           '<p class="on-note">الأصوات الظاهرة للجميع قد تكشف تحالفات — احذر.</p>';
+  }
+
+  function renderLog(s) {
+    var log = (s.log || []).slice(-8);
+    if (!log.length) return '';
+    return '<div class="on-log">' + log.map(function (l) { return '<div>' + esc(l) + '</div>'; }).join('') + '</div>';
+  }
+
+  function bindMafia(s, mine) {
+    var pick = null;
+    document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function (x) { x.classList.remove('sel'); });
+        b.classList.add('sel');
+        pick = b.getAttribute('data-pid') || null;
+        var conf = document.querySelector('[data-act="night_action"],[data-act="vote"]');
+        if (conf) conf.disabled = false;
+      });
+    });
+    var conf = document.querySelector('[data-act="night_action"],[data-act="vote"]');
+    if (conf) {
+      conf.addEventListener('click', function () {
+        if (s.phase === 'night') act({type: 'night_action', target: pick});
+        else act({type: 'vote', target: pick});
+      });
+    }
+  }
+
+  /* ---------- الأحداث ---------- */
+  function initGameInfo() {
+    var sel = $('onGame');
+    function fill() {
+      var g = GAMES[sel.value] || GAMES.tv_broken;
+      $('onGameDesc').textContent = g.desc;
+      $('onGameLimit').textContent = 'من ' + g.min + ' إلى ' + g.max + ' لاعبين';
+    }
+    sel.addEventListener('change', fill);
+    fill();
+    var q = new URLSearchParams(location.search);
+    if (q.get('game') && GAMES[q.get('game')]) { sel.value = q.get('game'); fill(); }
+  }
+
+  $('onCreateBtn').addEventListener('click', createRoom);
+  $('onJoinBtn').addEventListener('click', joinRoom);
+  $('onLeaveBtn').addEventListener('click', function () { leave(false); });
+  $('onCopyBtn').addEventListener('click', function () {
+    var code = $('onRoomCode').textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(code);
+    $('onCopyBtn').textContent = 'تم النسخ';
+    setTimeout(function () { $('onCopyBtn').textContent = 'نسخ الرمز'; }, 1500);
+  });
+  $('onChatSend').addEventListener('click', function () {
+    var t = $('onChatText').value.trim();
+    if (!t) return;
+    $('onChatText').value = '';
+    act({type: 'chat', text: t});
+  });
+  $('onChatText').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('onChatSend').click();
+  });
+  $('onCode').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') joinRoom();
+  });
+
+  try {
+    var savedName = localStorage.getItem('ameen_online_name') || '';
+    if (savedName) $('onName').value = savedName;
+  } catch (e) {}
+  $('onName').addEventListener('change', function () {
+    try { localStorage.setItem('ameen_online_name', $('onName').value.trim()); } catch (e) {}
+  });
+
+  initGameInfo();
+  if (restore()) startPolling();
+})();
+</script>
+{% endblock %}

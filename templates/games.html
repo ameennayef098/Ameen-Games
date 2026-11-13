@@ -118,7 +118,19 @@
                     <button class="cat-chip" type="button" data-filter="كلمات ومهارات">كلمات ومهارات</button>
                     <button class="cat-chip" type="button" data-filter="ألعاب المجموعة">ألعاب المجموعة</button>
                 </div>
+        <button class="onl-toggle" id="onlineToggle" type="button" aria-pressed="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>
+            <span>ألعاب أونلاين</span>
+        </button>
         <span class="cat-count" id="catCount" role="status" aria-live="polite"></span>
+    </div>
+
+    <div class="onl-banner" id="onlineBanner" hidden>
+        <div>
+            <strong>وضع الألعاب أونلاين</strong>
+            <p>هذه الألعاب تدعم اللعب مع أصدقائك عن بُعد عبر غرف برمز مشاركة وشات داخلي.</p>
+        </div>
+        <a class="onl-banner-btn" href="/online">افتح مركز الغرف</a>
     </div>
 
     <div class="catalogue-grid reveal-stagger" id="catGrid">
@@ -425,7 +437,7 @@
                                     <p style="color:var(--text-secondary);margin-top:var(--space-2);font-size:var(--font-size-sm)">ألعاب جماعية تفاعلية للفرق والحفلات</p>
                                 </div>
 
-                                <a class="cat-card" href="/game/tv_broken" data-cat="ألعاب المجموعة" style="--cat-color: var(--accent-purple)">
+                                <a class="cat-card" href="/game/tv_broken" data-cat="ألعاب المجموعة" data-online="1" style="--cat-color: var(--accent-purple)">
                                     <div class="cat-card-top">
                                         <span class="icon-chip purple"><svg class="ico" aria-hidden="true"><use href="#i-tv"></use></svg></span>
                                         <div>

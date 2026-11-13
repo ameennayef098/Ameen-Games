@@ -3754,6 +3754,7 @@ GAME_INTROS = {
                                 'يتناوب الفريقان، والفريق صاحب أعلى رصيد يفوز.',
                             ],
                             'tip': 'استخدم إيماءات قياسية: «كتاب» = فتح يدين، «فيلم» = تدوير يد وهمية، «يبدو مثل…» = سحب شحمة الأذن.',
+                            'online': 'لعب أونلاين: من شاشة الإعداد اختر «أو العب مع أصدقاء أونلاين» — أنشئ غرفة وشارك رمزها مع أصدقائك (من 3 إلى 8 لاعبين، كل لاعب على جهازه).',
                         },
                         'remontada': {
                             'name': 'ريمونتادا',
@@ -3828,7 +3829,7 @@ GAME_INTROS = {
     },
 }
 
-INTRO_KEYS = ('name', 'type', 'icon', 'color', 'lead', 'steps', 'tip')
+INTRO_KEYS = ('name', 'type', 'icon', 'color', 'lead', 'steps', 'tip', 'online')
 
 
 def intro_skipped(game):
@@ -4464,6 +4465,665 @@ def ludo_million_questions():
             'answer': ans_idx,
         })
     return jsonify({'questions': out, 'total': len(out)})
+
+
+# ============ الغرف الأونلاين (تجربة) ============
+# أول تجربة لعب جماعي عن بُعد — لعبة «تلفزيون خربان».
+# النقل بالتصويت (polling كل ~1.5 ث) بدل WebSocket: لا اعتماد جديد، ويعمل على
+# أي استضافة دون لمس requirements.txt. الغرف في الذاكرة وتُنظَّف تلقائياً.
+ROOMS = {}
+ROOM_TTL = 4 * 3600          # غرفة أقدم من 4 ساعات تُحذف
+ROOM_STALE = 3 * 3600         # لا نشاط منذ 3 ساعات ← حذف
+ROOM_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+ROOM_MAX_PLAYERS = 8
+ROOM_MAX_TEXT = 200
+ROOM_MAX_DRAW = 2 * 1024 * 1024
+
+
+def _room_code():
+    for _ in range(16):
+        code = ''.join(_rnd.choice(ROOM_ALPHABET) for _ in range(6))
+        if code not in ROOMS:
+            return code
+    return ''.join(_rnd.choice(ROOM_ALPHABET) for _ in range(8))
+
+
+def _clean_rooms():
+    t = time.time()
+    dead = [c for c, r in ROOMS.items()
+            if t - r['created'] > ROOM_TTL
+            or (t - max([r['seen'].get(p, r['created']) for p in r['players']] or [r['created']]) > ROOM_STALE)]
+    for c in dead:
+        ROOMS.pop(c, None)
+
+
+def _vote_counts(room):
+    counts = {p: 0 for p in range(len(room['players']))}
+    for target in room['votes'].values():
+        if isinstance(target, int) and 0 <= target < len(counts):
+            counts[target] += 1
+    return counts
+
+
+def _room_chains(room):
+    """سلاسل الكشف: جملة اللاعب ← رسم من قبله ← تخمين من قبله."""
+    n = len(room['players'])
+    out = []
+    for p in range(n):
+        drawer = (p - 1 + n) % n
+        guesser = (p - 2 + n) % n
+        out.append({
+            'idx': p,
+            'phrase_author': room['players'][p],
+            'phrase': room['phrases'].get(room['players'][p], ''),
+            'drawer': room['players'][drawer],
+            'drawing': room['drawings'].get(room['players'][drawer], ''),
+            'guesser': room['players'][guesser],
+            'guess': room['guesses'].get(room['players'][guesser], ''),
+        })
+    return out
+
+
+def _room_state(room, pid):
+    """حالة الغرفة كما يراها لاعب واحد — لا تُكشف بيانات إلا لمن يحق له."""
+    n = len(room['players'])
+    idx = room['players'].index(pid) if pid in room['players'] else -1
+    nxt = room['players'][(idx + 1) % n] if idx >= 0 and n else None
+
+    players = []
+    for p in room['players']:
+        submitted = False
+        if room['phase'] == 'write':
+            submitted = p in room['phrases']
+        elif room['phase'] == 'draw':
+            submitted = p in room['drawings']
+        elif room['phase'] == 'guess':
+            submitted = p in room['guesses']
+        players.append({
+            'id': p,
+            'name': room['names'].get(p, 'لاعب'),
+            'is_host': p == room['host'],
+            'online': (time.time() - room['seen'].get(p, 0)) < 20,
+            'submitted': submitted,
+        })
+
+    st = {
+        'code': room['code'],
+        'phase': room['phase'],
+        'round': room['round'],
+        'max_rounds': room['max_rounds'],
+        'host': room['host'],
+        'me': pid,
+        'my_idx': idx,
+        'players': players,
+        'updated': room['updated'],
+        'submitted': False,
+    }
+
+    if room['phase'] == 'write':
+        st['my_phrase'] = room['phrases'].get(pid, '')
+        st['submitted'] = pid in room['phrases']
+    elif room['phase'] == 'draw':
+        st['phrase_to_draw'] = room['phrases'].get(nxt, '')
+        st['submitted'] = pid in room['drawings']
+    elif room['phase'] == 'guess':
+        st['drawing_to_guess'] = room['drawings'].get(nxt, '')
+        st['submitted'] = pid in room['guesses']
+    elif room['phase'] == 'reveal':
+        st['chains'] = _room_chains(room)
+        st['my_vote'] = room['votes'].get(pid)
+        st['vote_counts'] = _vote_counts(room)
+    elif room['phase'] == 'results':
+        counts = room['totals'] or {}
+        scores = []
+        for p in range(len(room['players'])):
+            scores.append({'idx': p, 'name': room['names'].get(room['players'][p], 'لاعب'),
+                           'score': counts.get(p, 0)})
+        scores.sort(key=lambda x: (-x['score'], x['idx']))
+        st['scores'] = scores
+    return st
+
+
+def _room_bank_votes(room):
+    """يجمع أصوات الجولة الحالية في المجموع التراكمي قبل الانتقال."""
+    for p, c in _vote_counts(room).items():
+        room['totals'][p] = room['totals'].get(p, 0) + c
+    room['updated'] = time.time()
+
+
+def _maybe_advance(room):
+    n = len(room['players'])
+    if n == 0:
+        return
+    if room['phase'] == 'write' and len(room['phrases']) >= n:
+        room['phase'] = 'draw'
+    elif room['phase'] == 'draw' and len(room['drawings']) >= n:
+        room['phase'] = 'guess'
+    elif room['phase'] == 'guess' and len(room['guesses']) >= n:
+        room['phase'] = 'reveal'
+        room['votes'] = {}
+    room['updated'] = time.time()
+
+
+def _room_start_round(room, rnd):
+    room['round'] = rnd
+    room['phase'] = 'write'
+    room['phrases'] = {}
+    room['drawings'] = {}
+    room['guesses'] = {}
+    room['votes'] = {}
+    room['updated'] = time.time()
+
+
+def _room_leave(room, pid):
+    if pid not in room['players']:
+        return
+    _pname = room['names'].get(pid)
+    room['players'].remove(pid)
+    room['names'].pop(pid, None)
+    room['seen'].pop(pid, None)
+    room['phrases'].pop(pid, None)
+    room['drawings'].pop(pid, None)
+    room['guesses'].pop(pid, None)
+    room['votes'].pop(pid, None)
+    if room.get('game') == 'mafia':
+        gs = room.get('gs') or {}
+        if gs.get('phase') in ('night', 'day') and gs.get('alive', {}).get(pid):
+            gs['alive'][pid] = False
+            gs.setdefault('dead', []).append({'pid': pid, 'name': _pname,
+                                              'role': gs.get('roles', {}).get(pid), 'cause': 'leave'})
+            _mafia_sweep(room)
+    room['chat'] = [c for c in room.get('chat', []) if c.get('pid') != pid]
+    if room['host'] == pid and room['players']:
+        room['host'] = room['players'][0]
+    room['updated'] = time.time()
+
+
+
+
+# ---------- لعبة: مافيا (أونلاين) ----------
+MAFIA_NIGHT = 45
+MAFIA_DAY = 90
+MAFIA_REVEAL = 8
+MAFIA_ROLE_NAMES = {'mafia': 'مافيا', 'doctor': 'الطبيب', 'detective': 'المحقق', 'host': 'الهوست', 'citizen': 'مواطن'}
+MAFIA_ROLE_DESC = {
+    'mafia': 'تختار ليلاً ضحية للقضاء عليها. وإن كان معك شركاء فأنتم تقررون معاً.',
+    'doctor': 'تختار ليلاً شخصاً تحميه من القتل — ولا تستطيع حماية نفسك مرتين متتاليتين.',
+    'detective': 'تختار ليلاً شخصاً تفحصه لتعرف إن كان مافيا أم لا.',
+    'host': 'دور خاص: تشارك في المناقشات وتصوّت، ولك إجراء ليلي رمزي.',
+    'citizen': 'مواطن عادي: شارك في النقاش وصوّت لإخراج المشتبه بهم.',
+}
+
+
+def _mafia_new(n):
+    return {'phase': 'lobby', 'day': 0, 'roles': {}, 'alive': {}, 'self_healed': {},
+            'night': {}, 'votes': {}, 'phase_until': 0, 'log': [], 'dead': [],
+            'winner': None, 'after': None, 'last_result': None}
+
+
+def _mafia_alive(room):
+    gs = room.get('gs') or {}
+    return [p for p in room['players'] if gs.get('alive', {}).get(p, False)]
+
+
+def _mafia_count(room, role):
+    gs = room.get('gs') or {}
+    return len([p for p in _mafia_alive(room) if gs.get('roles', {}).get(p) == role])
+
+
+def _mafia_win(room):
+    gs = room['gs']
+    m = _mafia_count(room, 'mafia')
+    total = len(_mafia_alive(room))
+    if m == 0:
+        gs['winner'] = 'town'
+        gs['phase'] = 'ended'
+        _room_log(room, '🏆 فاز الأهالي — تم القضاء على كل المافيا')
+        return True
+    if total and m * 2 >= total:
+        gs['winner'] = 'mafia'
+        gs['phase'] = 'ended'
+        _room_log(room, '🔴 فازت المافيا — أصبحت أغلبية في القرية')
+        return True
+    return False
+
+
+def _mafia_need(room):
+    gs = room['gs']
+    need = []
+    for p in _mafia_alive(room):
+        r = gs['roles'].get(p)
+        act = gs['night'].get(p) or {}
+        if r in ('mafia', 'doctor', 'detective') and not act.get('target'):
+            need.append(p)
+        elif r == 'host' and not act.get('host_done'):
+            need.append(p)
+    return need
+
+
+def _mafia_resolve_night(room):
+    gs = room['gs']
+    kill = None
+    save = None
+    for p in _mafia_alive(room):
+        r = gs['roles'].get(p)
+        act = gs['night'].get(p) or {}
+        if r == 'mafia' and act.get('target') and kill is None:
+            kill = act['target']
+        if r == 'doctor' and act.get('target') and save is None:
+            save = act['target']
+    if kill and kill == save:
+        kill = None
+    msg = '☀️ لم يمت أحد هذه الليلة'
+    if kill and gs['alive'].get(kill):
+        gs['alive'][kill] = False
+        gs['dead'].append({'pid': kill, 'name': room['names'].get(kill), 'role': gs['roles'].get(kill), 'cause': 'night'})
+        msg = '💀 قُتل ' + room['names'].get(kill, '') + ' ليلاً'
+    gs['night'] = {}
+    gs['last_result'] = msg
+    gs['phase'] = 'reveal'
+    gs['after'] = 'day'
+    gs['phase_until'] = time.time() + MAFIA_REVEAL
+    _room_log(room, msg)
+    _mafia_win(room)
+    room['updated'] = time.time()
+
+
+def _mafia_tally(room):
+    gs = room['gs']
+    counts = {}
+    for v, t in gs['votes'].items():
+        if t and gs['alive'].get(t):
+            counts[t] = counts.get(t, 0) + 1
+    top = None
+    if counts:
+        best = max(counts.values())
+        tops = [t for t, c in counts.items() if c == best]
+        if len(tops) == 1:
+            top = tops[0]
+    msg = '🗳️ لم يُطرد أحد اليوم'
+    if top:
+        gs['alive'][top] = False
+        gs['dead'].append({'pid': top, 'name': room['names'].get(top), 'role': gs['roles'].get(top), 'cause': 'vote'})
+        msg = '⚖️ طُرد ' + room['names'].get(top, '') + ' من القرية'
+    gs['votes'] = {}
+    gs['last_result'] = msg
+    gs['phase'] = 'reveal'
+    gs['after'] = 'night'
+    gs['phase_until'] = time.time() + MAFIA_REVEAL
+    _room_log(room, msg)
+    _mafia_win(room)
+    room['updated'] = time.time()
+
+
+def _mafia_reveal_done(room):
+    gs = room['gs']
+    if gs['phase'] == 'ended':
+        return
+    if gs.get('after') == 'day':
+        gs['phase'] = 'day'
+        gs['day'] += 1
+        gs['votes'] = {}
+        gs['phase_until'] = time.time() + MAFIA_DAY
+        _room_log(room, '🌞 بدأ النهار ' + str(gs['day']) + ' — نقاش ثم تصويت')
+    else:
+        gs['phase'] = 'night'
+        gs['night'] = {}
+        gs['phase_until'] = time.time() + MAFIA_NIGHT
+        _room_log(room, '🌙 بدأت الليلة ' + str(gs['day'] + 1))
+    gs['after'] = None
+    room['updated'] = time.time()
+
+
+def _mafia_sweep(room):
+    gs = room['gs']
+    if gs.get('phase') in ('lobby', 'ended', None):
+        return
+    if gs['phase'] == 'night':
+        if not _mafia_need(room) or time.time() > gs.get('phase_until', 0):
+            _mafia_resolve_night(room)
+    elif gs['phase'] == 'day':
+        alive = _mafia_alive(room)
+        if (alive and all(gs['votes'].get(p) for p in alive)) or time.time() > gs.get('phase_until', 0):
+            _mafia_tally(room)
+    elif gs['phase'] == 'reveal':
+        if time.time() > gs.get('phase_until', 0):
+            _mafia_reveal_done(room)
+
+
+def _mafia_state(room, pid):
+    _mafia_sweep(room)
+    gs = room['gs']
+    players = []
+    for p in room['players']:
+        if p not in gs.get('roles', {}):
+            players.append({'pid': p, 'name': room['names'].get(p, p), 'is_host': p == room['host'],
+                            'alive': True, 'role': None, 'self_healed': False})
+            continue
+        show_role = (p == pid or not gs['alive'].get(p, True) or gs['phase'] == 'ended')
+        players.append({'pid': p, 'name': room['names'].get(p, p), 'is_host': p == room['host'],
+                        'alive': gs['alive'].get(p, False),
+                        'role': gs['roles'].get(p) if show_role else None,
+                        'self_healed': gs['self_healed'].get(p, False)})
+    votes = [{'pid': v, 'name': room['names'].get(v), 'target': t} for v, t in gs.get('votes', {}).items() if t]
+    return {
+        'code': room['code'], 'phase': gs.get('phase'), 'day': gs.get('day', 0),
+        'players': players, 'my_role': gs.get('roles', {}).get(pid),
+        'my_alive': gs.get('alive', {}).get(pid, False),
+        'my_night': gs.get('night', {}).get(pid) or {},
+        'votes': votes,
+        'last_result': gs.get('last_result'),
+        'dead': gs.get('dead', []),
+        'winner': gs.get('winner'),
+        'phase_until': gs.get('phase_until', 0),
+        'log': gs.get('log', [])[-40:],
+        'need': len(_mafia_need(room)) if gs.get('phase') == 'night' else 0,
+        'host': room['host'], 'me': pid,
+    }
+
+
+def _mafia_action(room, pid, atype, body):
+    gs = room['gs']
+    if atype == 'start':
+        if pid != room['host']:
+            return False, 'فقط صاحب الغرفة يبدأ اللعبة'
+        if gs.get('phase') != 'lobby':
+            return False, 'اللعبة بدأت بالفعل'
+        n = len(room['players'])
+        if n < 5:
+            return False, 'تحتاج 5 لاعبين على الأقل — بقي ' + str(5 - n)
+        mafia_count = max(1, min(n // 3, 3))
+        roles = ['mafia'] * mafia_count + ['doctor', 'detective', 'host']
+        while len(roles) < n:
+            roles.append('citizen')
+        _rnd.shuffle(roles)
+        gs['roles'] = {}
+        gs['alive'] = {}
+        gs['self_healed'] = {}
+        for i, p in enumerate(room['players']):
+            gs['roles'][p] = roles[i]
+            gs['alive'][p] = True
+            gs['self_healed'][p] = False
+        gs['day'] = 0
+        gs['night'] = {}
+        gs['votes'] = {}
+        gs['dead'] = []
+        gs['log'] = []
+        gs['winner'] = None
+        gs['after'] = None
+        gs['last_result'] = None
+        gs['phase'] = 'night'
+        gs['phase_until'] = time.time() + MAFIA_NIGHT
+        _room_log(room, '🌙 بدأت الليلة 1 — المافيا تختار ضحية')
+        room['updated'] = time.time()
+        return True, None
+
+    if atype == 'night_action':
+        if gs.get('phase') != 'night':
+            return False, 'ليس وقت الليل الآن'
+        if not gs.get('alive', {}).get(pid):
+            return False, 'أنت ميت'
+        role = gs['roles'].get(pid)
+        tgt = body.get('target')
+        act = gs['night'].get(pid) or {}
+        if role in ('mafia', 'doctor', 'detective'):
+            if tgt not in room['players']:
+                return False, 'الهدف غير موجود'
+            if role != 'doctor' and tgt == pid:
+                return False, 'لا يمكنك استهداف نفسك'
+            if role == 'mafia' and gs['roles'].get(tgt) == 'mafia':
+                return False, 'لا يمكنك استهداف مافيا آخر'
+            if role == 'doctor' and tgt == pid and gs['self_healed'].get(pid):
+                return False, 'لا يمكنك إنقاذ نفسك أكثر من مرة'
+            if not gs['alive'].get(tgt, False):
+                return False, 'الهدف ميت'
+            act['target'] = tgt
+        elif role == 'host':
+            act['host_done'] = True
+        else:
+            return False, 'لا تملك إجراءً ليلياً'
+        gs['night'][pid] = act
+        _mafia_sweep(room)
+        return True, None
+
+    if atype == 'vote':
+        if gs.get('phase') != 'day':
+            return False, 'ليس وقت التصويت الآن'
+        if not gs.get('alive', {}).get(pid):
+            return False, 'أنت ميت'
+        tgt = body.get('target')
+        if tgt is not None:
+            if tgt not in room['players'] or not gs['alive'].get(tgt, False):
+                return False, 'الهدف غير صالح'
+            if tgt == pid:
+                return False, 'لا يمكنك التصويت لنفسك'
+        gs['votes'][pid] = tgt
+        _mafia_sweep(room)
+        return True, None
+
+    if atype == 'play_again':
+        if pid != room['host']:
+            return False, 'فقط صاحب الغرفة يبدأ اللعبة'
+        room['gs'] = _mafia_new(0)
+        _room_log(room, 'جولة جديدة — بانتظار البدء')
+        room['updated'] = time.time()
+        return True, None
+
+    return False, 'أمر غير معروف'
+
+
+ROOM_GAMES = {
+    'tv_broken': {'name': 'تلفزيون خربان', 'min': 3, 'max': 8,
+                  'desc': 'جملة ← رسم ← تخمين، مع تصويت على أفضل رسم'},
+    'mafia': {'name': 'مافيا', 'min': 5, 'max': 12,
+              'desc': 'أدوار مخفية: مافيا وأهالٍ في ليل ونهار'},
+}
+
+
+def _room_view_any(room, pid):
+    """حالة الغرفة كما يراها لاعب — مع بيانات عامة (شات، اللعبة، المضيف)."""
+    game = room.get('game', 'tv_broken')
+    h = ROOM_GAMES.get(game) or ROOM_GAMES['tv_broken']
+    if game == 'mafia':
+        st = _mafia_state(room, pid)
+    else:
+        st = _room_state(room, pid)
+    st['game'] = game
+    st['game_name'] = h['name']
+    st['game_desc'] = h['desc']
+    st['min_players'] = h['min']
+    st['max_players'] = h['max']
+    st['chat'] = room.get('chat', [])[-100:]
+    st['now'] = time.time()
+    return st
+
+
+@app.route('/api/rooms', methods=['POST'])
+def room_create():
+    _clean_rooms()
+    body = request.get_json(silent=True) or {}
+    name = str(body.get('name', '') or '').strip()[:24]
+    if not name:
+        return jsonify({'error': 'الاسم مطلوب'}), 400
+    game = str(body.get('game', '') or 'tv_broken')
+    if game not in ROOM_GAMES:
+        return jsonify({'error': 'لعبة غير مدعومة'}), 400
+    pid = uuid.uuid4().hex[:12]
+    code = _room_code()
+    ROOMS[code] = {
+        'code': code, 'host': pid, 'created': time.time(), 'updated': time.time(),
+        'game': game, 'chat': [],
+        'phase': 'lobby', 'round': 0, 'max_rounds': 2,
+        'players': [pid], 'names': {pid: name}, 'seen': {pid: time.time()},
+        'phrases': {}, 'drawings': {}, 'guesses': {}, 'votes': {}, 'totals': {},
+        'gs': _mafia_new(0) if game == 'mafia' else {},
+    }
+    return jsonify({'ok': True, 'code': code, 'pid': pid,
+                    'state': _room_view_any(ROOMS[code], pid)})
+
+
+@app.route('/api/rooms/<code>/join', methods=['POST'])
+def room_join(code):
+    _clean_rooms()
+    room = ROOMS.get(code.upper())
+    if not room:
+        return jsonify({'error': 'الغرفة غير موجودة — تأكد من الرمز'}), 404
+    _hg = ROOM_GAMES.get(room.get('game', 'tv_broken'), ROOM_GAMES['tv_broken'])
+    _in_game = ((room.get('gs') or {}).get('phase') != 'lobby') if room.get('game') == 'mafia' else (room['phase'] != 'lobby')
+    if _in_game:
+        return jsonify({'error': 'اللعبة بدأت بالفعل في هذه الغرفة'}), 400
+    if len(room['players']) >= _hg['max']:
+        return jsonify({'error': 'الغرفة ممتلئة (' + str(_hg['max']) + ' لاعبين كحد أقصى)'}), 400
+    body = request.get_json(silent=True) or {}
+    name = str(body.get('name', '') or '').strip()[:24]
+    if not name:
+        return jsonify({'error': 'الاسم مطلوب'}), 400
+    for p in room['players']:
+        if room['names'].get(p) == name:
+            return jsonify({'error': 'هذا الاسم مستخدم في الغرفة'}), 400
+    pid = uuid.uuid4().hex[:12]
+    room['players'].append(pid)
+    room['names'][pid] = name
+    room['seen'][pid] = time.time()
+    room['updated'] = time.time()
+    return jsonify({'ok': True, 'code': room['code'], 'pid': pid,
+                    'state': _room_view_any(room, pid)})
+
+
+@app.route('/api/rooms/<code>/state')
+def room_get_state(code):
+    room = ROOMS.get(code.upper())
+    if not room:
+        return jsonify({'error': 'الغرفة غير موجودة'}), 404
+    pid = request.args.get('pid', '')
+    if pid not in room['players']:
+        return jsonify({'error': 'لست في هذه الغرفة'}), 403
+    room['seen'][pid] = time.time()
+    return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
+
+
+@app.route('/api/rooms/<code>/action', methods=['POST'])
+def room_action(code):
+    room = ROOMS.get(code.upper())
+    if not room:
+        return jsonify({'error': 'الغرفة غير موجودة'}), 404
+    body = request.get_json(silent=True) or {}
+    pid = str(body.get('pid', ''))
+    if pid not in room['players']:
+        return jsonify({'error': 'لست في هذه الغرفة'}), 403
+    atype = str(body.get('type', ''))
+    room['seen'][pid] = time.time()
+    room['updated'] = time.time()
+
+    if atype == 'chat':
+        text = str(body.get('text', '') or '').strip()[:ROOM_MAX_TEXT]
+        if not text:
+            return jsonify({'error': 'الرسالة فارغة'}), 400
+        room.setdefault('chat', []).append({'pid': pid, 'name': room['names'].get(pid, pid),
+                                            'text': text, 'ts': time.time()})
+        if len(room['chat']) > 200:
+            room['chat'] = room['chat'][-200:]
+        room['updated'] = time.time()
+        return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
+
+    if room.get('game') == 'mafia':
+        _ok, _err = _mafia_action(room, pid, atype, body)
+        if not _ok:
+            return jsonify({'error': _err or 'إجراء غير صالح'}), 400
+        if not room['players']:
+            ROOMS.pop(room['code'], None)
+        return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
+
+    if atype == 'start':
+        if pid != room['host']:
+            return jsonify({'error': 'فقط صاحب الغرفة يبدأ اللعبة'}), 403
+        try:
+            mr = max(1, min(5, int(body.get('max_rounds', 2))))
+        except (TypeError, ValueError):
+            mr = 2
+        room['max_rounds'] = mr
+        _room_start_round(room, 1)
+
+    elif atype == 'phrase':
+        if room['phase'] != 'write':
+            return jsonify({'error': 'ليس وقت الكتابة الآن'}), 400
+        text = str(body.get('text', '') or '').strip()[:ROOM_MAX_TEXT]
+        if not text:
+            return jsonify({'error': 'اكتب جملة أولاً'}), 400
+        room['phrases'][pid] = text
+        _maybe_advance(room)
+
+    elif atype == 'drawing':
+        if room['phase'] != 'draw':
+            return jsonify({'error': 'ليس وقت الرسم الآن'}), 400
+        data = str(body.get('data', '') or '')
+        if not data.startswith('data:image/'):
+            return jsonify({'error': 'الرسمة غير صالحة'}), 400
+        if len(data) > ROOM_MAX_DRAW:
+            return jsonify({'error': 'الرسمة كبيرة جداً'}), 400
+        room['drawings'][pid] = data
+        _maybe_advance(room)
+
+    elif atype == 'guess':
+        if room['phase'] != 'guess':
+            return jsonify({'error': 'ليس وقت التخمين الآن'}), 400
+        text = str(body.get('text', '') or '').strip()[:ROOM_MAX_TEXT]
+        if not text:
+            return jsonify({'error': 'اكتب تخمينك أولاً'}), 400
+        room['guesses'][pid] = text
+        _maybe_advance(room)
+
+    elif atype == 'vote':
+        if room['phase'] != 'reveal':
+            return jsonify({'error': 'ليس وقت التصويت الآن'}), 400
+        try:
+            target = int(body.get('target', -1))
+        except (TypeError, ValueError):
+            target = -1
+        if not (0 <= target < len(room['players'])):
+            return jsonify({'error': 'اختيار غير صالح'}), 400
+        room['votes'][pid] = target
+
+    elif atype == 'next_round':
+        if pid != room['host']:
+            return jsonify({'error': 'فقط صاحب الغرفة ينتقل'}), 403
+        _room_bank_votes(room)
+        if room['round'] >= room['max_rounds']:
+            room['phase'] = 'results'
+            room['updated'] = time.time()
+        else:
+            _room_start_round(room, room['round'] + 1)
+
+    elif atype == 'end_game':
+        if pid != room['host']:
+            return jsonify({'error': 'فقط صاحب الغرفة ينهي اللعبة'}), 403
+        _room_bank_votes(room)
+        room['phase'] = 'results'
+        room['updated'] = time.time()
+
+    elif atype == 'leave':
+        _room_leave(room, pid)
+        return jsonify({'ok': True, 'left': True})
+
+    else:
+        return jsonify({'error': 'أمر غير معروف'}), 400
+
+    if not room['players']:
+        ROOMS.pop(room['code'], None)
+    return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
+
+
+@app.route('/api/rooms/<code>/leave', methods=['POST'])
+def room_leave(code):
+    room = ROOMS.get(code.upper())
+    if not room:
+        return jsonify({'ok': True})
+    body = request.get_json(silent=True) or {}
+    pid = str(body.get('pid', ''))
+    _room_leave(room, pid)
+    if not room['players']:
+        ROOMS.pop(room['code'], None)
+    return jsonify({'ok': True})
 
 
 if __name__ == '__main__':

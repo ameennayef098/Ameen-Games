@@ -1,0 +1,554 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root{--sq-light:#eeeed2;--sq-dark:#769656;--sq-sel:#f6f669;--sq-last:rgba(205,210,106,.62);--sq-check:#e5533d}
+.chess-page{max-width:1100px;margin:0 auto;padding:1.5rem 1rem}
+.chess-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem}
+.chess-header h1{margin:0;font-size:1.7rem}
+.pills{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.pill{padding:.35rem .8rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border-color);color:var(--text-secondary);font-weight:700;font-size:.85rem}
+.pill.on{background:var(--accent-soft);border-color:rgba(129,182,76,.35);color:var(--accent)}
+.board-frame{position:relative;display:inline-block;width:100%;max-width:min(92vh,720px);aspect-ratio:1/1;border-radius:12px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.45);background:var(--sq-dark);border:3px solid rgba(0,0,0,.25);transition:transform .35s ease;transform-origin:center;touch-action:none}
+
+.board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%;user-select:none;touch-action:none;direction:ltr}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sq.l{background:var(--sq-light)} .sq.d{background:var(--sq-dark)}
+.sq.sel::after{content:"";position:absolute;inset:0;background:var(--sq-sel);opacity:.55}
+.sq.last::before{content:"";position:absolute;inset:0;background:var(--sq-last)}
+.sq.chk{background:radial-gradient(circle at 50% 50%,#ff8a70 0%,#e5533d 62%,var(--sq-dark) 100%)!important}
+.sq.legal::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(20,40,10,.28)}
+.sq .pc{width:88%;height:88%;position:relative;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:clamp(1.6rem,5.5vw,3.4rem);filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.drag-ghost{position:fixed;z-index:999;pointer-events:none;width:56px;height:56px;transform:translate(-50%,-50%);opacity:.95}
+.drag-ghost svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.side-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem}
+.card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:1rem}
+.card h4{margin:0 0 .6rem;color:#f0c040;font-size:.95rem}
+.cap-list{display:flex;flex-wrap:wrap;gap:.3rem;min-height:28px;font-size:1.4rem}
+.moves{max-height:260px;overflow-y:auto;font-size:.9rem;display:grid;grid-template-columns:32px 1fr 1fr;gap:2px 6px;align-content:start;padding:.4rem;background:rgba(0,0,0,.22);border-radius:8px}
+.mv{padding:3px 6px;border-radius:4px;cursor:pointer;color:var(--text-secondary);direction:ltr;text-align:start;font-family:ui-monospace,Consolas,monospace}
+.mv:hover{background:rgba(255,255,255,.07);color:var(--text)}
+.mv.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.mv-n{color:var(--muted);font-size:.75rem;padding:3px 4px}
+.status-bar{margin-top:1rem;padding:.8rem 1rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;text-align:center;font-weight:800;font-size:1.1rem}
+.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+.btn{padding:.55rem 1.1rem;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--border-color);color:var(--text);font-weight:700;cursor:pointer;font-family:inherit;transition:.2s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#041022;border-color:transparent}
+.help{margin-top:1rem;font-size:.9rem;color:var(--text-secondary)}
+@media(max-width:720px){.side-grid{grid-template-columns:1fr}}
+
+/* --- إصلاحات الواجهة: إحداثيات، سحب، ترقية، أسرى --- */
+.coord{position:absolute;font-size:.6rem;font-weight:800;color:rgba(0,0,0,.35);pointer-events:none;z-index:1;line-height:1;font-family:ui-monospace,Consolas,monospace}
+.sq.d .coord{color:rgba(255,255,255,.5)}
+.coord.f{right:3px;bottom:2px}
+.coord.r{left:3px;top:2px}
+.sq.dragging .pc{opacity:.3}
+.sq.legal.cap::after{content:"";position:absolute;inset:8%;border-radius:50%;border:.28rem solid rgba(20,40,10,.3);box-sizing:border-box}
+.cap-list span{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px}
+.cap-list svg{width:100%;height:100%}
+.promo-pop{position:absolute;inset:0;z-index:30;border-radius:inherit}
+.promo-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;background:rgba(0,0,0,.62);border-radius:inherit}
+.promo-title{color:#fff;font-weight:800;font-size:1rem;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.promo-row{display:flex;gap:.6rem;background:#262421;border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:.7rem}
+.promo-opt{width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:9px;cursor:pointer;transition:.15s;padding:4px}
+.promo-opt:hover{background:var(--accent-soft);border-color:var(--accent);transform:translateY(-2px)}
+.promo-opt svg{width:100%;height:100%}
+</style>
+
+<div class="chess-page">
+  <div class="chess-header">
+    <h1>♟️ شطرنج</h1>
+    <div class="pills">
+      <span class="pill on" id="turnPill">دور الأبيض</span>
+      <span class="pill" id="checkPill" style="display:none">كش!</span>
+      <span class="pill" id="modePill">لاعبان</span>
+    </div>
+  </div>
+
+  <div class="board-frame">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="status-bar" id="statusBar">اضغط قطعة للبدء</div>
+
+  <div class="btn-row">
+    <button class="btn primary" onclick="newGame()">🔄 لعبة جديدة</button>
+    <button class="btn" onclick="undoMove()">↩ تراجع</button>
+    <button class="btn" onclick="flipBoard()">🔄 قلب الرقعة</button>
+    <button class="btn" onclick="resetBoard()">🏠 إعادة ضبط</button>
+  </div>
+
+  <div class="side-grid">
+    <div class="card">
+      <h4>💀 القطع المأسورة (أبيض)</h4>
+      <div class="cap-list" id="capW"></div>
+    </div>
+    <div class="card">
+      <h4>💀 القبطلة المأسورة (أسود)</h4>
+      <div class="cap-list" id="capB"></div>
+    </div>
+    <div class="card">
+      <h4>📜 سجل الحركات</h4>
+      <div class="moves" id="movesList"></div>
+    </div>
+    <div class="card">
+      <h4>ℹ️ معلومات</h4>
+      <p style="margin:0;font-size:.9rem;color:var(--text-secondary)">اضغط قطعة لتحديدها ثم اضغط مربعاً صالحاً للتحرك. الحركات الخضراء تدل على المربعات المتاحة. الكش باللون الأحمر، والكش مات ينتهي اللعبة.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== ChessCore (from Ameen Chess) =====================
+var PAWN=1,KNIGHT=2,BISHOP=3,ROOK=4,QUEEN=5,KING=6;
+var VAL=[0,100,320,330,500,900,0];
+var LETTER=['P','N','B','R','Q','K'];
+var FILE_LETTER=['a','b','c','d','e','f','g','h'];
+var RANK_LETTER=['1','2','3','4','5','6','7','8'];
+var KNIGHT_OFF=[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]];
+var KING_OFF=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+var BISHOP_DIR=[[1,1],[1,-1],[-1,1],[-1,-1]];
+var ROOK_DIR=[[1,0],[-1,0],[0,1],[0,-1]];
+var KN_ATT=new Array(64),KG_ATT=new Array(64),RAY=new Array(64);
+(function(){for(var sq=0;sq<64;sq++){var r=sq>>3,f=sq&7,a=[],b=[],rays=[];
+for(var i=0;i<8;i++){var nr=r+KNIGHT_OFF[i][0],nf=f+KNIGHT_OFF[i][1];if(nr>=0&&nr<8&&nf>=0&&nf<8)a.push(nr*8+nf);
+var kr=r+KING_OFF[i][0],kf=f+KING_OFF[i][1];if(kr>=0&&kr<8&&kf>=0&&kf<8)b.push(kr*8+kf);}
+KN_ATT[sq]=a;KG_ATT[sq]=b;
+var dirs=BISHOP_DIR.concat(ROOK_DIR);for(var d=0;d<dirs.length;d++){var ray=[],cr=r,cf=f;while(true){cr+=dirs[d][0];cf+=dirs[d][1];if(cr<0||cr>7||cf<0||cf>7)break;ray.push(cr*8+cf);}rays.push(ray);}
+RAY[sq]=rays;}})();
+function sqName(sq){return FILE_LETTER[sq&7]+RANK_LETTER[sq>>3];}
+function parseSq(s){return(s.charCodeAt(1)-49)*8+(s.charCodeAt(0)-97);}
+function colorOf(p){return p>0?'w':'b';}
+function pieceLetter(p){return LETTER[Math.abs(p)-1];}
+function newState(){return{b:new Int8Array(64),t:'w',c:'KQkq',e:-1,h:0,f:1,kw:4,kb:60};}
+function fromFEN(fen){var st=newState();var parts=fen.trim().split(/\s+/);var rows=parts[0].split('/');
+for(var r=0;r<8;r++){var rank=7-r,file=0;for(var i=0;i<rows[r].length;i++){var ch=rows[r][i];
+if(ch>='1'&&ch<='8'){file+=parseInt(ch,10);continue;}var p='pnbrqk'.indexOf(ch.toLowerCase())+1;var sq=rank*8+file;
+st.b[sq]=(ch===ch.toUpperCase())?p:-p;if(p===KING){if(ch==='K')st.kw=sq;else st.kb=sq;}file++;}}
+st.t=parts[1]||'w';st.c=parts[2]&&parts[2]!=='-'?parts[2]:'';st.e=parts[3]&&parts[3]!=='-'?parseSq(parts[3]):-1;
+st.h=parts[4]?parseInt(parts[4],10):0;st.f=parts[5]?parseInt(parts[5],10):1;return st;}
+function toFEN(st){var out=[];for(var rank=7;rank>=0;rank--){var row='',empty=0;for(var f=0;f<8;f++){var p=st.b[rank*8+f];if(!p){empty++;continue;}
+if(empty){row+=empty;empty=0;}var ch=LETTER[Math.abs(p)-1];row+=p>0?ch:ch.toLowerCase();}
+if(empty)row+=empty;out.push(row);}var cast=st.c===''?'-':st.c;var ep=st.e<0?'-':sqName(st.e);
+return out.join('/')+' '+st.t+' '+cast+' '+ep+' '+st.h+' '+st.f;}
+function startFEN(){return'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';}
+function cloneState(st){return{b:Int8Array.from(st.b),t:st.t,c:st.c,e:st.e,h:st.h,f:st.f,kw:st.kw,kb:st.kb};}
+function attacked(st,sq,byWhite){var b=st.b,f=sq&7;
+if(byWhite){if(f>0&&sq-9>=0&&b[sq-9]===PAWN)return true;if(f<7&&sq-7>=0&&b[sq-7]===PAWN)return true;}
+else{if(f>0&&sq+7<=63&&b[sq+7]===-PAWN)return true;if(f<7&&sq+9<=63&&b[sq+9]===-PAWN)return true;}
+var kn=byWhite?KNIGHT:-KNIGHT;var ka=KN_ATT[sq];for(var i=0;i<ka.length;i++)if(b[ka[i]]===kn)return true;
+var kg=byWhite?KING:-KING;var ga=KG_ATT[sq];for(var j=0;j<ga.length;j++)if(b[ga[j]]===kg)return true;
+var rays=RAY[sq];var d,t,piece,wantB,wantR,wq,bq;
+for(d=0;d<4;d++){var ray=rays[d];for(i=0;i<ray.length;i++){t=ray[i];piece=b[t];if(!piece)continue;
+if(byWhite?(piece===BISHOP||piece===QUEEN):(piece===-BISHOP||piece===-QUEEN))return true;break;}}
+for(d=4;d<8;d++){var ray2=rays[d];for(i=0;i<ray2.length;i++){t=ray2[i];piece=b[t];if(!piece)continue;
+if(byWhite?(piece===ROOK||piece===QUEEN):(piece===-ROOK||piece===-QUEEN))return true;break;}}
+return false;}
+function inCheck(st,color){var ksq=color==='w'?st.kw:st.kb;return attacked(st,ksq,color!=='w');}
+function addMove(list,f,t,piece,captured,promo,flag){list.push({f:f,t:t,p:piece,c:captured||0,pr:promo||0,fl:flag||''});}
+function pseudoMoves(st){var moves=[],b=st.b,us=st.t,them=us==='w'?'b':'w';var i,sq,p,t,f,r,d,ray,j,sq2,pc;
+for(sq=0;sq<64;sq++){p=b[sq];if(!p)continue;if(colorOf(p)!==us)continue;t=Math.abs(p);r=sq>>3;f=sq&7;
+if(t===PAWN){var dir=us==='w'?1:-1;var startRank=us==='w'?1:6;var promoRank=us==='w'?7:0;var one=sq+dir*8;
+if(one>=0&&one<64&&!b[one]){if((one>>3)===promoRank){addMove(moves,sq,one,p,0,QUEEN,'promo');addMove(moves,sq,one,p,0,ROOK,'promo');addMove(moves,sq,one,p,0,BISHOP,'promo');addMove(moves,sq,one,p,0,KNIGHT,'promo');}
+else{addMove(moves,sq,one,p,0,0,'');if(r===startRank){var two=sq+dir*16;if(!b[two])addMove(moves,sq,two,p,0,0,'double');}}}
+var caps=(dir===1)?[7,9]:[-9,-7];for(i=0;i<2;i++){sq2=sq+caps[i];if(sq2<0||sq2>63)continue;
+if(i===0&&f===0)continue;if(i===1&&f===7)continue;pc=b[sq2];
+if(pc&&colorOf(pc)===them){if((sq2>>3)===promoRank){addMove(moves,sq,sq2,p,pc,QUEEN,'promo');addMove(moves,sq,sq2,p,pc,ROOK,'promo');addMove(moves,sq,sq2,p,pc,BISHOP,'promo');addMove(moves,sq,sq2,p,pc,KNIGHT,'promo');}else addMove(moves,sq,sq2,p,pc,0,'');}
+else if(!pc&&sq2===st.e){addMove(moves,sq,sq2,p,us==='w'?-PAWN:PAWN,0,'ep');}}continue;}
+if(t===KNIGHT||t===KING){var offs=(t===KNIGHT)?KNIGHT_OFF:KING_OFF;
+for(i=0;i<offs.length;i++){var nr=r+offs[i][0],nf=f+offs[i][1];if(nr<0||nr>7||nf<0||nf>7)continue;sq2=nr*8+nf;pc=b[sq2];
+if(!pc)addMove(moves,sq,sq2,p,0,0,'');else if(colorOf(pc)===them)addMove(moves,sq,sq2,p,pc,0,'');}continue;}
+var dirs=(t===BISHOP)?BISHOP_DIR:(t===ROOK)?ROOK_DIR:BISHOP_DIR.concat(ROOK_DIR);
+for(d=0;d<dirs.length;d++){var cr=r,cf=f;while(true){cr+=dirs[d][0];cf+=dirs[d][1];if(cr<0||cr>7||cf<0||cf>7)break;sq2=cr*8+cf;pc=b[sq2];
+if(!pc){addMove(moves,sq,sq2,p,0,0,'');continue;}if(colorOf(pc)===them)addMove(moves,sq,sq2,p,pc,0,'');break;}}}
+if(us==='w'){if(st.c.indexOf('K')>=0&&!b[5]&&!b[6]&&b[7]===ROOK&&!attacked(st,4,false)&&!attacked(st,5,false)&&!attacked(st,6,false))addMove(moves,4,6,KING,0,0,'castle');
+if(st.c.indexOf('Q')>=0&&!b[3]&&!b[2]&&!b[1]&&b[0]===ROOK&&!attacked(st,4,false)&&!attacked(st,3,false)&&!attacked(st,2,false))addMove(moves,4,2,KING,0,0,'castle');}
+else{if(st.c.indexOf('k')>=0&&!b[61]&&!b[62]&&b[63]===-ROOK&&!attacked(st,60,true)&&!attacked(st,61,true)&&!attacked(st,62,true))addMove(moves,60,62,-KING,0,0,'castle');
+if(st.c.indexOf('q')>=0&&!b[59]&&!b[58]&&!b[57]&&b[56]===-ROOK&&!attacked(st,60,true)&&!attacked(st,59,true)&&!attacked(st,58,true))addMove(moves,60,58,-KING,0,0,'castle');}
+return moves;}
+var undoStack=[];
+function makeMove(st,m){var us=st.t,them=us==='w'?'b':'w';var undo={cap:m.c,capSq:(m.fl==='ep')?(us==='w'?m.t-8:m.t+8):m.t,cast:st.c,ep:st.e,half:st.h,full:st.f,kw:st.kw,kb:st.kb};
+undoStack.push(undo);var b=st.b;if(m.fl==='ep')b[undo.capSq]=0;else if(m.c)b[m.t]=0;
+b[m.t]=b[m.f];b[m.f]=0;if(m.pr)b[m.t]=us==='w'?m.pr:-m.pr;
+if(m.fl==='castle'){if(m.t===6){b[5]=b[7];b[7]=0;}if(m.t===2){b[3]=b[0];b[0]=0;}
+if(m.t===62){b[61]=b[63];b[63]=0;}if(m.t===58){b[59]=b[56];b[56]=0;}}
+if(Math.abs(m.p)===KING){if(us==='w')st.c=st.c.replace('K','').replace('Q','');else st.c=st.c.replace('k','').replace('q','');}
+if(m.f===0||m.t===0)st.c=st.c.replace('Q','');if(m.f===7||m.t===7)st.c=st.c.replace('K','');
+if(m.f===56||m.t===56)st.c=st.c.replace('q','');if(m.f===63||m.t===63)st.c=st.c.replace('k','');
+st.e=(m.fl==='double')?(us==='w'?m.f+8:m.f-8):-1;
+st.h=(Math.abs(m.p)===PAWN||m.c||m.fl==='ep')?0:st.h+1;if(us==='b')st.f++;
+if(Math.abs(m.p)===KING){if(us==='w')st.kw=m.t;else st.kb=m.t;}st.t=them;return undo;}
+function unmakeMove(st,m){var undo=undoStack.pop();var us=(st.t==='w')?'b':'w';var b=st.b;st.t=us;if(us==='b')st.f--;
+b[m.f]=b[m.t];b[m.t]=0;if(m.pr)b[m.f]=us==='w'?PAWN:-PAWN;
+if(m.fl==='ep')b[undo.capSq]=undo.cap;else if(undo.cap)b[m.t]=undo.cap;
+if(m.fl==='castle'){if(m.t===6){b[7]=b[5];b[5]=0;}if(m.t===2){b[0]=b[3];b[3]=0;}
+if(m.t===62){b[63]=b[61];b[61]=0;}if(m.t===58){b[56]=b[59];b[59]=0;}}
+st.c=undo.cast;st.e=undo.ep;st.h=undo.half;st.f=undo.full;st.kw=undo.kw;st.kb=undo.kb;}
+function legalMoves(st){var all=pseudoMoves(st),out=[];for(var i=0;i<all.length;i++){var m=all[i];makeMove(st,m);
+if(!attacked(st,st.t==='w'?st.kb:st.kw,st.t==='w'))out.push(m);unmakeMove(st,m);}return out;}
+function legalMovesFrom(st,sq){var ms=legalMoves(st),out=[];for(var i=0;i<ms.length;i++)if(ms[i].f===sq)out.push(ms[i]);return out;}
+function isLegal(st,f,t,promo){var ms=legalMovesFrom(st,f);for(var i=0;i<ms.length;i++){if(ms[i].t===t&&(!promo||ms[i].pr===promo))return ms[i];}return null;}
+function gameStatus(st){var ms=legalMoves(st);var check=inCheck(st,st.t);
+if(ms.length===0){if(check)return{over:true,reason:'checkmate',winner:st.t==='w'?'b':'w'};return{over:true,reason:'stalemate'};}
+if(st.h>=100)return{over:true,reason:'fifty'};return{over:false,check:check};}
+function moveToSAN(st,m){var san;if(m.fl==='castle'){san=(m.t===6||m.t===62)?'O-O':'O-O-O';}else{var t=Math.abs(m.p),dest=sqName(m.t);var cap=(m.c||m.fl==='ep');
+if(t===PAWN){san=cap?(FILE_LETTER[m.f&7]+'x'+dest):dest;}else{var same=[];
+var all=legalMoves(st);var us=colorOf(m.p);for(var i=0;i<all.length;i++){if(all[i].t===m.t&&all[i].f!==m.f&&colorOf(all[i].p)===us&&Math.abs(all[i].p)===t)same.push(all[i].f);}
+var needFile=false,needRank=false;for(i=0;i<same.length;i++){if((same[i]&7)!==(m.f&7))needFile=true;else needRank=true;}
+san=LETTER[t-1]+(needFile?FILE_LETTER[m.f&7]:'')+(needRank?RANK_LETTER[m.f>>3]:'')+(cap?'x':'')+dest;}
+if(m.pr)san+='='+LETTER[m.pr-1];}makeMove(st,m);var st2=gameStatus(st);if(st2.over&&st2.reason==='checkmate')san+='#';else if(inCheck(st,st.t))san+='+';unmakeMove(st,m);return san;}
+function moveKey(m){return m.f*1000+m.t*10+(m.pr||0);}
+var ChessCore={PAWN:PAWN,KNIGHT:KNIGHT,BISHOP:BISHOP,ROOK:ROOK,QUEEN:QUEEN,KING:KING,VAL:VAL,LETTER:LETTER,FILE_LETTER:FILE_LETTER,RANK_LETTER:RANK_LETTER,
+sqName:sqName,parseSq:parseSq,colorOf:colorOf,pieceLetter:pieceLetter,newState:newState,fromFEN:fromFEN,toFEN:toFEN,startFEN:startFEN,
+cloneState:cloneState,attacked:attacked,inCheck:inCheck,pseudoMoves:pseudoMoves,legalMoves:legalMoves,legalMovesFrom:legalMovesFrom,isLegal:isLegal,
+makeMove:makeMove,unmakeMove:unmakeMove,gameStatus:gameStatus,moveToSAN:moveToSAN,moveKey:moveKey};
+// ===================== Pieces SVG (from Ameen Chess) =====================
+var PIECES_SVG=(function(){
+function outline(color,w){return'stroke="'+color+'" stroke-width="'+w+'" stroke-linejoin="round" stroke-linecap="round"';}
+function pawn(fill,stroke){return'<circle cx="22.5" cy="13.2" r="4.4" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<path d="M18.2 19.4 Q22.5 16.6 26.8 19.4 L29.6 32.4 L15.4 32.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<ellipse cx="22.5" cy="20.2" rx="6.4" ry="2.1" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<rect x="12.8" y="32.6" width="19.4" height="4.6" rx="1.9" fill="'+fill+'" '+outline(stroke,1.2)+'/>';}
+function rook(fill,stroke){return'<path d="M14.2 17.4 L14.2 11.4 L17.8 11.4 L17.8 13.6 L20.7 13.6 L20.7 11.4 L24.3 11.4 L24.3 13.6 L27.2 13.6 L27.2 11.4 L30.8 11.4 L30.8 17.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<path d="M15.6 17.4 L29.4 17.4 L28.2 25.2 L16.8 25.2 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<path d="M16.8 25.2 L28.2 25.2 L29.6 32.4 L15.4 32.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<rect x="12.8" y="32.6" width="19.4" height="4.6" rx="1.9" fill="'+fill+'" '+outline(stroke,1.2)+'/>';}
+function knight(fill,stroke,inner){return'<path d="M24.6 8.6 L28.6 12.6 L26.2 16.2 L28.4 20.6 L32.2 25.4 L31.2 28.8 L25.6 26.6 L24 31.4 L25.4 32.4 L25.4 34.2 L14.4 34.2 L15.8 28.6 L16.8 21.6 L15.4 17.6 L18 9.8 L24.6 8.6 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<path d="M24.6 8.6 L28.6 12.6 L26.2 16.2 Z" fill="'+inner+'" opacity=".28"/>'+'<circle cx="22.4" cy="17.4" r="1.35" fill="'+inner+'"/>'+'<path d="M25.6 26.6 L24 31.4" stroke="'+inner+'" stroke-width="1.1" fill="none" opacity=".55"/>'+'<rect x="12.8" y="32.6" width="19.4" height="4.6" rx="1.9" fill="'+fill+'" '+outline(stroke,1.2)+'/>';}
+function bishop(fill,stroke,inner){return'<circle cx="22.5" cy="7.4" r="2.3" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<path d="M17.6 20.6 Q17.6 9.6 22.5 9.6 Q27.4 9.6 27.4 20.6 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<path d="M19.8 12.2 L25.2 17.6" stroke="'+inner+'" stroke-width="1.7" fill="none" opacity=".6"/>'+'<ellipse cx="22.5" cy="21.6" rx="6.3" ry="2.1" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<path d="M18 22.8 L27 22.8 L29.4 32.4 L15.6 32.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<rect x="12.8" y="32.6" width="19.4" height="4.6" rx="1.9" fill="'+fill+'" '+outline(stroke,1.2)+'/>';}
+function queen(fill,stroke,inner){return'<circle cx="13.8" cy="12.6" r="2.15" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<circle cx="18.2" cy="9.8" r="2.15" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<circle cx="22.5" cy="8.2" r="2.15" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<circle cx="26.8" cy="9.8" r="2.15" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<circle cx="31.2" cy="12.6" r="2.15" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<path d="M13.8 14.8 L18.2 12 L22.5 15 L26.8 12 L31.2 14.8 L31.6 21.6 L13.4 21.6 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<ellipse cx="22.5" cy="22.8" rx="6.5" ry="2" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<path d="M17.8 24 L27.2 24 L29.4 32.4 L15.6 32.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<rect x="12.8" y="32.6" width="19.4" height="4.6" rx="1.9" fill="'+fill+'" '+outline(stroke,1.2)+'/>';}
+function king(fill,stroke,inner){return'<path d="M21.6 4.6 L23.4 4.6 L23.4 7.4 L26.2 7.4 L26.2 9.2 L23.4 9.2 L23.4 12 L21.6 12 L21.6 9.2 L18.8 9.2 L18.8 7.4 L21.6 7.4 Z" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<path d="M14.2 21.4 L16.2 11.2 L20.2 15.4 L22.5 10 L24.8 15.4 L28.8 11.2 L30.8 21.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<ellipse cx="22.5" cy="22.6" rx="6.5" ry="2" fill="'+fill+'" '+outline(stroke,1.1)+'/>'+'<path d="M17.8 23.8 L27.2 23.8 L29.4 32.4 L15.6 32.4 Z" fill="'+fill+'" '+outline(stroke,1.2)+'/>'+'<rect x="12.8" y="32.6" width="19.4" height="4.6" rx="1.9" fill="'+fill+'" '+outline(stroke,1.2)+'/>';}
+var WHITE={fill:'#f8f8f6',stroke:'#1d1d1d',inner:'#1d1d1d'};var BLACK={fill:'#222226',stroke:'#cfcfcf',inner:'#d8d8d8'};
+function svg(type,color){var c=(color==='w')?WHITE:BLACK;var body;switch(type){case'p':body=pawn(c.fill,c.stroke);break;case'r':body=rook(c.fill,c.stroke);break;case'n':body=knight(c.fill,c.stroke,c.inner);break;case'b':body=bishop(c.fill,c.stroke,c.inner);break;case'q':body=queen(c.fill,c.stroke,c.inner);break;case'k':body=king(c.fill,c.stroke,c.inner);break;default:body='';}
+return'<svg viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg">'+body+'</svg>';}
+return{svg:svg};})();
+// ===================== BoardUI =====================
+var C = ChessCore;
+var boardEl = null, squares = [], order = [], elBySq = new Array(64), flipped = false,
+    state = null, sel = -1, legal = [], lastMove = null,
+    checkSq = -1, drag = null, ghost = null, gameOver = false;
+var moveHist = [], capsW = [], capsB = [];
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+function setStatus(t) { var el = document.getElementById('statusBar'); if (el) el.textContent = t; }
+function lightSquare(sq) { return (((sq >> 3) + (sq & 7)) % 2 === 1); }
+
+function buildOrder() {
+  var o = [];
+  for (var r = 0; r < 8; r++) {
+    var rank = flipped ? r : 7 - r;
+    for (var f = 0; f < 8; f++) o.push(rank * 8 + f);
+  }
+  return o;
+}
+
+function coord(cls, text) {
+  var s = document.createElement('span');
+  s.className = 'coord ' + cls;
+  s.textContent = text;
+  return s;
+}
+
+function buildSquares() {
+  if (!boardEl) return;
+  boardEl.innerHTML = '';
+  squares = [];
+  elBySq = new Array(64);
+  order = buildOrder();
+  for (var k = 0; k < 64; k++) {
+    var sq = order[k];
+    var d = document.createElement('div');
+    d.className = 'sq ' + (lightSquare(sq) ? 'l' : 'd');
+    d.dataset.sq = sq;
+    if (k >= 56) d.appendChild(coord('f', C.FILE_LETTER[sq & 7]));
+    if (k % 8 === 0) d.appendChild(coord('r', C.RANK_LETTER[sq >> 3]));
+    boardEl.appendChild(d);
+    squares.push(d);
+    elBySq[sq] = d;
+  }
+}
+
+function paint() {
+  if (!boardEl || !squares.length) return;
+  for (var k = 0; k < 64; k++) {
+    var d = squares[k], sq = order[k];
+    d.classList.remove('sel', 'last', 'chk', 'legal', 'cap');
+    if (checkSq === sq) d.classList.add('chk');
+    if (lastMove && (lastMove.f === sq || lastMove.t === sq)) d.classList.add('last');
+    if (sel === sq) d.classList.add('sel');
+    var isCap = false, isLegal = false;
+    for (var j = 0; j < legal.length; j++) {
+      if (legal[j].t !== sq) continue;
+      isLegal = true;
+      if (legal[j].c || legal[j].fl === 'ep') isCap = true;
+    }
+    if (isLegal) d.classList.add('legal');
+    if (isCap) d.classList.add('cap');
+    var old = d.querySelector('.pc');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var p = state ? state.b[sq] : 0;
+    if (p) {
+      var pc = document.createElement('span');
+      pc.className = 'pc';
+      pc.innerHTML = PIECES_SVG.svg(C.pieceLetter(p).toLowerCase(), p > 0 ? 'w' : 'b');
+      d.appendChild(pc);
+    }
+  }
+}
+
+function sqFromEvent(e) {
+  var t = document.elementFromPoint(e.clientX, e.clientY);
+  if (!t) return -1;
+  var el = t.closest ? t.closest('.sq') : null;
+  return el ? parseInt(el.dataset.sq, 10) : -1;
+}
+
+function attempt(from, to) {
+  if (!state || gameOver) return;
+  var ms = C.legalMovesFrom(state, from);
+  var promos = [], plain = null;
+  for (var i = 0; i < ms.length; i++) {
+    if (ms[i].t !== to) continue;
+    if (ms[i].pr) promos.push(ms[i]);
+    else if (!plain) plain = ms[i];
+  }
+  if (!plain && promos.length === 0) {
+    var p = state.b[to];
+    if (p && C.colorOf(p) === state.t) { sel = to; legal = C.legalMovesFrom(state, to); }
+    else { sel = -1; legal = []; }
+    paint();
+    return;
+  }
+  if (promos.length) {
+    showPromotion(function (pr) {
+      var m = null;
+      for (var i2 = 0; i2 < promos.length; i2++) if (promos[i2].pr === pr) { m = promos[i2]; break; }
+      if (!m) m = promos[0];
+      doMove(m);
+    });
+    return;
+  }
+  doMove(plain);
+}
+
+function doMove(m) {
+  if (!state || gameOver) return;
+  var cap = m.c || 0;
+  if (cap) { if (cap < 0) capsW.push(cap); else capsB.push(cap); }
+  var side = state.t, num = state.f;
+  var san;
+  try { san = C.moveToSAN(state, m); }
+  catch (e) { san = C.sqName(m.f) + (m.c || m.fl === 'ep' ? 'x' : '-') + C.sqName(m.t); }
+  var before = C.cloneState(state);
+  C.makeMove(state, m);
+  moveHist.push({ snapshot: before, capsW: capsW.slice(), capsB: capsB.slice(), last: lastMove, san: san, side: side, num: num });
+  lastMove = { f: m.f, t: m.t };
+  sel = -1; legal = [];
+  addMoveText(san, side, num);
+  updateStatus(C.gameStatus(state));
+  renderCaptures();
+  paint();
+}
+
+function updateStatus(gs) {
+  checkSq = -1;
+  var turnPill = document.getElementById('turnPill'),
+      checkPill = document.getElementById('checkPill');
+  if (gs && gs.over) {
+    gameOver = true;
+    var msg;
+    if (gs.reason === 'checkmate') msg = 'كش مات! فاز ' + (gs.winner === 'w' ? 'الأبيض' : 'الأسود') + ' 🏆';
+    else if (gs.reason === 'stalemate') msg = 'تعادل — الجمود: لا توجد حركة قانونية ولا كش';
+    else if (gs.reason === 'fifty') msg = 'تعادل — قاعدة الخمسين حركة';
+    else msg = 'انتهت اللعبة';
+    setStatus(msg);
+    if (checkPill) checkPill.style.display = 'none';
+  } else {
+    gameOver = false;
+    if (gs && gs.check) {
+      checkSq = (state.t === 'w') ? state.kw : state.kb;
+      setStatus('كش! دور ' + (state.t === 'w' ? 'الأبيض' : 'الأسود'));
+      if (checkPill) checkPill.style.display = '';
+    } else {
+      setStatus('دور ' + (state.t === 'w' ? 'الأبيض' : 'الأسود'));
+      if (checkPill) checkPill.style.display = 'none';
+    }
+  }
+  if (turnPill) turnPill.textContent = 'دور ' + (state.t === 'w' ? 'الأبيض' : 'الأسود') + (gameOver ? ' — انتهت' : '');
+}
+
+function addMoveText(san, side, num) {
+  var list = document.getElementById('movesList');
+  if (!list) return;
+  if (side === 'w') {
+    var row = document.createElement('div');
+    row.innerHTML = '<span class="mv-n">' + num + '.</span><span class="mv">' + esc(san) + '</span><span class="mv"></span>';
+    list.appendChild(row);
+  } else {
+    var rows = list.children, last = rows[rows.length - 1];
+    if (last) {
+      var cells = last.querySelectorAll('.mv');
+      if (cells.length >= 2) cells[1].textContent = san;
+    } else {
+      var row2 = document.createElement('div');
+      row2.innerHTML = '<span class="mv-n">' + num + '.</span><span class="mv"></span><span class="mv">' + esc(san) + '</span>';
+      list.appendChild(row2);
+    }
+  }
+  list.scrollTop = list.scrollHeight;
+}
+
+function rebuildMoves() {
+  var list = document.getElementById('movesList');
+  if (!list) return;
+  list.innerHTML = '';
+  for (var i = 0; i < moveHist.length; i++) {
+    var h = moveHist[i];
+    if (h.side === 'w') {
+      var row = document.createElement('div');
+      row.innerHTML = '<span class="mv-n">' + h.num + '.</span><span class="mv">' + esc(h.san) + '</span><span class="mv"></span>';
+      list.appendChild(row);
+    } else {
+      var rows = list.children, last = rows[rows.length - 1];
+      if (last) {
+        var cells = last.querySelectorAll('.mv');
+        if (cells.length >= 2) cells[1].textContent = h.san;
+      } else {
+        var row2 = document.createElement('div');
+        row2.innerHTML = '<span class="mv-n">' + h.num + '.</span><span class="mv"></span><span class="mv">' + esc(h.san) + '</span>';
+        list.appendChild(row2);
+      }
+    }
+  }
+  list.scrollTop = list.scrollHeight;
+}
+
+function capSpan(p) {
+  var color = p < 0 ? 'b' : 'w', t = Math.abs(p);
+  return '<span title="' + C.LETTER[t - 1] + '">' + PIECES_SVG.svg(C.LETTER[t - 1].toLowerCase(), color) + '</span>';
+}
+function renderCaptures() {
+  var w = document.getElementById('capW'), b = document.getElementById('capB');
+  if (w) w.innerHTML = capsW.map(capSpan).join('');
+  if (b) b.innerHTML = capsB.map(capSpan).join('');
+}
+
+function showPromotion(cb) {
+  var color = state ? state.t : 'w';
+  var host = boardEl ? boardEl.parentElement : null;
+  if (!host) { cb(C.QUEEN); return; }
+  var box = document.createElement('div');
+  box.className = 'promo-pop';
+  var opts = [C.QUEEN, C.ROOK, C.BISHOP, C.KNIGHT];
+  var h = '<div class="promo-inner"><div class="promo-title">ترقية البيدق — اختر القطعة</div><div class="promo-row">';
+  opts.forEach(function (pr) {
+    h += '<button type="button" class="promo-opt" data-pr="' + pr + '">' + PIECES_SVG.svg(C.LETTER[pr - 1].toLowerCase(), color) + '</button>';
+  });
+  h += '</div></div>';
+  box.innerHTML = h;
+  host.appendChild(box);
+  function pick(pr) {
+    if (box.parentNode) box.parentNode.removeChild(box);
+    cb(pr);
+  }
+  Array.prototype.forEach.call(box.querySelectorAll('.promo-opt'), function (btn) {
+    btn.addEventListener('click', function () { pick(parseInt(btn.dataset.pr, 10)); });
+  });
+}
+
+function bindPointer() {
+  boardEl.addEventListener('pointerdown', function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    if (!state || gameOver) return;
+    var sq = sqFromEvent(e);
+    if (sq < 0) return;
+    e.preventDefault();
+    var p = state.b[sq];
+    if (p && C.colorOf(p) === state.t) {
+      sel = sq;
+      legal = C.legalMovesFrom(state, sq);
+      paint();
+      drag = { from: sq, x: e.clientX, y: e.clientY, moved: false };
+      ghost = document.createElement('div');
+      ghost.className = 'drag-ghost';
+      ghost.innerHTML = PIECES_SVG.svg(C.pieceLetter(p).toLowerCase(), p > 0 ? 'w' : 'b');
+      ghost.style.display = 'none';
+      document.body.appendChild(ghost);
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+    } else if (sel >= 0 && sel !== sq) {
+      attempt(sel, sq);
+    } else if (sel === sq) {
+      sel = -1; legal = []; paint();
+    }
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.sqrt(dx * dx + dy * dy) > 6) {
+      drag.moved = true;
+      if (ghost) ghost.style.display = 'block';
+      var dEl = elBySq[drag.from];
+      if (dEl) dEl.classList.add('dragging');
+    }
+    if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; }
+  });
+  window.addEventListener('pointerup', function (e) {
+    if (!drag) return;
+    var dEl = elBySq[drag.from];
+    if (dEl) dEl.classList.remove('dragging');
+    if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    ghost = null;
+    var from = drag.from, moved = drag.moved;
+    drag = null;
+    if (moved) {
+      var to = sqFromEvent(e);
+      if (to >= 0 && to !== from) attempt(from, to);
+      else paint();
+    }
+  });
+}
+
+function initBoard() {
+  boardEl = document.getElementById('board');
+  if (!boardEl) return;
+  buildSquares();
+  bindPointer();
+  paint();
+}
+
+// ===================== Game Logic =====================
+function newGame() {
+  state = C.fromFEN(C.startFEN());
+  moveHist = []; capsW = []; capsB = [];
+  sel = -1; legal = []; lastMove = null; checkSq = -1; gameOver = false;
+  flipped = false;
+  var list = document.getElementById('movesList');
+  if (list) list.innerHTML = '';
+  renderCaptures();
+  if (!boardEl) initBoard(); else buildSquares();
+  updateStatus({ over: false, check: false });
+  paint();
+}
+
+function undoMove() {
+  if (!moveHist.length) return;
+  var h = moveHist.pop();
+  state = h.snapshot;
+  capsW = h.capsW; capsB = h.capsB;
+  lastMove = h.last;
+  sel = -1; legal = [];
+  rebuildMoves();
+  updateStatus(C.gameStatus(state));
+  renderCaptures();
+  paint();
+}
+
+function flipBoard() {
+  flipped = !flipped;
+  buildSquares();
+  paint();
+}
+
+function resetBoard() { newGame(); }
+
+newGame();
+</script>
+{% endblock %}

@@ -1,0 +1,1067 @@
+{% extends "base.html" %}{% block content %}
+<style>
+.lu-hidden{display:none !important}
+.lu-wrap{max-width:1400px;margin:0 auto;padding:0 var(--space-4) var(--space-7);display:grid;grid-template-columns:200px 1fr 220px;gap:var(--space-4);align-items:start;direction:ltr}
+.lu-head{text-align:center;margin-bottom:var(--space-3)}
+.lu-rules{margin-bottom:var(--space-4)}
+.lu-rules summary{cursor:pointer;padding:.8rem 1.2rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);font-weight:700;font-size:1rem;color:var(--text-primary);transition:var(--transition)}
+.lu-rules summary:hover{border-color:var(--accent-blue)}
+.lu-rules-body{padding:1rem 1.2rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.lu-rules-body ul{padding-right:1.5rem;display:grid;gap:.35rem;margin:0}
+.lu-rules-body li{color:var(--text-secondary);font-size:.92rem}
+.lu-setup{display:flex;justify-content:center;padding:var(--space-4) 0}
+.lu-panel{background:var(--bg-card);border:2px solid var(--border-color);border-radius:var(--radius-lg);padding:var(--space-5);max-width:760px;width:100%;box-shadow:var(--shadow-sm)}
+.lu-panel-title{margin:0 0 var(--space-3);font-size:1.5rem;font-weight:900;text-align:center}
+.lu-field{margin-bottom:var(--space-4)}
+.lu-label{font-weight:800;margin-bottom:.5rem;display:block;color:var(--text-secondary);font-size:.95rem}
+.lu-seg{display:flex;gap:.4rem;flex-wrap:wrap}
+.lu-seg button{padding:.55rem 1rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:.95rem;font-weight:700;cursor:pointer;transition:var(--transition);font-family:inherit}
+.lu-seg button:hover{border-color:var(--accent-blue)}
+.lu-seg button.on{border-color:var(--accent-gold);background:var(--accent-gold-tint);color:var(--accent-gold-ink)}
+.lu-seg button:disabled{opacity:.5;cursor:not-allowed}
+.lu-players{display:grid;gap:.5rem}
+.lu-pl-row{display:grid;grid-template-columns:34px 1fr 90px;gap:.5rem;align-items:center}
+.lu-swatch{width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.3);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.lu-swatch.on{border-color:#fff;transform:scale(1.12)}
+.lu-pl-row input{width:100%;padding:.55rem .8rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;font-family:inherit}
+.lu-note{font-size:.88rem;color:var(--text-muted);padding:.6rem .8rem;background:var(--bg-secondary);border-radius:var(--radius);border:1px dashed var(--border-color);margin-bottom:var(--space-3)}
+.lu-setup-actions{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;padding-top:var(--space-2);border-top:2px solid var(--border-color)}
+.lu-board-wrap{display:flex;justify-content:center;margin:var(--space-3) 0}
+.lu-board{position:relative;width:min(92vw,580px);aspect-ratio:1/1;display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);gap:1px;background:#fff;border:4px solid #334155;border-radius:20px;padding:6px;direction:ltr;box-shadow:0 12px 40px rgba(0,0,0,.6);transition:background .5s ease}
+.lu-board.theme-red{background:linear-gradient(135deg,#fef2f2,#fee2e2)}
+.lu-board.theme-blue{background:linear-gradient(135deg,#eff6ff,#dbeafe)}
+.lu-board.theme-green{background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
+.lu-board.theme-gold{background:linear-gradient(135deg,#fffbeb,#fef3c7)}
+.lu-cell{background:#fff;border-radius:2px;position:relative;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;transition:all .25s ease;border:1px solid rgba(0,0,0,.06)}
+.lu-cell.trk{background:#f8fafc}
+.lu-cell.safe{background:#fef3c7;border-color:rgba(251,191,36,.5)}
+.lu-cell.safe::after{content:'★';position:absolute;font-size:.8rem;color:#f59e0b;opacity:.9;top:1px;right:2px;line-height:1}
+.lu-cell.start-cell{background:#fff;border:2px solid #cbd5e1;box-shadow:inset 0 0 8px rgba(0,0,0,.08)}
+.lu-cell.home-col{background:#fff}
+.lu-cell.home-col::after{content:''}
+.lu-base{border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden;border:3px solid rgba(255,255,255,.2);box-shadow:inset 0 2px 10px rgba(0,0,0,.3)}
+.lu-base::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.25),transparent 60%)}
+.lu-base::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 50%);pointer-events:none}
+.lu-base-label{position:relative;z-index:2;font-weight:900;font-size:1.2rem;color:rgba(255,255,255,.95);text-shadow:0 2px 4px rgba(0,0,0,.6);letter-spacing:.5px}
+.lu-board-col{display:flex;flex-direction:column;align-items:center}:16px;background:conic-gradient(from 0deg,#f0524f 0 25%,#4f8cff 25% 50%,#17c38f 50% 75%,#f6a714 75% 100%);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 8px var(--bg-primary),inset 0 0 0 10px #475569,0 4px 20px rgba(0,0,0,.5)}
+.lu-home-center::after{content:'🏠';font-size:1.8rem;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation:luHomeFloat 3s ease-in-out infinite}
+@keyframes luHomeFloat{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.1) rotate(5deg)}}
+.lu-tokens{position:absolute;inset:8px;pointer-events:none}
+.lu-tok{position:absolute;width:7%;height:7%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:auto;cursor:default;display:grid;place-items:center;font-size:.6rem;font-weight:900;color:#fff;transition:left .15s linear,top .15s linear,transform .15s cubic-bezier(.4,.9,.3,1.2);box-shadow:0 3px 8px rgba(0,0,0,.6),inset 0 -3px 6px rgba(0,0,0,.3),inset 0 2px 4px rgba(255,255,255,.3);border:3px solid rgba(255,255,255,.7);text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.lu-tok.movable{cursor:pointer;animation:luPulse 1.1s ease-in-out infinite;box-shadow:0 0 0 4px var(--accent-gold),0 4px 12px rgba(0,0,0,.6)}
+.lu-tok.pickable{cursor:pointer;box-shadow:0 0 0 4px var(--accent-red),0 4px 12px rgba(0,0,0,.6);animation:luPulse 1.1s ease-in-out infinite}
+.lu-tok .ln{font-family:var(--font-display);font-weight:900}
+@keyframes luPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.2)}}
+.lu-hud{display:grid;gap:var(--space-3);max-width:900px;margin:0 auto}
+.lu-turn{padding:.7rem 1rem;border-radius:var(--radius);background:var(--bg-card);border:2px solid var(--border-color);font-size:1.1rem;font-weight:900;text-align:center;transition:var(--transition)}
+.lu-playersbar{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.lu-pchip{padding:.4rem .7rem;border-radius:var(--radius);background:var(--bg-secondary);border:1px solid var(--border-color);font-weight:700;font-size:.85rem;display:flex;align-items:center;gap:.4rem}
+.lu-pchip .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.lu-actions{display:flex;gap:.6rem;justify-content:center;align-items:center;flex-wrap:wrap;margin:var(--space-2) 0}
+.lu-prob{font-size:.85rem;color:var(--text-muted);font-weight:700}
+.lu-die-wrap{display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.lu-die{width:100px;height:100px;background:linear-gradient(145deg,#ffffff 0%,#e2e8f0 50%,#cbd5e1 100%);border-radius:22px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:12px;gap:5px;box-shadow:0 8px 20px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.8),inset 0 -3px 6px rgba(0,0,0,.1);border:3px solid #64748b;position:relative;overflow:hidden}
+.lu-die::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),transparent 60%);pointer-events:none}
+.lu-die.rolling{animation:luRollShake .1s linear infinite}
+.lu-pip{width:100%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,#1e293b,#0f172a);visibility:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 2px rgba(255,255,255,.3)}
+.lu-pip.on{visibility:visible;animation:luPipPop .3s cubic-bezier(.4,.9,.3,1.2)}
+@keyframes luPipPop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes luRollShake{0%{transform:rotate(0) translateY(0) scale(1)}25%{transform:rotate(-18deg) translateY(-10px) scale(1.05)}50%{transform:rotate(14deg) translateY(6px) scale(.95)}75%{transform:rotate(-9deg) translateY(-5px) scale(1.02)}100%{transform:rotate(0) translateY(0) scale(1)}}
+.lu-hand{display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;margin:0 0 0 var(--space-3);padding:var(--space-3);background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);min-height:60px;min-width:140px;max-width:180px}
+.lu-hand-label{font-weight:800;color:var(--text-secondary);font-size:.9rem;margin-bottom:.25rem;text-align:center}
+.lu-left{position:sticky;top:var(--space-4)}
+.lu-right{position:sticky;top:var(--space-4)}
+.lu-bottom{grid-column:1/-1;display:flex;flex-direction:column;align-items:center}
+.lu-mini{width:110px;min-height:150px;border-radius:16px;padding:.6rem;color:#fff;position:relative;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.3);box-shadow:0 4px 12px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.1) inset;transition:all .2s cubic-bezier(.4,.9,.3,1.2);display:flex;flex-direction:column;gap:.3rem;backdrop-filter:blur(10px)}
+.lu-mini:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 8px 20px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.2) inset}
+.lu-mini .lm-ico{font-size:2rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));animation:luFloat 3s ease-in-out infinite}
+.lu-mini .lm-title{font-weight:900;font-size:.9rem;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.lu-mini .lm-desc{font-size:.7rem;line-height:1.4;opacity:.95;flex:1}
+.lu-mini .lm-btn{margin-top:auto;padding:.35rem .5rem;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;font-weight:800;font-size:.75rem;cursor:pointer;font-family:inherit;backdrop-filter:blur(5px);transition:all .15s ease}
+.lu-mini .lm-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.05)}
+.lu-mini.dist{background:linear-gradient(135deg,#3b82f6 0%,#06b6d4 50%,#0891b2 100%);box-shadow:0 4px 15px rgba(59,130,246,.4)}
+.lu-mini.swap{background:linear-gradient(135deg,#a855f7 0%,#6366f1 50%,#8b5cf6 100%);box-shadow:0 4px 15px rgba(168,85,247,.4)}
+.lu-mini.push{background:linear-gradient(135deg,#f59e0b 0%,#ef4444 50%,#dc2626 100%);box-shadow:0 4px 15px rgba(245,158,11,.4)}
+.lu-mini::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.3),transparent 50%);pointer-events:none}
+.lu-mini::after{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.15),transparent 60%);pointer-events:none;animation:luShine 4s ease-in-out infinite}
+@keyframes luFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes luShine{0%,100%{transform:translate(0,0)}50%{transform:translate(-20%,20%)}}
+.lu-log{max-width:600px;margin:0 auto var(--space-4);background:var(--bg-card);border-radius:var(--radius);padding:1rem;border:1px solid var(--border-color);max-height:160px;overflow-y:auto;font-size:.88rem}
+.lu-log-line{padding:.25rem 0;border-bottom:1px solid var(--border-color);color:var(--text-secondary)}
+.lu-log-line:last-child{border-bottom:none}
+.lu-modal{position:fixed;inset:0;background:rgba(6,8,20,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:60;padding:var(--space-4)}
+.lu-modal.on{display:flex}
+.lu-sheet{background:var(--bg-card);border:2px solid var(--border-strong);border-radius:var(--radius-lg);max-width:560px;width:100%;padding:var(--space-5);box-shadow:0 24px 60px rgba(0,0,0,.5);animation:luPop .18s ease}
+@keyframes luPop{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:none}}
+.lu-sheet h3{margin:0 0 var(--space-3);font-size:1.3rem;font-weight:900;text-align:center}
+.lu-sheet .qmeta{display:flex;gap:.4rem;justify-content:center;margin-bottom:.8rem}
+.lu-sheet .qtag{padding:.25rem .6rem;border-radius:6px;background:var(--accent-purple-tint);color:var(--accent-purple-ink);font-weight:800;font-size:.78rem}
+.lu-sheet .qtext{font-size:1.15rem;font-weight:700;text-align:center;margin:var(--space-3) 0;line-height:1.7}
+.lu-choices{display:grid;gap:.5rem;margin:var(--space-3) 0}
+.lu-choice{padding:.75rem 1rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition);font-family:inherit;text-align:right}
+.lu-choice:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.lu-choice.correct{border-color:var(--accent-green);background:var(--accent-green-tint);color:var(--accent-green-ink)}
+.lu-choice.wrong{border-color:var(--accent-red);background:var(--accent-red-tint);color:var(--accent-red-ink)}
+.lu-timer{font-size:.95rem;font-weight:800;text-align:center;color:var(--accent-gold-ink);margin-bottom:.5rem}
+.lu-textrow{display:flex;gap:.5rem;margin:var(--space-3) 0}
+.lu-textrow input{flex:1;padding:.7rem .9rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;font-family:inherit}
+.lu-modal-actions{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:var(--space-3)}
+.lu-flip{width:220px;height:300px;perspective:1200px;margin:0 auto var(--space-3)}
+.lu-flip-in{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.4,.9,.3,1.2);transform:rotateY(180deg)}
+.lu-flip.on .lu-flip-in{transform:rotateY(0)}
+.lu-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lu-face.back{transform:rotateY(180deg)}
+.lu-card-face{display:flex;flex-direction:column;gap:.5rem;padding:1.5rem;color:#fff;position:relative;height:100%;border:2px solid rgba(255,255,255,.2)}
+.lu-card-face::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.35),transparent 50%);pointer-events:none}
+.lu-card-face::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.2),transparent 60%);pointer-events:none}
+.lu-card-face .cf-ico{font-size:3rem;position:relative;z-index:2;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));animation:luCardFloat 2.5s ease-in-out infinite}
+.lu-card-face .cf-title{font-weight:900;font-size:1.4rem;position:relative;z-index:2;text-shadow:0 2px 6px rgba(0,0,0,.4)}
+.lu-card-face .cf-desc{font-size:.95rem;line-height:1.6;position:relative;z-index:2;opacity:.98;flex:1}
+.lu-card-face .cf-foot{margin-top:auto;position:relative;z-index:2;font-size:.8rem;opacity:.95;border-top:1px solid rgba(255,255,255,.3);padding-top:.6rem;letter-spacing:.5px}
+.lu-card-face.dist{background:linear-gradient(135deg,#3b82f6 0%,#06b6d4 50%,#0891b2 100%)}
+.lu-card-face.swap{background:linear-gradient(135deg,#a855f7 0%,#6366f1 50%,#8b5cf6 100%)}
+.lu-card-face.push{background:linear-gradient(135deg,#f59e0b 0%,#ef4444 50%,#dc2626 100%)}
+.lu-card-back{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;border:3px solid rgba(255,255,255,.25);padding:1.5rem;position:relative;overflow:hidden}
+.lu-card-back::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(34,211,238,.15),transparent 70%);pointer-events:none}
+.lu-card-back .cb-icon{font-size:4rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));animation:luPulse 2s ease-in-out infinite}
+.lu-card-back .cb-title{font-weight:900;font-size:1.3rem;text-shadow:0 2px 6px rgba(0,0,0,.5);letter-spacing:1px}
+.lu-card-back .cb-sub{font-size:.85rem;opacity:.9;text-align:center}
+@keyframes luCardFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+@keyframes luPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.8}}
+.lu-step-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:var(--space-3) 0}
+.lu-step-btn{padding:.6rem .4rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:1.1rem;font-weight:900;cursor:pointer;font-family:inherit;transition:var(--transition)}
+.lu-step-btn:hover{border-color:var(--accent-gold);background:var(--accent-gold-tint)}
+.lu-target-list{display:grid;gap:.4rem;max-height:280px;overflow-y:auto;margin:var(--space-3) 0}
+.lu-target-item{padding:.6rem .8rem;border-radius:var(--radius);border:2px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;font-weight:700;display:flex;align-items:center;gap:.5rem;transition:var(--transition)}
+.lu-target-item:hover{border-color:var(--accent-blue);background:var(--bg-card-hover)}
+.lu-target-item .tdot{width:14px;height:14px;border-radius:50%}
+.lu-end{text-align:center}
+.lu-end h2{font-size:2rem;margin-bottom:.4rem}
+.lu-rank{display:grid;gap:.4rem;margin:var(--space-3) 0}
+.lu-rank-row{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;background:var(--bg-secondary);border-radius:var(--radius);font-weight:700}
+.lu-rank-row .rk{width:28px;height:28px;border-radius:50%;background:var(--accent-gold-tint);color:var(--accent-gold-ink);display:grid;place-items:center;font-weight:900}
+.lu-empty-hand{text-align:center;color:var(--text-muted);font-size:.88rem;padding:.6rem}
+@media(max-width:768px){
+  .lu-wrap{grid-template-columns:1fr;max-width:600px}
+  .lu-left,.lu-right{position:static;display:flex;flex-direction:row;justify-content:center;gap:var(--space-3)}
+  .lu-hand{flex-direction:row;flex-wrap:wrap;justify-content:center;min-width:auto}
+  .lu-mini{width:auto;min-height:auto;min-width:100px}
+}
+@media(max-width:600px){.lu-panel{padding:var(--space-4)} .lu-step-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+
+<h1 class="lu-head">🎲 لودو الأسئلة</h1>
+<p style="text-align:center;color:var(--text-secondary);margin-bottom:var(--space-3)">لودو بمسارات وأحجار وكروت خاصة — لا تتحرك إلا بسؤال تجيب عليه.</p>
+
+<details class="lu-rules">
+<summary>📖 طريقة اللعب</summary>
+<div class="lu-rules-body"><ul>
+<li>🎲 رمِ النرد: يظهر سؤال من بنك س.ج وحروف مع أمين.</li>
+<li>✅ الإجابة الصحيحة تمكّنك من التحرك بعدد النرد (حتى الدخول إلى القاعدة).</li>
+<li>❌ الإجابة الخاطئة (أو انتهاء الوقت) تُلغي الحركة.</li>
+<li>🔄 رمي 6 يمنح دوراً إضافياً (حتى 3 مرات متتالية).</li>
+<li>🎯 الوقوف على حجر خصم (أحد) يرسله إلى قاعدته — الخلايا المُلوّنة والنجمة آمنة.</li>
+<li>🎴 في كل دور: إما رمي النرد (مع سؤال) أو استخدام أحد كروتك (حتى 4).</li>
+<li>🎴 احتمال ظهور كرت خاص (15% أو 30%) — يُحدّد عشوائياً في كل دور.</li>
+<li>🏆 من يُدخل كل أحجاره إلى القاعدة الوسطى أولاً يفوز.</li>
+</ul></div>
+</details>
+
+<!-- شاشة الإعداد -->
+<div class="lu-setup" id="luSetup">
+  <div class="lu-panel">
+    <h2 class="lu-panel-title">⚙️ إعداد المباراة</h2>
+    <div class="lu-field">
+      <span class="lu-label">عدد اللاعبين</span>
+      <div class="lu-seg" id="luSegCount">
+        <button type="button" data-v="2">2 لاعبين</button>
+        <button type="button" data-v="3" class="on">3 لاعبين</button>
+        <button type="button" data-v="4">4 لاعبين</button>
+      </div>
+    </div>
+    <div class="lu-field">
+      <span class="lu-label">عدد الأحجار لكل لاعب</span>
+      <div class="lu-seg" id="luSegTokens">
+        <button type="button" data-v="1">1</button>
+        <button type="button" data-v="2" class="on">2</button>
+        <button type="button" data-v="4">4</button>
+      </div>
+    </div>
+    <div class="lu-field">
+      <span class="lu-label">مصدر الأسئلة</span>
+      <div class="lu-seg" id="luSegGames">
+        <button type="button" data-v="quiz" class="on">س.ج</button>
+        <button type="button" data-v="letters" class="on">حروف مع أمين</button>
+        <button type="button" data-v="million">سيربح المليون</button>
+      </div>
+    </div>
+    <div class="lu-field">
+      <span class="lu-label">الأسئلة: نمط الاختيار</span>
+      <div class="lu-seg" id="luSegMode">
+        <button type="button" data-v="mc" class="on">اختيار متعدد</button>
+        <button type="button" data-v="text">إجابة كتابة</button>
+        <button type="button" data-v="mix">مختلط</button>
+      </div>
+    </div>
+    <div class="lu-field">
+      <span class="lu-label">أسماء اللاعبين وألوانهم</span>
+      <div class="lu-players" id="luPlayers"></div>
+    </div>
+    <div class="lu-note">💡 الألوان: الأحمر · الأزرق · الأخضر · الذهبي. تغيير اللون (انقر على الدائرة) ي swaps مع لاعب آخر.</div>
+    <div class="lu-setup-actions">
+      <button class="btn btn-primary" id="luStartBtn" onclick="luStart()">ابدأ اللعبة</button>
+      <button class="btn btn-secondary" onclick="location.href='/games'">العودة</button>
+    </div>
+  </div>
+</div>
+
+<!-- شاشة اللعب -->
+<div id="luPlay" class="lu-wrap lu-hidden">
+  <!-- Left: Dice -->
+  <div class="lu-left" id="luLeft">
+    <div class="lu-die-wrap">
+      <div class="lu-die" id="luDie">
+        <span class="lu-pip" data-i="0"></span><span class="lu-pip" data-i="1"></span><span class="lu-pip" data-i="2"></span>
+        <span class="lu-pip" data-i="3"></span><span class="lu-pip" data-i="4"></span><span class="lu-pip" data-i="5"></span>
+        <span class="lu-pip" data-i="6"></span><span class="lu-pip" data-i="7"></span><span class="lu-pip" data-i="8"></span>
+      </div>
+      <button class="btn btn-gold" id="luRollBtn" onclick="luRoll()">🎲 ارمِ النرد</button>
+      <span class="lu-prob" id="luProb">احتمال الكرت: —%</span>
+    </div>
+    <div class="lu-turn" id="luTurn" style="margin-top:var(--space-3)">الدور: —</div>
+    <div class="lu-playersbar" id="luPlayersBar" style="margin-top:var(--space-2)"></div>
+  </div>
+
+  <!-- Center: Board -->
+  <div class="lu-board-col">
+    <div class="lu-board" id="luBoard"></div>
+    <div class="lu-tokens" id="luTokens"></div>
+  </div>
+
+  <!-- Right: Cards -->
+  <div class="lu-right" id="luRight">
+    <div class="lu-hand" id="luHand"><span class="lu-empty-hand">لا توجد كروت</span></div>
+  </div>
+
+  <!-- Bottom: Log + Actions -->
+  <div class="lu-bottom">
+    <div class="lu-log" id="luLog" style="margin-top:var(--space-3)"></div>
+    <div style="display:flex;gap:.5rem;justify-content:center;margin-top:var(--space-2);flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="luNewGame()">لوحة جديدة</button>
+      <button class="btn btn-secondary" onclick="location.href='/games'">العودة للألعاب</button>
+    </div>
+  </div>
+</div>
+  <div style="text-align:center;margin:var(--space-3) 0">
+    <button class="btn btn-secondary" onclick="luNewGame()">لوحة جديدة</button>
+    <button class="btn btn-secondary" onclick="location.href='/games'">العودة للألعاب</button>
+  </div>
+</div>
+
+<!-- مودال السؤال -->
+<div class="lu-modal" id="luQModal">
+  <div class="lu-sheet">
+    <h3 id="luQTitle">سؤال</h3>
+    <div class="qmeta" id="luQMeta"></div>
+    <div class="lu-timer" id="luQTimer"></div>
+    <div class="qtext" id="luQText"></div>
+    <div class="lu-choices" id="luQChoices"></div>
+    <div class="lu-textrow" id="luQTextRow" style="display:none">
+      <input type="text" id="luQInput" placeholder="اكتب إجابتك هنا…">
+      <button class="btn btn-primary" onclick="luSubmitText()">إرسال</button>
+    </div>
+    <div class="lu-modal-actions">
+      <button class="btn btn-secondary" onclick="luCloseQ()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال الكرت (رسم + كشف) -->
+<div class="lu-modal" id="luCardModal">
+  <div class="lu-sheet">
+    <h3 id="luCardTitle">🎴 كرت خاص!</h3>
+    <div class="lu-flip" id="luFlip">
+      <div class="lu-flip-in">
+        <div class="lu-face front"></div>
+        <div class="lu-face back">
+          <div class="lu-card-back">
+            <div class="cb-icon">🎴</div>
+            <div class="cb-title">كرت خاص</div>
+            <div class="cb-sub">انقر للكشف</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="luCardReveal" style="display:none"></div>
+    <div class="lu-modal-actions" id="luCardActions"></div>
+  </div>
+</div>
+
+<!-- مودال اختيار خطوة 1-12 -->
+<div class="lu-modal" id="luStepsModal">
+  <div class="lu-sheet">
+    <h3>🎯 اختر عدد الخطوات</h3>
+    <p style="text-align:center;color:var(--text-secondary);margin-bottom:.6rem">اختر من 1 إلى 12 — ثم اختر الحجر.</p>
+    <div class="lu-step-grid" id="luStepGrid"></div>
+    <div class="lu-modal-actions">
+      <button class="btn btn-secondary" onclick="luCloseModal('luStepsModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال اختيار هدف -->
+<div class="lu-modal" id="luTargetModal">
+  <div class="lu-sheet">
+    <h3 id="luTargetTitle">اختر الحجر</h3>
+    <p style="text-align:center;color:var(--text-secondary);margin-bottom:.6rem" id="luTargetHint"></p>
+    <div class="lu-target-list" id="luTargetList"></div>
+    <div class="lu-modal-actions">
+      <button class="btn btn-secondary" onclick="luCloseModal('luTargetModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال النهاية -->
+<div class="lu-modal" id="luEndModal">
+  <div class="lu-sheet">
+    <div class="lu-end">
+      <h2 id="luEndTitle">🏆</h2>
+      <p id="luEndSub" style="color:var(--text-secondary)"></p>
+      <div class="lu-rank" id="luRank"></div>
+      <div class="lu-modal-actions">
+        <button class="btn btn-primary" onclick="luNewGame()">جولة جديدة</button>
+        <button class="btn btn-secondary" onclick="location.href='/games'">العودة للألعاب</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ===== هندسة اللوحة ===== */
+function ringCells(){
+  var c=[];
+  for(var i=0;i<6;i++)c.push([6,i]);
+  for(var r=5;r>=0;r--)c.push([r,6]);
+  c.push([0,7]);
+  for(var r=0;r<6;r++)c.push([r,8]);
+  for(var i=9;i<15;i++)c.push([6,i]);
+  c.push([7,14]);
+  for(var i=14;i>=9;i--)c.push([8,i]);
+  for(var r=9;r<15;r++)c.push([r,8]);
+  c.push([14,7]);
+  c.push([14,6]);
+  for(var r=13;r>=9;r--)c.push([r,6]);
+  for(var i=5;i>=0;i--)c.push([8,i]);
+  c.push([7,0]);
+  return c;
+}
+var RING=ringCells();
+function rotCell(r,c,k){k=((k%4)+4)%4;for(var i=0;i<k;i++){var t=r;r=c;c=14-t;}return [r,c];}
+function pathFor(k){
+  var p=[],start=(k*13)%52;
+  for(var i=0;i<52;i++){var cell=RING[(start+i)%52];var rc=rotCell(cell[0],cell[1],k);p.push(rc);}
+  for(var i=1;i<=5;i++){p.push(rotCell(7,i,k));}
+  p.push([7,7]);
+  return p;
+}
+var PATHS=[0,1,2,3].map(pathFor);
+var SAFE=new Set();
+(function(){for(var k=0;k<4;k++){SAFE.add(RING[(k*13)%52].join(','));SAFE.add(RING[((k*13)+8)%52].join(','));}})();
+window.luStart = luStart;
+window.S = S;
+window.luStart = luStart;
+function isSafe(r,c){return SAFE.has(r+','+c);}
+
+/* ===== الكروت ===== */
+var CARDS={
+  distance:{key:'distance',title:'تحديد المسافة',ico:'🎯',cls:'dist',desc:'اختر من 1 إلى 12 وحرّك حجرك',foot:'أي حجر · 1-12 خطوة'},
+  swap:{key:'swap',title:'تبديل المكان',ico:'🔄',cls:'swap',desc:'بدّل موقع حجرك بحجر خصم',foot:'حجرك + حجر خصم'},
+  push:{key:'push',title:'إرجاع 4 خطوات',ico:'↩️',cls:'push',desc:'أرجِع أي حجر (لك أو للخصم) 4 خطوات',foot:'أي حجر · -4 خطوة'}
+};
+var CARD_KEYS=['distance','swap','push'];
+
+/* ===== الحالة ===== */
+var S={phase:'setup',players:[],cur:0,roll:0,sixes:0,pool:[],byCat:{},byLetter:{},usedQ:new Set(),nextRoll:null,cardProb:0.15,curQ:null,curCard:null,pendingCardIdx:-1,timer:null,timeLeft:0,tokenCount:2,questionMode:'mc'};
+
+/* ===== مساعدات ===== */
+function norm(t){t=String(t||'');t=t.replace(/[\u064B-\u0652\u0670\u0640]/g,'');t=t.replace(/[أإآٱ]/g,'ا');t=t.replace(/ة/g,'ه').replace(/ى/g,'ي');t=t.replace(/[^\w\s\u0600-\u06FF]/g,' ');return t.replace(/\s+/g,' ').trim();}
+function sleep(ms){return new Promise(function(res){setTimeout(res,ms);});}
+function log(msg){var el=document.getElementById('luLog');if(!el)return;el.innerHTML='<div class="lu-log-line">'+msg+'</div>'+el.innerHTML;while(el.children.length>40)el.removeChild(el.lastChild);}
+function el(id){return document.getElementById(id);}
+function show(id){var e=el(id);if(e)e.classList.add('on');}
+function hide(id){var e=el(id);if(e)e.classList.remove('on');}
+function closeAll(){['luQModal','luCardModal','luStepsModal','luTargetModal'].forEach(hide);}
+
+/* ===== الإعداد ===== */
+var LU_COLORS=[
+ {id:'red',name:'الأحمر',hex:'#f0524f',tint:'rgba(240,82,79,.18)',ink:'var(--accent-red-ink)'},
+ {id:'blue',name:'الأزرق',hex:'#4f8cff',tint:'rgba(79,140,255,.18)',ink:'var(--accent-blue-ink)'},
+ {id:'green',name:'الأخضر',hex:'#17c38f',tint:'rgba(23,195,143,.18)',ink:'var(--accent-green-ink)'},
+ {id:'gold',name:'الذهبي',hex:'#f6a714',tint:'rgba(246,167,20,.20)',ink:'var(--accent-gold-ink)'}
+];
+var luPlayerCount=3,luTokenCount=2,luGames=['quiz','letters'],luQMode='mc';
+
+function setupSegs(){
+  var groups={luSegCount:{v:luPlayerCount},luSegTokens:{v:luTokenCount},luSegMode:{v:luQMode}};
+  document.querySelectorAll('.lu-seg').forEach(function(seg){
+    seg.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click',function(){
+        if(seg.id==='luSegGames'){
+          b.classList.toggle('on');
+          luGames=Array.from(seg.querySelectorAll('button.on')).map(function(x){return x.dataset.v;});
+          if(luGames.length===0){b.classList.add('on');luGames=['quiz'];}
+          return;
+        }
+        seg.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+        b.classList.add('on');
+        if(seg.id==='luSegCount')luPlayerCount=parseInt(b.dataset.v);
+        if(seg.id==='luSegTokens')luTokenCount=parseInt(b.dataset.v);
+        if(seg.id==='luSegMode')luQMode=b.dataset.v;
+        luRenderPlayers();
+      });
+    });
+  });
+}
+function luRenderPlayers(){
+  var cont=el('luPlayers');cont.innerHTML='';
+  var colors=LU_COLORS.slice(0,luPlayerCount);
+  for(var i=0;i<luPlayerCount;i++){
+    var row=document.createElement('div');row.className='lu-pl-row';
+    var sw=document.createElement('div');sw.className='lu-swatch on';sw.style.background=colors[i].hex;sw.dataset.i=i;sw.dataset.ci=i;
+    sw.title='انقر لتغيير اللون';sw.addEventListener('click',luSwapColor);
+    var inp=document.createElement('input');inp.type='text';inp.value='لاعب '+(i+1);inp.placeholder='اسم اللاعب '+(i+1);inp.dataset.i=i;
+    var num=document.createElement('div');num.style.cssText='text-align:center;font-weight:900;color:'+colors[i].hex+';font-size:1.2rem';num.textContent='#'+(i+1);
+    row.appendChild(sw);row.appendChild(inp);row.appendChild(num);
+    cont.appendChild(row);
+  }
+}
+function luSwapColor(e){
+  var sw=e.currentTarget;var i=parseInt(sw.dataset.i);var ci=parseInt(sw.dataset.ci);
+  ci=(ci+1)%LU_COLORS.length;
+  sw.dataset.ci=ci;sw.style.background=LU_COLORS[ci].hex;
+  // update the number color
+  var row=sw.parentNode;row.children[2].style.color=LU_COLORS[ci].hex;
+}
+async function luStart(){
+  var names=[];var colors=[];
+  document.querySelectorAll('#luPlayers .lu-pl-row').forEach(function(row,i){
+    var inp=row.querySelector('input');var sw=row.querySelector('.lu-swatch');
+    names.push((inp.value||'').trim()||('لاعب '+(i+1)));
+    colors.push(parseInt(sw.dataset.ci));
+  });
+  if(luGames.length===0){alert('اختر مصدراً للأسئلة');return;}
+  S.tokenCount=luTokenCount;S.questionMode=luQMode;
+  S.players=[];
+  for(var i=0;i<luPlayerCount;i++){
+    S.players.push({name:names[i],ci:colors[i],color:LU_COLORS[colors[i]],tokens:[],cards:[]});
+    for(var t=0;t<luTokenCount;t++){S.players[i].tokens.push({p:i,idx:t,pos:-1});}
+  }
+  // fetch questions
+  el('luStartBtn').disabled=true;el('luStartBtn').textContent='جارٍ تحميل الأسئلة…';
+  try{
+    var url='/api/questions/pool?games='+encodeURIComponent(luGames.join(','))+'&limit=500';
+    var r=await fetch(url);
+    var d=await r.json();
+    S.pool=d.questions||[];
+  }catch(e){S.pool=[];}
+  if(S.pool.length<8){alert('لا توجد أسئلة كافية. تأكد من وجود أسئلة معتمدة في بنك س.ج/حروف.');el('luStartBtn').disabled=false;el('luStartBtn').textContent='ابدأ اللعبة';return;}
+  // index by category/letter
+  S.byCat={};S.byLetter={};
+  S.pool.forEach(function(q){
+    var c=q.category||'عام'; (S.byCat[c]=S.byCat[c]||[]).push(q.answer);
+    if(q.letter){(S.byLetter[q.letter]=S.byLetter[q.letter]||[]).push(q.answer);}
+  });
+  S.usedQ=new Set();
+  S.easy=[];S.medium=[];S.hard=[];
+  S.pool.forEach(function(q){var d=q.difficulty||"medium";if(d==="easy")S.easy.push(q);else if(d==="hard")S.hard.push(q);else S.medium.push(q);});
+  el('luSetup').classList.add('lu-hidden');el('luPlay').classList.remove('lu-hidden');
+  buildBoard();renderTokens();luUpdateTurn();luRenderHand();luNewProb();
+  S.cur=0;S.sixes=0;S.phase='roll';
+  luUpdateTurn();log('🎮 بدأت المباراة — '+S.players.length+' لاعبين، '+luTokenCount+' حجر لكل لاعب.');
+  el('luRollBtn').disabled=false;
+  if(new URLSearchParams(location.search).get('test')==='1'){window.LU_TEST={state:luTestState,correctIndex:luTestCorrect,answerText:luTestAnswer,forceCard:luForceCard,setRoll:luSetRoll,moves:luTestMoves,start:luStart};}
+}
+
+function luTestState(){return JSON.parse(JSON.stringify({phase:S.phase,cur:S.cur,roll:S.roll,players:S.players.map(function(p){return {name:p.name,ci:p.ci,tokens:p.tokens.map(function(t){return t.pos}),cards:p.cards};})}));}
+function luTestCorrect(){return S.curQ && S.curQ.choices ? S.curQ.choices.indexOf(S.curQ.answer) : -1;}
+function luTestAnswer(){return S.curQ?S.curQ.answer:'';}
+function luTestMoves(){return legalMoves(S.cur,S.roll).map(function(m){return m.ti;});}
+function luSetRoll(n){S.nextRoll=n;}
+function luForceCard(k){luDrawCard(k);}
+
+/* ===== اللوحة ===== */
+function buildBoard(){
+  var board=el('luBoard');board.innerHTML='';
+  // ring cells
+  for(var r=0;r<15;r++){
+    for(var c=0;c<15;c++){
+      var cell=document.createElement('div');cell.className='lu-cell';cell.dataset.r=r;cell.dataset.c=c;
+      // determine type
+      var inRing=false;
+      for(var i=0;i<RING.length;i++){if(RING[i][0]===r && RING[i][1]===c){inRing=true;break;}}
+      if(inRing){
+        cell.classList.add('trk');
+        if(isSafe(r,c))cell.classList.add('safe');
+        // start cell? find a player whose start is this cell
+        var isStart=false;
+        for(var k=0;k<4;k++){var s=RING[(k*13)%52];if(s[0]===r && s[1]===c)isStart=true;}
+        if(isStart)cell.classList.add('start-cell');
+        // home column?
+      }
+      board.appendChild(cell);
+    }
+  }
+  // home columns (colored cells)
+  for(var k=0;k<4;k++){
+    var col=LU_COLORS[k].hex;
+    for(var i=1;i<=5;i++){
+      var rc=rotCell(7,i,k);
+      var cell=board.querySelector('.lu-cell[data-r="'+rc[0]+'"][data-c="'+rc[1]+'"]');
+      if(cell){cell.classList.add('home-col');cell.style.background=col+'33';cell.style.boxShadow='inset 0 0 0 1px '+col+'66';}
+    }
+  }
+  // bases
+  var quadStarts=[[0,0],[0,9],[9,9],[9,0]];
+  for(var k=0;k<4;k++){
+    var base=document.createElement('div');base.className='lu-base';base.style.gridArea=(quadStarts[k][0]+1)+'/'+(quadStarts[k][1]+1)+'/'+(quadStarts[k][0]+7)+'/'+(quadStarts[k][1]+7);
+    base.style.background=LU_COLORS[k].tint;
+    base.style.border='2px solid '+LU_COLORS[k].hex+'55';
+    var lbl=document.createElement('div');lbl.className='lu-base-label';lbl.textContent=LU_COLORS[k].name;lbl.style.color=LU_COLORS[k].hex;
+    base.appendChild(lbl);
+    board.appendChild(base);
+  }
+  // center
+  var center=document.createElement('div');center.className='lu-home-center';center.style.gridArea='7/7/10/10';
+  board.appendChild(center);
+  // tokens layer (spans all)
+  var tokLayer=document.createElement('div');tokLayer.className='lu-tokens';tokLayer.style.gridArea='1/1/16/16';
+  board.appendChild(tokLayer);
+}
+
+function cellCenter(r,c){return {left:((c+0.5)/15*100)+'%',top:((r+0.5)/15*100)+'%'};}
+
+function tokenDisplayPos(tok){
+  if(tok.pos===-1){
+    var p=S.players[tok.p];var spotIdx=tok.idx % S.tokenCount;
+    // base spots 2x2
+    var qs=[[0,0],[0,9],[9,9],[9,0]][tok.p];
+    var offs=[[1.5,1.5],[1.5,3.5],[3.5,1.5],[3.5,3.5]];
+    var o=offs[spotIdx]||[1.5,1.5];
+    return [qs[0]+o[0],qs[1]+o[1]];
+  }
+  if(tok.pos>=57){return [7,7];}
+  var rc=PATHS[tok.p][tok.pos];
+  return [rc[0],rc[1]];
+}
+
+function renderTokens(){
+  var layer=el('luTokens');layer.innerHTML='';
+  // group tokens by cell for stacking offset
+  var groups={};
+  S.players.forEach(function(pl){
+    pl.tokens.forEach(function(t){
+      var pos=tokenDisplayPos(t);var key=pos[0]+','+pos[1];
+      (groups[key]=groups[key]||[]).push({t:t,pos:pos});
+    });
+  });
+  Object.keys(groups).forEach(function(key){
+    var arr=groups[key];
+    arr.forEach(function(item,idx){
+      var t=item.t;
+      var pl=S.players[t.p];
+      var div=document.createElement('div');div.className='lu-tok';div.style.background='linear-gradient(145deg,'+pl.color.hex+','+pl.color.hex+'cc)';div.style.left=cellCenter(item.pos[1],item.pos[0]).left;div.style.top=cellCenter(item.pos[0],item.pos[1]).top;
+      // stacking offset
+      if(arr.length>1){var off=(idx-(arr.length-1)/2)*0.28;div.style.transform='translate(calc(-50% + '+off+'%),calc(-50% + '+off+'%))';}
+      var span=document.createElement('span');span.className='ln';span.textContent=(t.idx+1);div.appendChild(span);
+      div.dataset.p=t.p;div.dataset.ti=t.idx;
+      div.addEventListener('click',function(){luTokenClicked(t.p,t.idx);});
+      layer.appendChild(div);
+    });
+  });
+  // movable highlight
+  if(S.phase==='move'){
+    var moves=legalMoves(S.cur,S.roll);
+    var moveSet=new Set(moves.map(function(m){return m.ti;}));
+    layer.querySelectorAll('.lu-tok').forEach(function(d){
+      if(parseInt(d.dataset.p)===S.cur && moveSet.has(parseInt(d.dataset.ti)))d.classList.add('movable');
+    });
+  }
+  if(S.phase==='card-use' && (S.curCard==='swap'||S.curCard==='push'||S.curCard==='distance')){
+    // highlight handled in target picker
+  }
+}
+
+/* ===== قانونية الحركة ===== */
+function legalMoves(p,steps){
+  var out=[];var pl=S.players[p];
+  pl.tokens.forEach(function(t,ti){
+    var to;
+    if(t.pos===-1){if(steps===6)to=0;else return;}
+    else{to=t.pos+steps;if(to>57)return;}
+    var rc=(to>=57)?[7,7]:PATHS[p][to];
+    // block check
+    if(isBlocked(p,rc))return;
+    out.push({ti:ti,to:to});
+  });
+  return out;
+}
+function isBlocked(p,cell){
+  for(var q=0;q<S.players.length;q++){
+    if(q===p)continue;
+    var cnt=0;
+    S.players[q].tokens.forEach(function(t){
+      var pos=tokenDisplayPos(t);if(pos[0]===cell[0] && pos[1]===cell[1])cnt++;
+    });
+    if(cnt>=2)return true;
+  }
+  return false;
+}
+function hasLegalMove(p,steps){return legalMoves(p,steps).length>0;}
+
+/* ===== رمي النرد ===== */
+function luNewProb(){S.cardProb=Math.random()<0.6?0.15:0.30;el('luProb').textContent='احتمال الكرت: '+Math.round(S.cardProb*100)+'%';}
+function luRoll(){
+  if(S.phase!=='roll')return;
+  el('luRollBtn').disabled=true;
+  S.phase='rolling';
+  // decide event
+  var isCard=Math.random()<S.cardProb;
+  // roll die animation
+  var die=el('luDie');die.classList.add('rolling');
+  var ticks=0;var iv=setInterval(function(){setDieFace(Math.ceil(Math.random()*6));ticks++;if(ticks>12){clearInterval(iv);die.classList.remove('rolling');finishRoll(isCard);}},70);
+}
+function setDieFace(v){
+  var pips=[[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
+  var on=pips[v-1]||[];
+  document.querySelectorAll('#luDie .lu-pip').forEach(function(p,i){p.classList.toggle('on',on.indexOf(i)>=0);});
+}
+function finishRoll(isCard){
+  if(isCard){
+    S.roll=0;luDrawCard(null);
+    return;
+  }
+  var v=(S.nextRoll!=null)?S.nextRoll:Math.ceil(Math.random()*6);
+  S.nextRoll=null;S.roll=v;setDieFace(v);
+  log('🎲 رمي: '+v);
+  // consecutive sixes
+  if(v===6){S.sixes++;}else{S.sixes=0;}
+  if(S.sixes>=3){log('⚠️ ثلاث مرات 6 متتالية — الدور ينتقل.');S.sixes=0;setTimeout(luEndTurn,600);return;}
+  // legal moves?
+  if(!hasLegalMove(S.cur,v)){log('🚫 لا توجد حركة ممكنة بهذا الرمي.');setTimeout(luEndTurn,600);return;}
+  // ask question
+  S.phase='question';luAskQuestion();
+}
+
+/* ===== الأسئلة ===== */
+function pickQuestion(){
+  // 60% medium, 20% hard, 20% easy
+  var r=Math.random();
+  var bucket;
+  if(r<0.6) bucket=S.medium;
+  else if(r<0.8) bucket=S.hard;
+  else bucket=S.easy;
+  
+  var candidates=bucket.filter(function(q){return !S.usedQ.has(q.id);});
+  if(candidates.length===0){S.usedQ=new Set();
+  S.easy=[];S.medium=[];S.hard=[];
+  S.pool.forEach(function(q){var d=q.difficulty||"medium";if(d==="easy")S.easy.push(q);else if(d==="hard")S.hard.push(q);else S.medium.push(q);});candidates=bucket.slice();}
+  if(candidates.length===0) return null;
+  var q=candidates[Math.floor(Math.random()*candidates.length)];
+  S.usedQ.add(q.id);
+  return q;
+}
+function buildChoices(q){
+  var group=q.game==='letters'?(S.byLetter[q.letter]||[]):(S.byCat[q.category]||[]);
+  var used={};used[norm(q.answer)]=1;
+  var cands=[];
+  var sh=[...group].sort(function(){return Math.random()-.5;});
+  for(var i=0;i<sh.length && cands.length<3;i++){
+    var a=sh[i];if(used[norm(a)])continue;if(String(a).length>42)continue;
+    if(norm(a).indexOf(norm(q.answer))>=0 || norm(q.answer).indexOf(norm(a))>=0)continue;
+    used[norm(a)]=1;cands.push(a);
+  }
+  if(cands.length<3)return null;
+  var opts=[q.answer].concat(cands);
+  for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}
+  return opts;
+}
+function luAskQuestion(){
+  var q=pickQuestion();S.curQ=q;
+  var choices=null;
+  var mode=S.questionMode;
+  if(mode==='text')choices=null;
+  else if(mode==='mc')choices=buildChoices(q);
+  else {choices=(Math.random()<0.5)?buildChoices(q):null;}
+  q.choices=choices;
+  el('luQTitle').textContent='سؤال';
+  el('luQMeta').innerHTML='<span class="qtag">'+(q.category||q.game)+'</span><span class="qtag">'+(q.difficulty||'medium')+'</span><span class="qtag">'+q.game+'</span>';
+  el('luQText').textContent=q.question;
+  var choicesEl=el('luQChoices');choicesEl.innerHTML='';
+  var textRow=el('luQTextRow');
+  if(choices){
+    textRow.style.display='none';
+    choices.forEach(function(ch){
+      var btn=document.createElement('button');btn.className='lu-choice';btn.textContent=ch;
+      btn.addEventListener('click',function(){luAnswerChoice(ch,btn);});choicesEl.appendChild(btn);
+    });
+  }else{
+    choicesEl.innerHTML='';textRow.style.display='flex';
+    el('luQInput').value='';el('luQInput').focus();
+  }
+  // timer
+  if(S.timer)clearInterval(S.timer);
+  S.timeLeft=25;el('luQTimer').textContent='⏱️ '+S.timeLeft+' ثانية';
+  S.timer=setInterval(function(){S.timeLeft--;el('luQTimer').textContent='⏱️ '+S.timeLeft+' ثانية';if(S.timeLeft<=0){clearInterval(S.timer);luAnswerChoice(null,null,true);}},1000);
+  show('luQModal');
+}
+function luAnswerChoice(ch,btn,timeout){
+  if(S.phase!=='question')return;
+  S.phase='answering';
+  if(S.timer)clearInterval(S.timer);
+  var q=S.curQ;var correct=false;
+  if(timeout){correct=false;}
+  else if(q.choices){correct=(ch===q.answer);}
+  else{correct=(norm(ch)===norm(q.answer))||(q.alternatives||[]).some(function(a){return norm(a)===norm(ch);});}
+  // highlight
+  document.querySelectorAll('#luQChoices .lu-choice').forEach(function(b){
+    if(q.choices && b.textContent===q.answer)b.classList.add('correct');
+    if(btn && b===btn && !correct)b.classList.add('wrong');
+  });
+  if(correct){
+    log('✅ إجابة صحيحة!');
+    setTimeout(function(){hide('luQModal');S.phase='move';renderTokens();el('luRollBtn').disabled=true;},700);
+  }else{
+    var ans=q.answer;log('❌ إجابة خاطئة. الإجابة: '+ans);
+    setTimeout(function(){hide('luQModal');luEndTurn();},1200);
+  }
+}
+function luSubmitText(){
+  var v=el('luQInput').value.trim();if(!v)return;luAnswerChoice(v,null,false);
+}
+function luCloseModal(id){hide(id);}function luCloseQ(){if(S.phase==='question'){if(S.timer)clearInterval(S.timer);hide('luQModal');luEndTurn();}}
+
+/* ===== حركة الحجر ===== */
+function luTokenClicked(p,ti){
+  if(p!==S.cur)return;
+  if(S.phase==='move'){
+    var moves=legalMoves(S.cur,S.roll);var m=moves.find(function(x){return x.ti===ti;});
+    if(!m)return;
+    luDoMove(m.ti,m.to);
+  }else if(S.phase==='card-use'){
+    // handled by target picker separately
+  }
+}
+async function luDoMove(ti,to){
+  S.phase='moving';
+  var pl=S.players[S.cur];var tok=pl.tokens[ti];
+  var from=tok.pos;
+  // animate step by step
+  if(from===-1){
+    // entering: just place at 0
+    tok.pos=0;renderTokens();await sleep(180);
+  }else{
+    var steps=to-from;
+    for(var s=0;s<steps;s++){
+      tok.pos=from+s+1;renderTokens();await sleep(130);
+    }
+  }
+  tok.pos=to;
+  // capture
+  if(to<57){
+    var cell=PATHS[S.cur][to];
+    if(!isSafe(cell[0],cell[1])){
+      // capture opponent tokens
+      S.players.forEach(function(op,oi){
+        if(oi===S.cur)return;
+        op.tokens.forEach(function(t){
+          var pos=tokenDisplayPos(t);if(pos[0]===cell[0] && pos[1]===cell[1]){
+            t.pos=-1;log('🎯 '+pl.name+' أسر حجر '+op.name+'!');
+          }
+        });
+      });
+    }
+  }
+  renderTokens();
+  // win check
+  var allHome=pl.tokens.every(function(t){return t.pos>=57;});
+  if(allHome){luEndGame(S.cur);return;}
+  // extra turn on 6?
+  if(S.roll===6 && S.sixes<3 && S.sixes>0){
+    log('🔄 رمي 6 — دور إضافي!');
+    S.phase='roll';S.roll=0;luNewProb();luUpdateTurn();el('luRollBtn').disabled=false;
+  }else{
+    luEndTurn();
+  }
+}
+
+/* ===== كروت ===== */
+function luDrawCard(forcedKey){
+  S.phase='card';
+  var key=forcedKey||CARD_KEYS[Math.floor(Math.random()*CARD_KEYS.length)];
+  var card=CARDS[key];
+  var pl=S.players[S.cur];
+  // build reveal
+  var flip=el('luFlip');flip.classList.remove('on');
+  var reveal=el('luCardReveal');reveal.style.display='none';reveal.innerHTML='';
+  var actions=el('luCardActions');actions.innerHTML='';
+  el('luCardTitle').textContent='🎴 كرت خاص!';
+  // card face
+  var faceHtml='<div class="lu-card-face '+card.cls+'"><div class="cf-ico">'+card.ico+'</div><div class="cf-title">'+card.title+'</div><div class="cf-desc">'+card.desc+'</div><div class="cf-foot">'+card.foot+'</div></div>';
+  document.querySelector('#luFlip .front').innerHTML=faceHtml;
+  show('luCardModal');
+  // flip after short delay
+  setTimeout(function(){flip.classList.add('on');},120);
+  setTimeout(function(){
+    reveal.style.display='block';
+    reveal.innerHTML='<p style="text-align:center;font-weight:800;margin:.6rem 0">حصلت على: <span style="color:var(--accent-gold-ink)">'+card.title+'</span></p>';
+    if(pl.cards.length<4){
+      pl.cards.push(card.key);luRenderHand();
+      var useBtn=document.createElement('button');useBtn.className='btn btn-primary';useBtn.textContent='💡 استخدم الآن';
+      useBtn.addEventListener('click',function(){hide('luCardModal');luUseCardNow(pl.cards.length-1);});
+      var keepBtn=document.createElement('button');keepBtn.className='btn btn-secondary';keepBtn.textContent='💾 خزّن للحقيبة';
+      keepBtn.addEventListener('click',function(){hide('luCardModal');luEndTurn();});
+      actions.appendChild(useBtn);actions.appendChild(keepBtn);
+    }else{
+      // 5th card: swap or decline
+      reveal.innerHTML+='<p style="text-align:center;color:var(--accent-red-ink);font-weight:800;margin:.4rem 0">⚠️ حقيبتك ممتلئة (4/4) — اختر:</p>';
+      var swapBtn=document.createElement('button');swapBtn.className='btn btn-gold';swapBtn.textContent='🔄 استبدل بكرت من حقيبتك';
+      swapBtn.addEventListener('click',function(){luSwapCardChoice(card.key);});
+      var declineBtn=document.createElement('button');declineBtn.className='btn btn-secondary';declineBtn.textContent='❌ لا آخذه';
+      declineBtn.addEventListener('click',function(){hide('luCardModal');luEndTurn();});
+      actions.appendChild(swapBtn);actions.appendChild(declineBtn);
+    }
+  },800);
+}
+function luSwapCardChoice(newKey){
+  // show picker of your cards to replace
+  var pl=S.players[S.cur];
+  var list=el('luTargetList');list.innerHTML='';
+  el('luTargetTitle').textContent='اختر الكرت للإلغاء';
+  el('luTargetHint').textContent='سيُستبدل بالكرت الجديد.';
+  pl.cards.forEach(function(k,i){
+    var c=CARDS[k];
+    var item=document.createElement('div');item.className='lu-target-item';
+    item.innerHTML='<span style="font-size:1.2rem">'+c.ico+'</span><span>'+c.title+'</span>';
+    item.addEventListener('click',function(){pl.cards[i]=newKey;hide('luTargetModal');hide('luCardModal');luRenderHand();luEndTurn();});
+    list.appendChild(item);
+  });
+  hide('luCardModal');show('luTargetModal');
+}
+function luRenderHand(){
+  var hand=el('luHand');hand.innerHTML='';
+  var pl=S.players[S.cur];
+  if(!pl.cards.length){hand.innerHTML='<span class="lu-empty-hand">لا توجد كروت (0/4)</span>';return;}
+  var lbl=document.createElement('span');lbl.className='lu-hand-label';lbl.textContent='كروتك ('+pl.cards.length+'/4):';hand.appendChild(lbl);
+  pl.cards.forEach(function(k,i){
+    var c=CARDS[k];
+    var mini=document.createElement('div');mini.className='lu-mini '+c.cls;
+    mini.innerHTML='<div class="lm-ico">'+c.ico+'</div><div class="lm-title">'+c.title+'</div><div class="lm-desc">'+c.desc+'</div><button class="lm-btn">استخدام</button>';
+    mini.querySelector('.lm-btn').addEventListener('click',function(e){e.stopPropagation();luUseCard(i);});
+    hand.appendChild(mini);
+  });
+}
+function luUseCard(idx){
+  if(S.phase!=='roll')return;
+  var pl=S.players[S.cur];var key=pl.cards[idx];
+  S.pendingCardIdx=idx;S.curCard=key;
+  if(key==='distance'){luOpenSteps();}
+  else if(key==='swap'){luOpenTarget('swap');}
+  else if(key==='push'){luOpenTarget('push');}
+}
+function luOpenSteps(){
+  var grid=el('luStepGrid');grid.innerHTML='';
+  for(var n=1;n<=12;n++){
+    var b=document.createElement('button');b.className='lu-step-btn';b.textContent=n;
+    b.addEventListener('click',function(){luCardDistance(parseInt(this.textContent));});
+    grid.appendChild(b);
+  }
+  show('luStepsModal');
+}
+function luCardDistance(n){
+  hide('luStepsModal');
+  // pick your token on board
+  luOpenTarget('distance',{steps:n});
+}
+function luOpenTarget(mode,extra){
+  S.cardMode=mode;S.cardExtra=extra||{};
+  var title='اختر الحجر';var hint='';
+  if(mode==='distance'){title='اختر حجرك (للتقدم '+extra.steps+')';hint='حجر على اللوحة (وليس في القاعدة).';}
+  else if(mode==='swap'){title='اختر حجرك (للتبديل)';hint='حجرك على اللوحة.';}
+  else if(mode==='push'){title='اختر الحجر (للإرجاع)';hint='أي حجر على اللوحة (لك أو للخصم).';}
+  el('luTargetTitle').textContent=title;el('luTargetHint').textContent=hint;
+  var list=el('luTargetList');list.innerHTML='';
+  // build options
+  var opts=[];
+  if(mode==='distance'||mode==='swap'){
+    S.players[S.cur].tokens.forEach(function(t){if(t.pos>=0 && t.pos<57)opts.push({p:S.cur,ti:t.idx,label:S.players[S.cur].name+' — حجر '+(t.idx+1)+' (موضع '+t.pos+')',color:S.players[S.cur].color.hex});});
+  }
+  if(mode==='push'){
+    S.players.forEach(function(pl,pi){
+      pl.tokens.forEach(function(t){if(t.pos>=0 && t.pos<57)opts.push({p:pi,ti:t.idx,label:pl.name+' — حجر '+(t.idx+1)+' (موضع '+t.pos+')',color:pl.color.hex});});
+    });
+  }
+  if(mode==='swap'){
+    // first pick own, then opponent — handle in two steps
+    luSwapStep1(opts);
+    return;
+  }
+  opts.forEach(function(o){
+    var item=document.createElement('div');item.className='lu-target-item';
+    item.innerHTML='<span class="tdot" style="background:'+o.color+'"></span><span>'+o.label+'</span>';
+    item.addEventListener('click',function(){luCardTargetPicked(o);});
+    list.appendChild(item);
+  });
+  show('luTargetModal');
+}
+function luSwapStep1(ownOpts){
+  var list=el('luTargetList');list.innerHTML='';
+  el('luTargetTitle').textContent='اختر حجرك (للتبديل)';
+  el('luTargetHint').textContent='حجرك على اللوحة.';
+  ownOpts.forEach(function(o){
+    var item=document.createElement('div');item.className='lu-target-item';
+    item.innerHTML='<span class="tdot" style="background:'+o.color+'"></span><span>'+o.label+'</span>';
+    item.addEventListener('click',function(){
+      S.swapOwn={p:o.p,ti:o.ti};
+      luSwapStep2();
+    });
+    list.appendChild(item);
+  });
+  show('luTargetModal');
+}
+function luSwapStep2(){
+  var list=el('luTargetList');list.innerHTML='';
+  el('luTargetTitle').textContent='اختر حجر الخصم (للتبديل)';
+  el('luTargetHint').textContent='حجر خصم على اللوحة.';
+  var opts=[];
+  S.players.forEach(function(pl,pi){if(pi===S.cur)return;pl.tokens.forEach(function(t){if(t.pos>=0 && t.pos<57)opts.push({p:pi,ti:t.idx,label:pl.name+' — حجر '+(t.idx+1),color:pl.color.hex});});});
+  opts.forEach(function(o){
+    var item=document.createElement('div');item.className='lu-target-item';
+    item.innerHTML='<span class="tdot" style="background:'+o.color+'"></span><span>'+o.label+'</span>';
+    item.addEventListener('click',function(){
+      hide('luTargetModal');
+      luCardSwap(S.swapOwn,o);
+    });
+    list.appendChild(item);
+  });
+}
+function luCardTargetPicked(o){
+  hide('luTargetModal');
+  if(S.cardMode==='distance'){
+    var tok=S.players[o.p].tokens[o.ti];
+    var to=tok.pos+S.cardExtra.steps;
+    if(to>57){log('🚫 تجاوز القاعدة — لا يمكن.');return;}
+    var rc=(to>=57)?[7,7]:PATHS[o.p][to];
+    if(isBlocked(o.p,rc)){log('🚫 خلية محظورة.');return;}
+    // consume card
+    var pl=S.players[S.cur];pl.cards.splice(S.pendingCardIdx,1);S.pendingCardIdx=-1;
+    luRenderHand();
+    // move
+    S.phase='moving';S.roll=0;
+    luDoMoveCard(o.ti,to);
+  }else if(S.cardMode==='push'){
+    var tok=S.players[o.p].tokens[o.ti];
+    var newPos=tok.pos-4;
+    var pl=S.players[S.cur];pl.cards.splice(S.pendingCardIdx,1);S.pendingCardIdx=-1;
+    luRenderHand();
+    if(newPos<0){tok.pos=-1;log('↩️ '+pl.name+' أرجع حجر '+S.players[o.p].name+' إلى القاعدة.');}
+    else{tok.pos=newPos;log('↩️ '+pl.name+' أرجع حجر '+S.players[o.p].name+' 4 خطوات.');}
+    renderTokens();
+    S.phase='moving';
+    setTimeout(function(){S.phase='roll';luEndTurn();},400);
+  }
+}
+async function luDoMoveCard(ti,to){
+  var pl=S.players[S.cur];var tok=pl.tokens[ti];
+  var from=tok.pos;
+  if(from===-1){tok.pos=0;renderTokens();await sleep(180);}
+  else{for(var s=0;s<to-from;s++){tok.pos=from+s+1;renderTokens();await sleep(130);}}
+  tok.pos=to;
+  if(to<57){
+    var cell=PATHS[S.cur][to];
+    if(!isSafe(cell[0],cell[1])){
+      S.players.forEach(function(op,oi){if(oi===S.cur)return;op.tokens.forEach(function(t){var pos=tokenDisplayPos(t);if(pos[0]===cell[0]&&pos[1]===cell[1]){t.pos=-1;log('🎯 '+pl.name+' أسر حجر '+op.name+'!');}});});
+    }
+  }
+  renderTokens();
+  var allHome=pl.tokens.every(function(t){return t.pos>=57;});
+  if(allHome){luEndGame(S.cur);return;}
+  S.phase='roll';luEndTurn();
+}
+function luCardSwap(own,opp){
+  var t1=S.players[own.p].tokens[own.ti];var t2=S.players[opp.p].tokens[opp.ti];
+  var tmp=t1.pos;t1.pos=t2.pos;t2.pos=tmp;
+  var pl=S.players[S.cur];pl.cards.splice(S.pendingCardIdx,1);S.pendingCardIdx=-1;
+  luRenderHand();
+  log('🔄 '+pl.name+' بدّل حجره بحجر '+S.players[opp.p].name);
+  renderTokens();
+  S.phase='moving';
+  setTimeout(function(){S.phase='roll';luEndTurn();},400);
+}
+
+/* ===== انتهاء الدور / إعلان الفائز ===== */
+function luEndTurn(){
+  S.cur=(S.cur+1)%S.players.length;S.roll=0;S.sixes=0;S.phase='roll';
+  luNewProb();luUpdateTurn();luRenderHand();el('luRollBtn').disabled=false;
+}
+function luUpdateTurn(){
+  var pl=S.players[S.cur];
+  el('luTurn').textContent='دور: '+pl.name+' ('+pl.color.name+')';
+  el('luTurn').style.borderColor=pl.color.hex;el('luTurn').style.color=pl.color.hex;
+  // theme the board for current player
+  var board=el('luBoard');
+  if(board){
+    board.classList.remove('theme-red','theme-blue','theme-green','theme-gold');
+    board.classList.add('theme-'+pl.color.id);
+  }
+  // players bar
+  var bar=el('luPlayersBar');bar.innerHTML='';
+  S.players.forEach(function(p,i){
+    var home=p.tokens.filter(function(t){return t.pos>=57;}).length;
+    var chip=document.createElement('div');chip.className='lu-pchip';
+    chip.innerHTML='<span class="dot" style="background:'+p.color.hex+'"></span>'+p.name+' · '+home+'/'+S.tokenCount+' · 🎴'+p.cards.length;
+    if(i===S.cur)chip.style.borderColor=p.color.hex;
+    bar.appendChild(chip);
+  });
+}
+function luEndGame(winnerIdx){
+  S.phase='over';
+  var w=S.players[winnerIdx];
+  el('luEndTitle').textContent='🏆 '+w.name+' يفوز!';
+  el('luEndSub').textContent='أدخل جميع أحجاره إلى القاعدة الوسطى.';
+  // ranking
+  var ranked=S.players.map(function(p,i){
+    var home=p.tokens.filter(function(t){return t.pos>=57;}).length;
+    var prog=p.tokens.reduce(function(a,t){return a+(t.pos>=0?t.pos:0);},0);
+    return {i:i,p:p,home:home,prog:prog};
+  }).sort(function(a,b){if(b.home!==a.home)return b.home-a.home;return b.prog-a.prog;});
+  var rankEl=el('luRank');rankEl.innerHTML='';
+  ranked.forEach(function(r,idx){
+    var row=document.createElement('div');row.className='lu-rank-row';
+    row.innerHTML='<span class="rk">'+(idx+1)+'</span><span style="color:'+r.p.color.hex+';font-weight:900">'+r.p.name+'</span><span style="margin-right:auto;color:var(--text-muted)">'+r.home+'/'+S.tokenCount+' حجر</span>';
+    rankEl.appendChild(row);
+  });
+  show('luEndModal');
+}
+function luNewGame(){hide('luEndModal');el('luSetup').classList.remove('lu-hidden');el('luPlay').classList.add('lu-hidden');}
+
+/* ===== بدء ===== */
+document.addEventListener('DOMContentLoaded',function(){
+  setupSegs();luRenderPlayers();
+  // default seg state
+  document.querySelectorAll('#luSegCount button').forEach(function(b){if(parseInt(b.dataset.v)===luPlayerCount)b.classList.add('on');else b.classList.remove('on');});
+  document.querySelectorAll('#luSegTokens button').forEach(function(b){if(parseInt(b.dataset.v)===luTokenCount)b.classList.add('on');else b.classList.remove('on');});
+  document.querySelectorAll('#luSegMode button').forEach(function(b){if(b.dataset.v===luQMode)b.classList.add('on');else b.classList.remove('on');});
+  document.querySelectorAll('#luSegGames button').forEach(function(b){if(luGames.indexOf(b.dataset.v)>=0)b.classList.add('on');else b.classList.remove('on');});
+});
+el('luQInput')&&el('luQInput').addEventListener('keydown',function(e){if(e.key==='Enter')luSubmitText();});
+
+/* expose to window for onclick / test hooks */
+window.luStart=luStart;window.luRoll=luRoll;window.luEndTurn=luEndTurn;
+window.luNewGame=luNewGame;window.luCloseModal=luCloseModal;window.luCloseQ=luCloseQ;
+window.luSubmitText=luSubmitText;window.luAskQuestion=luAskQuestion;window.S=S;
+})();
+</script>
+{% endblock %}
