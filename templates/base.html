@@ -307,6 +307,7 @@
         <div class="nav-links">
             <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
             <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
+            <a href="/online" class="nav-link {{ 'active' if request.path.startswith('/online') }}"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>أونلاين</a>
             <a href="/tournament" class="nav-link {{ 'active' if request.path.startswith('/tournament') }}"><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>وضع البطولة</a>
             <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
             <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}{{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
@@ -334,6 +335,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <a href="/" class="nav-link {{ 'active' if request.path == '/' }}"><svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>الرئيسية</a>
         <a href="/games" class="nav-link {{ 'active' if request.path.startswith('/games') or request.path.startswith('/game/') }}"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg>الألعاب</a>
+        <a href="/online" class="nav-link {{ 'active' if request.path.startswith('/online') }}"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg>أونلاين</a>
         <a href="/how-to-play" class="nav-link {{ 'active' if request.path == '/how-to-play' }}"><svg class="ico" aria-hidden="true"><use href="#i-help"></use></svg>طريقة اللعب</a>
         <a href="/about" class="nav-link {{ 'active' if request.path == '/about' }}{{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>عن الموقع</a>
         <a href="/me" class="nav-link {{ 'active' if request.path == '/me' }}"><svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>من أنا</a>

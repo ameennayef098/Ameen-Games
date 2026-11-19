@@ -13,6 +13,8 @@ run.log
 # بيانات المستخدمين تُولَّد عند التشغيل — لا تُرفع إلى المستودع
 data/accounts.json
 data/tournaments.json
+data/rooms.json
+data/rooms.json.tmp
 
 # نسخ احتياطية محلية
 *.bak

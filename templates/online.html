@@ -9,27 +9,38 @@
 .on-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
 .on-field{margin-bottom:18px}
 .on-field label,.on-box label{display:block;font-size:.9rem;color:var(--text-secondary);margin-bottom:6px}
-.on-field input,.on-box input,.on-box select,.on-chat-row input{
+.on-field input,.on-box input,.on-chat-row input{
   width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);
   background:var(--bg);color:var(--text);font:inherit;font-size:1rem}
-.on-box input:focus,.on-box select:focus,.on-field input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.on-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.on-box input:focus,.on-field input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.on-cols{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
 @media(max-width:760px){.on-cols{grid-template-columns:1fr}}
 .on-box{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px}
 .on-box h2{margin:0 0 12px;font-size:1.15rem}
 .on-box .on-desc{font-size:.9rem;color:var(--text-secondary);margin:8px 0 14px;min-height:2.4em}
-.on-box .on-limit{font-size:.85rem;color:var(--accent);margin:0 0 14px}
 .on-btn{width:100%;padding:13px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);
-  font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
-.on-btn:hover{filter:brightness(1.08)}
+  font:inherit;font-weight:700;font-size:1rem;cursor:pointer;transition:filter .15s,transform .15s}
+.on-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .on-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
 .on-btn.sm{width:auto;padding:9px 16px;font-size:.9rem}
-.on-btn:disabled{opacity:.5;cursor:not-allowed}
+.on-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .on-err{color:#f87171;font-size:.9rem;min-height:1.2em;margin:12px 0 0}
+/* شبكة اختيار اللعبة */
+.on-games{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+.on-game{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:right;
+  padding:12px 14px;border-radius:12px;border:2px solid var(--border);background:var(--surface);
+  color:var(--text);font:inherit;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
+.on-game:hover{border-color:var(--accent);transform:translateY(-2px)}
+.on-game.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint,rgba(79,140,255,.18))}
+.on-game .gi{font-size:1.5rem;line-height:1}
+.on-game .gn{font-weight:800;font-size:1rem}
+.on-game .gd{font-size:.78rem;color:var(--text-secondary);line-height:1.5}
+.on-game .gm{font-size:.72rem;color:var(--accent);font-weight:700;margin-top:2px}
 .on-room-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;
   padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
 .on-code{font-size:1rem}
 .on-code b{letter-spacing:2px;color:var(--accent);font-size:1.15rem}
+.on-code-inline{letter-spacing:2px;color:var(--accent)}
 .on-room-meta{display:flex;gap:10px;flex-wrap:wrap}
 .on-chip{background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.85rem}
 .on-grid{display:grid;grid-template-columns:280px 1fr;gap:18px}
@@ -43,13 +54,25 @@
 .on-player .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .on-player.dead .nm{text-decoration:line-through;color:var(--text-secondary)}
 .on-player .tag{font-size:.72rem;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:2px 8px}
+.on-player .score{font-size:.8rem;font-weight:800;color:var(--accent);flex:none}
 .on-main{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px;min-height:220px}
 .on-main h3{margin:0 0 12px;font-size:1.2rem}
 .on-main .on-phase-sub{color:var(--text-secondary);font-size:.92rem;margin:0 0 16px}
+.on-lobby-game{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px;margin-bottom:14px}
+.on-lobby-game .gi{font-size:2.2rem;line-height:1}
+.on-lobby-game h3{margin:0 0 4px}
+.on-lobby-game p{margin:0 0 6px;color:var(--text-secondary);font-size:.88rem;line-height:1.6}
+.on-lobby-game .gm{font-size:.78rem;color:var(--accent);font-weight:700}
+.on-change{margin-top:18px;border-top:1px dashed var(--border);padding-top:14px}
+.on-change-title{font-size:.9rem;font-weight:700;color:var(--text-secondary);margin:0 0 10px}
+.on-change-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.on-change-grid .on-game{padding:10px}
+.on-change-grid .on-game .gd{display:none}
 .on-targets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .on-tgt{padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);
-  color:var(--text);font:inherit;cursor:pointer;font-size:.92rem}
-.on-tgt:hover{border-color:var(--accent)}
+  color:var(--text);font:inherit;cursor:pointer;font-size:.92rem;transition:border-color .15s,transform .15s}
+.on-tgt:hover{border-color:var(--accent);transform:translateY(-1px)}
 .on-tgt.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .on-tgt:disabled{opacity:.45;cursor:not-allowed}
 .on-result{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;
@@ -62,19 +85,49 @@
 #onChatList{height:190px;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .on-msg{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:.9rem}
 .on-msg .who{font-weight:700;color:var(--accent);font-size:.8rem;display:block}
-.on-msg.sys{background:transparent;border-style:dashed;color:var(--text-secondary);text-align:center;font-size:.82rem}
+.on-msg.mine{border-color:var(--accent)}
 .on-chat-row{display:flex;gap:8px}
 .on-chat-row input{flex:1}
 .on-winner{text-align:center;padding:20px}
 .on-winner .big{font-size:2.6rem;display:block;margin-bottom:10px}
 .on-winner h2{margin:0 0 8px;font-size:1.6rem}
 .on-note{font-size:.85rem;color:var(--text-secondary);text-align:center;margin-top:10px}
+/* مبارزة الأسئلة */
+.duel-scores{display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.duel-score{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 16px;text-align:center;min-width:110px}
+.duel-score .sn{font-size:.85rem;font-weight:700;display:block}
+.duel-score .sv{font-size:1.5rem;font-weight:900;color:var(--accent)}
+.duel-score.me{border-color:var(--accent)}
+.duel-qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.duel-round{font-weight:800;color:var(--text-secondary)}
+.duel-timer{font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.duel-timer.urgent{color:#f87171}
+.duel-cat{font-size:.8rem;color:var(--text-secondary);margin-bottom:8px}
+.duel-q{font-size:1.2rem;font-weight:800;line-height:1.7;text-align:center;background:var(--surface);
+  border:1px solid var(--border);border-radius:12px;padding:16px;margin:0 0 14px}
+.duel-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.duel-opts{grid-template-columns:1fr}}
+.duel-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:2px solid var(--border);
+  background:var(--surface);color:var(--text);font:inherit;font-weight:700;font-size:.98rem;cursor:pointer;text-align:right;
+  transition:border-color .15s,transform .15s}
+.duel-opt:hover:not(:disabled){border-color:var(--accent);transform:translateY(-2px)}
+.duel-opt.sel{border-color:var(--accent);background:var(--accent-tint,rgba(79,140,255,.15))}
+.duel-opt:disabled{cursor:default}
+.duel-opt .dk{flex:none;width:1.7rem;height:1.7rem;border-radius:8px;background:var(--bg);border:1px solid var(--border);
+  display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}
+.duel-opt.static{cursor:default}
+.duel-opt.correct{border-color:#17c38f;background:rgba(23,195,143,.14)}
+.duel-opt.correct .dk{background:#17c38f;color:#05231a;border-color:#17c38f}
+.duel-opt.wrong{border-color:#f0524f;background:rgba(240,82,79,.12)}
+.duel-opt.dim{opacity:.55}
+.on-confetti{position:fixed;top:-14px;z-index:200;width:10px;height:14px;pointer-events:none;border-radius:2px;animation:onConfFall linear forwards}
+@keyframes onConfFall{0%{transform:translateY(0) rotate(0);opacity:1}85%{opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
 </style>
 
 <div class="on-wrap">
   <header class="on-head">
-    <h1>🎮 ألعاب أونلاين</h1>
-    <p>أنشئ غرفة، شارك رمزها مع أصدقائك، والعبوا من أجهزتكم — بلا تسجيل.</p>
+    <h1>🌐 ألعاب أونلاين</h1>
+    <p>أنشئ غرفة، اختر اللعبة، شارك الرمز مع أصدقائك والعبوا من أجهزتكم — وتقدر تغيّر اللعبة بنفس الغرفة بدون ما تنشئ وحدة جديدة.</p>
   </header>
 
   <section id="onEntry" class="on-card">
@@ -84,18 +137,13 @@
     </div>
     <div class="on-cols">
       <div class="on-box">
-        <h2>إنشاء غرفة جديدة</h2>
-        <label for="onGame">اللعبة</label>
-        <select id="onGame">
-          <option value="tv_broken">تلفزيون خربان — جملة ← رسم ← تخمين</option>
-          <option value="mafia">مافيا — أدوار مخفية في ليل ونهار</option>
-        </select>
-        <p class="on-desc" id="onGameDesc"></p>
-        <p class="on-limit" id="onGameLimit"></p>
+        <h2>🎲 أنشئ غرفة جديدة</h2>
+        <label>اختر اللعبة</label>
+        <div class="on-games" id="onGameGrid"></div>
         <button class="on-btn" id="onCreateBtn">إنشاء الغرفة</button>
       </div>
       <div class="on-box">
-        <h2>انضمام إلى غرفة</h2>
+        <h2>🚪 انضمام إلى غرفة</h2>
         <label for="onCode">رمز الغرفة</label>
         <input id="onCode" maxlength="6" placeholder="مثال: K7X2PQ" autocomplete="off" style="letter-spacing:3px;font-weight:700">
         <p class="on-desc">اسأل صديقك عن رمز الغرفة الذي يظهر له بعد الإنشاء.</p>
@@ -110,14 +158,14 @@
       <div>
         <span class="on-code">الغرفة: <b id="onRoomCode">—</b></span>
         <button class="on-btn ghost sm" id="onCopyBtn">نسخ الرمز</button>
+        <button class="on-btn ghost sm" id="onShareBtn">مشاركة 🔗</button>
       </div>
       <div class="on-room-meta">
         <span class="on-chip" id="onRoomGame">—</span>
         <span class="on-chip" id="onRoomPhase">—</span>
       </div>
-      <button class="on-btn ghost sm" id="onLeaveBtn">مغادرة</button>
+      <button class="on-btn ghost sm" id="onLeaveBtn">مغادرة ✕</button>
     </div>
-
     <div class="on-grid">
       <div class="on-players">
         <h3>اللاعبون <span id="onCount"></span></h3>
@@ -125,9 +173,8 @@
       </div>
       <div class="on-main" id="onMain"></div>
     </div>
-
     <div class="on-chat">
-      <h3>الشات</h3>
+      <h3>💬 الشات</h3>
       <div id="onChatList"></div>
       <div class="on-chat-row">
         <input id="onChatText" maxlength="200" placeholder="اكتب رسالتك..." autocomplete="off">
@@ -140,350 +187,353 @@
 <script>
 (function () {
   'use strict';
-  var ON = {code: null, pid: null, timer: null, state: null};
+  var ON = {code:null, pid:null, timer:null, tick:null, state:null, selectedGame:'mafia', offset:0, chatLen:-1, confDone:false};
   var GAMES = {
-    tv_broken: {name: 'تلفزيون خربان', min: 3, max: 8,
-                desc: 'جملة تكتبها ← صديقك يرسمها ← صديق ثالث يخمّنها. صوّتوا على أفضل رسمة.'},
-    mafia: {name: 'مافيا', min: 5, max: 12,
-            desc: 'أدوار مخفية: مافيا تقتل ليلاً، والطبيب ينقذ، والمحقق يفحص، والأهالي يصوّبون نهاراً.'}
+    mafia:      {name:'مافيا', icon:'🔪', min:5, max:12, desc:'أدوار مخفية: مافيا تقتل ليلاً، طبيب ينقذ، محقق يفحص، والأهالي يصوّتون نهارًا.'},
+    tv_broken:  {name:'تلفزيون خربان', icon:'📺', min:3, max:8, desc:'جملة تكتبها ← صديقك يرسمها ← ثالث يخمّنها. صوّتوا على أفضل رسمة.'},
+    quiz_duel:  {name:'مبارزة الأسئلة', icon:'⚡', min:2, max:2, desc:'سؤال واحد للاثنين — الأسرع بالإجابة الصحيحة يفوز بالجولة. أول من يجمع 3 جولات يفوز.'}
   };
-  var PHASE_NAMES = {lobby: 'بانتظار البدء', write: 'كتابة الجمل', draw: 'الرسم',
-                     guess: 'التخمين', reveal: 'التصويت', results: 'النتائج',
-                     night: 'الليل', day: 'النهار', ended: 'انتهت اللعبة'};
+  var PHASE_NAMES = {lobby:'بانتظار البدء', write:'كتابة الجمل', draw:'الرسم', guess:'التخمين',
+    reveal:'النتيجة', results:'النتائج', night:'الليل', day:'النهار', ended:'انتهت',
+    question:'السؤال', round_result:'نتيجة الجولة'};
+  var CATS = {general:'ثقافة عامة', math:'رياضيات', science:'علوم وطبيعة', sports:'رياضة', tech:'تقنية وذكاء اصطناعي', islamic:'إسلاميات'};
 
-  function $(id) { return document.getElementById(id); }
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); }
-  function save() { try { localStorage.setItem('ameen_online_room', JSON.stringify({code: ON.code, pid: ON.pid})); } catch (e) {} }
-  function clearSave() { try { localStorage.removeItem('ameen_online_room'); } catch (e) {} }
-  function restore() {
-    try {
-      var r = JSON.parse(localStorage.getItem('ameen_online_room') || 'null');
-      if (r && r.code && r.pid) { ON.code = r.code; ON.pid = r.pid; return true; }
-    } catch (e) {}
-    return false;
-  }
-  function err(msg) { $('onErr').textContent = msg || ''; }
+  function $(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function save(){try{localStorage.setItem('ameen_online_room',JSON.stringify({code:ON.code,pid:ON.pid}));}catch(e){}}
+  function clearSave(){try{localStorage.removeItem('ameen_online_room');}catch(e){}}
+  function err(m){$('onErr').textContent=m||'';}
+  function nameOf(s,pid){var p=(s.players||[]).filter(function(x){return x.pid===pid;})[0];return p?p.name:'؟';}
+  function pLabel(min,max){min=+min;max=+max;if(min===max){return min===2?'لاعبان':min+' لاعبين';}return min+'–'+max+' لاعبين';}
+  function remainLabel(n){return n===1?'بقي لاعب واحد على الأقل للبدء.':'بقي '+n+' لاعبين على الأقل للبدء.';}
+  function confetti(){var cols=['#f6a714','#4f8cff','#17c38f','#f0524f','#a16bff','#18c8e6'];for(var i=0;i<90;i++){var p=document.createElement('span');p.className='on-confetti';p.style.left=(Math.random()*100)+'vw';p.style.background=cols[i%cols.length];p.style.animationDuration=(2.2+Math.random()*1.8)+'s';p.style.animationDelay=(Math.random()*0.4)+'s';document.body.appendChild(p);p.addEventListener('animationend',function(){this.remove();});}}
 
-  async function api(path, body) {
-    try {
-      var res = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'},
-                               body: JSON.stringify(body || {})});
-      var data = await res.json().catch(function () { return {}; });
-      return data;
-    } catch (e) { return {error: 'تعذر الاتصال بالخادم'}; }
+  function api(path,body){
+    return fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})})
+      .then(function(r){return r.json().catch(function(){return {};});})
+      .catch(function(){return {error:'تعذر الاتصال بالخادم'};});
   }
 
-  async function createRoom() {
-    var name = $('onName').value.trim();
-    if (!name) { err('اكتب اسمك أولاً'); return; }
-    err('');
-    var data = await api('/api/rooms', {name: name, game: $('onGame').value});
-    if (!data.ok) { err(data.error || 'تعذر إنشاء الغرفة'); return; }
-    ON.code = data.code; ON.pid = data.pid;
-    save();
-    startPolling();
+  /* ---------- شبكة اختيار اللعبة ---------- */
+  function gameCards(sel,attr){
+    return Object.keys(GAMES).map(function(k){var g=GAMES[k];
+      return '<button type="button" class="on-game'+(k===sel?' sel':'')+'" '+attr+'="'+k+'">'+
+        '<span class="gi">'+g.icon+'</span><span class="gn">'+esc(g.name)+'</span>'+
+        '<span class="gd">'+esc(g.desc)+'</span><span class="gm">'+pLabel(g.min,g.max)+'</span></button>';
+    }).join('');
+  }
+  function renderEntryGrid(){
+    $('onGameGrid').innerHTML=gameCards(ON.selectedGame,'data-game');
+    $('onGameGrid').querySelectorAll('[data-game]').forEach(function(b){
+      b.addEventListener('click',function(){ON.selectedGame=b.getAttribute('data-game');renderEntryGrid();});
+    });
   }
 
-  async function joinRoom() {
-    var name = $('onName').value.trim();
-    var code = $('onCode').value.trim().toUpperCase();
-    if (!name) { err('اكتب اسمك أولاً'); return; }
-    if (!code) { err('اكتب رمز الغرفة'); return; }
-    err('');
-    var data = await api('/api/rooms/' + code + '/join', {name: name});
-    if (!data.ok) { err(data.error || 'تعذر الانضمام'); return; }
-    ON.code = data.code; ON.pid = data.pid;
-    save();
-    startPolling();
+  /* ---------- إنشاء / انضمام ---------- */
+  function createRoom(){
+    var name=$('onName').value.trim();
+    if(!name){err('اكتب اسمك أولاً');return;}
+    err('');try{localStorage.setItem('ameen_online_name',name);}catch(e){}
+    $('onCreateBtn').disabled=true;
+    api('/api/rooms',{name:name,game:ON.selectedGame}).then(function(d){
+      $('onCreateBtn').disabled=false;
+      if(!d.ok){err(d.error||'تعذر إنشاء الغرفة');return;}
+      enterRoom(d.code,d.pid);
+    });
   }
-
-  async function act(body) {
-    var data = await api('/api/rooms/' + ON.code + '/action', Object.assign({pid: ON.pid}, body));
-    if (!data.ok) { err(data.error || 'إجراء غير صالح'); return null; }
-    err('');
-    ON.state = data.state;
-    render();
-    return data.state;
+  function joinRoom(){
+    var name=$('onName').value.trim();var code=$('onCode').value.trim().toUpperCase();
+    if(!name){err('اكتب اسمك أولاً');return;}
+    if(!code){err('اكتب رمز الغرفة');return;}
+    err('');try{localStorage.setItem('ameen_online_name',name);}catch(e){}
+    $('onJoinBtn').disabled=true;
+    api('/api/rooms/'+code+'/join',{name:name}).then(function(d){
+      $('onJoinBtn').disabled=false;
+      if(!d.ok){err(d.error||'تعذر الانضمام');return;}
+      enterRoom(d.code,d.pid);
+    });
   }
-
-  async function poll() {
-    try {
-      var res = await fetch('/api/rooms/' + ON.code + '/state?pid=' + ON.pid);
-      var data = await res.json().catch(function () { return {}; });
-      if (!data.ok) { leave(true); return; }
-      ON.state = data.state;
-      render();
-    } catch (e) {}
+  function enterRoom(code,pid){
+    ON.code=code;ON.pid=pid;ON.chatLen=-1;ON.confDone=false;save();
+    $('onEntry').hidden=true;$('onRoom').hidden=false;
+    if(ON.timer)clearInterval(ON.timer);
+    if(ON.tick)clearInterval(ON.tick);
+    poll();ON.timer=setInterval(poll,1500);ON.tick=setInterval(updateTimers,500);
   }
-
-  function startPolling() {
-    if (ON.timer) clearInterval(ON.timer);
-    $('onEntry').hidden = true;
-    $('onRoom').hidden = false;
-    poll();
-    ON.timer = setInterval(poll, 1500);
+  function leave(silent){
+    if(ON.timer){clearInterval(ON.timer);ON.timer=null;}
+    if(ON.tick){clearInterval(ON.tick);ON.tick=null;}
+    if(!silent&&ON.code&&ON.pid)api('/api/rooms/'+ON.code+'/leave',{pid:ON.pid});
+    ON.code=null;ON.pid=null;ON.state=null;clearSave();
+    $('onRoom').hidden=true;$('onEntry').hidden=false;
   }
-
-  function leave(silent) {
-    if (ON.timer) { clearInterval(ON.timer); ON.timer = null; }
-    if (!silent && ON.code && ON.pid) { api('/api/rooms/' + ON.code + '/leave', {pid: ON.pid}); }
-    ON.code = null; ON.pid = null; ON.state = null;
-    clearSave();
-    $('onRoom').hidden = true;
-    $('onEntry').hidden = false;
+  function poll(){
+    if(!ON.code||!ON.pid)return;
+    fetch('/api/rooms/'+ON.code+'/state?pid='+encodeURIComponent(ON.pid))
+      .then(function(r){return r.json().catch(function(){return {};});})
+      .then(function(d){
+        if(!d.ok){leave(true);err('انتهت الغرفة أو غادرتها.');return;}
+        ON.state=d.state;ON.offset=(d.state.now||Date.now()/1000)-Date.now()/1000;render();
+      }).catch(function(){});
+  }
+  function act(body){
+    body.pid=ON.pid;
+    return api('/api/rooms/'+ON.code+'/action',body).then(function(d){
+      if(!d.ok){err(d.error||'إجراء غير صالح');return null;}
+      err('');ON.state=d.state;ON.offset=(d.state.now||Date.now()/1000)-Date.now()/1000;render();return d.state;
+    });
+  }
+  function updateTimers(){
+    var s=ON.state;if(!s)return;
+    var t=$('duelTimer');
+    if(t&&s.phase==='question'&&s.deadline){
+      var left=Math.max(0,Math.ceil(s.deadline-(Date.now()/1000+ON.offset)));
+      t.textContent='⏱ '+left;t.classList.toggle('urgent',left<=5);
+    }
   }
 
   /* ---------- الرسم ---------- */
-  function render() {
-    var s = ON.state;
-    if (!s) return;
-    var g = GAMES[s.game] || GAMES.tv_broken;
-    $('onRoomCode').textContent = s.code;
-    $('onRoomGame').textContent = g.name;
-    $('onRoomPhase').textContent = PHASE_NAMES[s.phase] || s.phase || '';
+  function render(){
+    var s=ON.state;if(!s)return;
+    var g=GAMES[s.game]||{};
+    $('onRoomCode').textContent=s.code;
+    $('onRoomGame').textContent=(s.game_icon||g.icon||'🎮')+' '+(s.game_name||g.name||'');
+    $('onRoomPhase').textContent=PHASE_NAMES[s.phase]||s.phase||'';
     renderPlayers(s);
-    if (s.game === 'mafia') renderMafia(s);
-    else renderTV(s);
-    renderChat(s.chat || []);
+    if(s.phase==='lobby'){renderLobby(s);}
+    else if(s.game==='mafia'){renderMafia(s);}
+    else if(s.game==='quiz_duel'){renderDuel(s);}
+    else{renderTV(s);}
+    renderChat(s.chat||[]);
   }
-
-  function renderPlayers(s) {
-    var list = s.players || [];
-    $('onCount').textContent = '(' + list.length + '/' + (s.max_players || g_max(s)) + ')';
-    $('onPlayers').innerHTML = list.map(function (p) {
-      var cls = 'on-player' + (p.alive === false ? ' dead' : '');
-      var tag = (p.pid === s.host) ? '<span class="tag">المضيف</span>' : '';
-      var role = p.role ? '<span class="tag">' + esc(roleName(p.role)) + '</span>' : '';
-      return '<div class="' + cls + '"><span class="dot"></span><span class="nm">' + esc(p.name) +
-             '</span>' + role + tag + '</div>';
+  function renderPlayers(s){
+    var list=s.players||[];
+    $('onCount').textContent='('+list.length+'/'+(s.max_players||8)+')';
+    $('onPlayers').innerHTML=list.map(function(p){
+      var cls='on-player'+(p.alive===false?' dead':'');
+      var tag=(p.pid===s.host)?'<span class="tag">المضيف</span>':'';
+      var role=p.role?'<span class="tag">'+esc(roleName(p.role))+'</span>':'';
+      var score=(s.game==='quiz_duel')?'<span class="score">'+(p.score||0)+'/'+(s.target||3)+'</span>':'';
+      var ans=(s.game==='quiz_duel'&&s.phase==='question'&&p.answered)?'<span class="tag">✓</span>':'';
+      return '<div class="'+cls+'"><span class="dot"></span><span class="nm">'+esc(p.name)+(p.pid===ON.pid?' (أنت)':'')+'</span>'+ans+score+role+tag+'</div>';
     }).join('');
   }
-
-  function g_max(s) { return (GAMES[s.game] || GAMES.tv_broken).max; }
-
-  function roleName(r) {
-    return {mafia: 'مافيا', doctor: 'الطبيب', detective: 'المحقق', host: 'الهوست', citizen: 'مواطن'}[r] || r;
-  }
-
-  function renderChat(chat) {
-    var el = $('onChatList');
-    el.innerHTML = chat.map(function (c) {
-      if (c.sys) return '<div class="on-msg sys">' + esc(c.text) + '</div>';
-      var mine = c.pid === ON.pid ? ' (أنت)' : '';
-      return '<div class="on-msg"><span class="who">' + esc(c.name) + mine + '</span>' + esc(c.text) + '</div>';
+  function roleName(r){return {mafia:'مافيا',doctor:'طبيب',detective:'محقق',host:'هوست',citizen:'مواطن'}[r]||r;}
+  function renderChat(chat){
+    if(chat.length===ON.chatLen)return;ON.chatLen=chat.length;
+    var el=$('onChatList');
+    el.innerHTML=chat.slice(-80).map(function(c){
+      return '<div class="on-msg'+(c.pid===ON.pid?' mine':'')+'"><span class="who">'+esc(c.name)+(c.pid===ON.pid?' (أنت)':'')+'</span>'+esc(c.text)+'</div>';
     }).join('');
-    el.scrollTop = el.scrollHeight;
+    el.scrollTop=el.scrollHeight;
   }
 
-  /* ---------- تلفزيون خربان ---------- */
-  function renderTV(s) {
-    var m = $('onMain');
-    if (s.phase === 'lobby') {
-      m.innerHTML = '<h3>بانتظار بدء اللعبة</h3>' +
-        '<p class="on-phase-sub">شارك رمز الغرفة مع أصدقائك. يحتاج 3 لاعبين على الأقل.</p>' +
-        hostStartBtn(s, 'start', 'بدء اللعبة') +
-        '<p class="on-note">بعد البدء ستنتقل إلى صفحة اللعبة نفسها مع بقية اللاعبين.</p>';
-      bindStart(s);
-      return;
+  /* ---------- اللوبي + تبديل اللعبة ---------- */
+  function renderLobby(s){
+    var g=GAMES[s.game]||{};var n=(s.players||[]).length;
+    var h='<div class="on-lobby-game"><span class="gi">'+(s.game_icon||g.icon||'🎮')+'</span><div>'+
+      '<h3>'+esc(s.game_name||g.name||'')+'</h3><p>'+esc(s.game_desc||g.desc||'')+'</p>'+
+      '<span class="gm">'+pLabel(s.min_players||g.min,s.max_players||g.max)+'</span></div></div>';
+    h+='<p class="on-phase-sub">شارك رمز الغرفة <b class="on-code-inline">'+esc(s.code)+'</b> مع أصدقائك — الحالي '+n+' لاعب.</p>';
+    h+=hostStartBtn(s,'start','🚀 بدء اللعبة');
+    if(s.host===ON.pid){
+      h+='<div class="on-change"><p class="on-change-title">🔄 غيّر اللعبة بنفس الغرفة (بدون إنشاء غرفة جديدة):</p>'+
+        '<div class="on-change-grid">'+gameCards(s.game,'data-change')+'</div></div>';
     }
-    m.innerHTML = '<h3>اللعبة جارية</h3>' +
-      '<p class="on-phase-sub">المرحلة الحالية: ' + esc(PHASE_NAMES[s.phase] || s.phase) + '</p>' +
-      '<a class="on-btn" href="/game/tv_broken?room=' + s.code + '" style="display:block;text-align:center;text-decoration:none">ادخل اللعبة</a>' +
-      '<p class="on-note">إن فاتتك مرحلة ستلحق بها في المرحلة التالية.</p>';
+    $('onMain').innerHTML=h;
+    bindStart(s);
+    $('onMain').querySelectorAll('[data-change]').forEach(function(b){
+      b.addEventListener('click',function(){act({type:'change_game',game:b.getAttribute('data-change')});});
+    });
   }
-
-  function hostStartBtn(s, type, label) {
-    var isHost = s.host === ON.pid;
-    var n = (s.players || []).length;
-    var min = s.min_players || 3;
-    if (!isHost) return '<p class="on-note">المضيف هو من يبدأ اللعبة.</p>';
-    if (n < min) return '<p class="on-note">بقي ' + (min - n) + ' لاعبين على الأقل للبدء.</p>';
-    return '<button class="on-btn" data-start="' + type + '">' + esc(label) + '</button>';
+  function hostStartBtn(s,type,label){
+    var isHost=s.host===ON.pid;var n=(s.players||[]).length;var min=s.min_players||2;
+    if(!isHost)return '<p class="on-note">المضيف هو من يبدأ اللعبة.</p>';
+    if(n<min)return '<p class="on-note">'+remainLabel(min-n)+'</p>';
+    return '<button class="on-btn" data-start="'+type+'">'+esc(label)+'</button>';
   }
-
-  function bindStart(s) {
-    var btn = document.querySelector('[data-start]');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      var type = btn.getAttribute('data-start');
-      var body = {type: type};
-      if (type === 'start' && s.game === 'tv_broken') body.max_rounds = 2;
+  function bindStart(s){
+    var btn=document.querySelector('[data-start]');if(!btn)return;
+    btn.addEventListener('click',function(){
+      var type=btn.getAttribute('data-start');var body={type:type};
+      if(type==='start'&&s.game==='tv_broken')body.max_rounds=2;
       act(body);
     });
   }
 
+  /* ---------- تلفزيون خربان ---------- */
+  function renderTV(s){
+    $('onMain').innerHTML='<h3>اللعبة جارية 📺</h3>'+
+      '<p class="on-phase-sub">المرحلة الحالية: '+esc(PHASE_NAMES[s.phase]||s.phase)+'</p>'+
+      '<a class="on-btn" href="/game/tv_broken?room='+s.code+'" style="display:block;text-align:center;text-decoration:none">ادخل اللعبة</a>'+
+      '<p class="on-note">إن فاتتك مرحلة ستلحق بها في المرحلة التالية.</p>';
+  }
+
+  /* ---------- مبارزة الأسئلة ---------- */
+  function duelScores(s){
+    return '<div class="duel-scores">'+(s.players||[]).map(function(p){
+      return '<div class="duel-score'+(p.pid===ON.pid?' me':'')+'"><span class="sn">'+esc(p.name)+'</span><span class="sv">'+(p.score||0)+'</span></div>';
+    }).join('')+'</div>';
+  }
+  function renderDuel(s){
+    var m=$('onMain');var q=s.question||{};
+    if(s.phase==='question'){
+      var answered=s.my_answer!=null;
+      var h='<div class="duel">'+duelScores(s)+
+        '<div class="duel-qhead"><span class="duel-round">الجولة '+s.round+' · أول من يجمع '+(s.target||3)+'</span><span class="duel-timer" id="duelTimer">⏱ 15</span></div>'+
+        '<div class="duel-cat">'+(CATS[q.category]||'سؤال')+' · '+'★'.repeat(q.difficulty||1)+'</div>'+
+        '<p class="duel-q">'+esc(q.text)+'</p><div class="duel-opts">'+
+        (q.options||[]).map(function(op,i){
+          return '<button type="button" class="duel-opt'+(s.my_answer===i?' sel':'')+'" data-duel="'+i+'"'+(answered?' disabled':'')+'><span class="dk">'+['أ','ب','ج','د'][i]+'</span>'+esc(op)+'</button>';
+        }).join('')+'</div>'+
+        (answered?'<p class="on-note">✅ أجبت — بانتظار الخصم...</p>':'<p class="on-note">الأسرع بالإجابة الصحيحة يفوز بالجولة ⚡</p>')+'</div>';
+      m.innerHTML=h;
+      m.querySelectorAll('[data-duel]').forEach(function(b){
+        b.addEventListener('click',function(){act({type:'answer',idx:Number(b.getAttribute('data-duel'))});});
+      });
+      updateTimers();return;
+    }
+    if(s.phase==='round_result'){
+      var h='<div class="duel">'+duelScores(s)+'<div class="on-result">'+esc(s.last_result||'')+'</div>'+
+        '<p class="duel-q">'+esc(q.text)+'</p><div class="duel-opts">'+
+        (q.options||[]).map(function(op,i){
+          var cls=(i===q.correct)?' correct':((s.my_answer===i)?' wrong':' dim');
+          return '<div class="duel-opt static'+cls+'"><span class="dk">'+['أ','ب','ج','د'][i]+'</span>'+esc(op)+'</div>';
+        }).join('')+'</div><p class="on-note">الجولة التالية تبدأ تلقائيًا...</p></div>';
+      m.innerHTML=h;return;
+    }
+    if(s.phase==='ended'){
+      var iWon=s.winner===ON.pid;
+      var h='<div class="duel"><div class="on-winner"><span class="big">'+(iWon?'🏆':'🎮')+'</span>'+
+        '<h2>'+esc(nameOf(s,s.winner))+' فاز بالمباراة!</h2>'+duelScores(s)+hostStartBtn(s,'play_again','🔄 مباراة جديدة')+'</div></div>';
+      m.innerHTML=h;bindStart(s);
+      if(iWon&&!ON.confDone){ON.confDone=true;confetti();}
+      return;
+    }
+  }
+
   /* ---------- مافيا ---------- */
-  function renderMafia(s) {
-    var m = $('onMain');
-    var mine = null;
-    (s.players || []).forEach(function (p) { if (p.pid === ON.pid) mine = p; });
-
-    if (s.phase === 'lobby') {
-      m.innerHTML = '<h3>بانتظار بدء اللعبة</h3>' +
-        '<p class="on-phase-sub">الأدوار تُوزَّع عشوائياً: مافيا، طبيب، محقق، وهوست. يحتاج 5 لاعبين على الأقل.</p>' +
-        hostStartBtn(s, 'start', 'بدء اللعبة');
-      bindStart(s);
+  function renderMafia(s){
+    var m=$('onMain');var mine=null;
+    (s.players||[]).forEach(function(p){if(p.pid===ON.pid)mine=p;});
+    if(s.phase==='ended'){
+      var w=s.winner==='mafia'?'🔴 فازت المافيا':'🏆 فاز الأهالي';
+      m.innerHTML='<div class="on-winner"><span class="big">'+(s.winner==='mafia'?'🔴':'🏆')+'</span><h2>'+w+'</h2>'+
+        hostStartBtn(s,'play_again','جولة جديدة')+'</div>';
+      bindStart(s);return;
+    }
+    if(s.phase==='reveal'){
+      m.innerHTML='<h3>النتيجة</h3><div class="on-result">'+esc(s.last_result||'')+'</div><p class="on-note">المرحلة التالية تبدأ تلقائيًا...</p>'+renderLog(s);
       return;
     }
-
-    if (s.phase === 'ended') {
-      var w = s.winner === 'mafia' ? '🔴 فازت المافيا' : '🏆 فاز الأهالي';
-      m.innerHTML = '<div class="on-winner"><span class="big">' + (s.winner === 'mafia' ? '🔴' : '🏆') + '</span>' +
-        '<h2>' + w + '</h2>' +
-        '<p class="on-phase-sub">تبقى ' + aliveCount(s) + ' لاعباً حياً.</p>' +
-        hostStartBtn(s, 'play_again', 'جولة جديدة') + '</div>';
-      bindStart(s);
-      return;
+    var html='';
+    if(s.phase==='night'){
+      html+='<h3>🌙 الليلة '+(s.day+1)+'</h3><p class="on-phase-sub">القرية نائمة. الأدوار الليلية تختار إجراءاتها.</p>'+
+        '<div class="on-result">شخصيتك: '+esc(roleName(s.my_role))+'</div>'+nightActions(s,mine);
+    }else{
+      html+='<h3>🌞 النهار '+s.day+'</h3><p class="on-phase-sub">ناقشوا في الشات ثم صوّتوا لمن تشكون فيه.</p>'+dayVote(s,mine);
     }
-
-    if (s.phase === 'reveal') {
-      m.innerHTML = '<h3>النتيجة</h3><div class="on-result">' + esc(s.last_result || '') + '</div>' +
-        '<p class="on-note">المرحلة التالية تبدأ تلقائياً...</p>' + renderLog(s);
-      return;
-    }
-
-    var html = '';
-    if (s.phase === 'night') {
-      html += '<h3>🌙 الليلة ' + (s.day + 1) + '</h3>';
-      html += '<p class="on-phase-sub">القرية نائمة. الأدوار الليلية تختار إجراءاتها.</p>';
-      html += '<div class="on-result">شخصيتك: ' + esc(roleName(s.my_role)) + '</div>';
-      html += nightActions(s, mine);
-    } else {
-      html += '<h3>🌞 النهار ' + s.day + '</h3>';
-      html += '<p class="on-phase-sub">ناقشوا في الشات ثم صوّتوا لمن تشكون فيه.</p>';
-      html += dayVote(s, mine);
-    }
-    html += renderLog(s);
-    m.innerHTML = html;
-    bindMafia(s, mine);
+    html+=renderLog(s);m.innerHTML=html;bindMafia(s,mine);
   }
-
-  function aliveCount(s) {
-    return (s.players || []).filter(function (p) { return p.alive !== false; }).length;
-  }
-
-  function nightActions(s, mine) {
-    if (!mine || mine.alive === false) return '<p class="on-note">أنت ميت — تتابع الأحداث فقط.</p>';
-    var role = s.my_role;
-    if (role === 'citizen') return '<p class="on-note">أنت مواطن: لا إجراء ليلي لك. بانتظار الأدوار الأخرى...</p>';
-    if (role === 'host') {
-      var done = (s.my_night && s.my_night.host_done);
-      return '<button class="on-btn" data-act="night_action" ' + (done ? 'disabled' : '') + '>' +
-             (done ? 'تم إنهاء إجراءاتك' : 'إنهاء إجراءات الهوست') + '</button>';
+  function nightActions(s,mine){
+    if(!mine||mine.alive===false)return '<p class="on-note">أنت ميت — تتابع الأحداث فقط.</p>';
+    var role=s.my_role;
+    if(role==='citizen')return '<p class="on-note">أنت مواطن: لا إجراء ليلي لك. بانتظار الأدوار الأخرى...</p>';
+    if(role==='host'){
+      var done=(s.my_night&&s.my_night.host_done);
+      return '<button class="on-btn" data-act="night_action" '+(done?'disabled':'')+'>'+(done?'تم إنهاء إجراءاتك':'إنهاء إجراءات الهوست')+'</button>';
     }
-    var targets = (s.players || []).filter(function (p) {
-      if (p.alive === false) return false;
-      if (role === 'doctor') return true;
-      if (p.pid === ON.pid) return false;
-      if (role === 'mafia' && p.role === 'mafia' && p.role) return false;
+    var targets=(s.players||[]).filter(function(p){
+      if(p.alive===false)return false;
+      if(role==='doctor')return true;
+      if(p.pid===ON.pid)return false;
+      if(role==='mafia'&&p.role==='mafia')return false;
       return true;
     });
-    var sel = (s.my_night && s.my_night.target) || '';
-    var label = role === 'mafia' ? 'اختر ضحية' : (role === 'doctor' ? 'اختر من تحميه' : 'اختر من تفحصه');
-    var btns = targets.map(function (p) {
-      return '<button class="on-tgt' + (sel === p.pid ? ' sel' : '') + '" data-act="night_pick" data-pid="' + p.pid + '">' +
-             esc(p.name) + '</button>';
+    var sel=(s.my_night&&s.my_night.target)||'';
+    var label=role==='mafia'?'اختر ضحية':(role==='doctor'?'اختر من تحميه':'اختر من تفحصه');
+    var btns=targets.map(function(p){
+      return '<button class="on-tgt'+(sel===p.pid?' sel':'')+'" data-act="night_pick" data-pid="'+p.pid+'">'+esc(p.name)+'</button>';
     }).join('');
-    var canConfirm = !!sel;
-    return '<p class="on-phase-sub">' + label + '</p><div class="on-targets">' + btns + '</div>' +
-           '<button class="on-btn" data-act="night_action" ' + (canConfirm ? '' : 'disabled') + '>تأكيد</button>';
-  }
-
-  function dayVote(s, mine) {
-    if (!mine || mine.alive === false) return '<p class="on-note">أنت ميت — تتابع الأحداث فقط.</p>';
-    var targets = (s.players || []).filter(function (p) { return p.alive !== false && p.pid !== ON.pid; });
-    var sel = s.votes.filter(function (v) { return v.pid === ON.pid; })[0];
-    var selT = sel ? sel.target : null;
-    var btns = targets.map(function (p) {
-      return '<button class="on-tgt' + (selT === p.pid ? ' sel' : '') + '" data-act="vote_pick" data-pid="' + p.pid + '">' +
-             esc(p.name) + '</button>';
-    }).join('');
-    var abstain = '<button class="on-tgt' + (selT === null && sel ? ' sel' : '') + '" data-act="vote_pick" data-pid="">امتناع</button>';
-    return '<div class="on-targets">' + btns + abstain + '</div>' +
-           '<button class="on-btn" data-act="vote" ' + (sel ? '' : 'disabled') + '>تأكيد التصويت</button>' +
-           '<p class="on-note">الأصوات الظاهرة للجميع قد تكشف تحالفات — احذر.</p>';
-  }
-
-  function renderLog(s) {
-    var log = (s.log || []).slice(-8);
-    if (!log.length) return '';
-    return '<div class="on-log">' + log.map(function (l) { return '<div>' + esc(l) + '</div>'; }).join('') + '</div>';
-  }
-
-  function bindMafia(s, mine) {
-    // استرجاع الاختيار المحفوظ من الحالة حتى لا يضيع التأكيد بعد إعادة الرسم
-    var pick = null;
-    if (s.phase === 'night') {
-      pick = (s.my_night && s.my_night.target) || null;
-    } else {
-      var mv = (s.votes || []).filter(function (v) { return v.pid === ON.pid; })[0];
-      pick = mv ? mv.target : null;
+    var extra='';
+    if(role==='detective'&&s.my_night&&s.my_night.result){
+      extra='<div class="on-result">'+(s.my_night.result==='mafia'?'🔴 مافيا!':'✅ ليس مافيا')+'</div>';
     }
-    document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function (x) { x.classList.remove('sel'); });
-        b.classList.add('sel');
-        pick = b.getAttribute('data-pid') || null;
-        var conf = document.querySelector('[data-act="night_action"],[data-act="vote"]');
-        if (conf) conf.disabled = false;
+    return '<p class="on-phase-sub">'+label+'</p><div class="on-targets">'+btns+'</div>'+extra+
+      '<button class="on-btn" data-act="night_action" '+(sel?'':'disabled')+'>تأكيد</button>';
+  }
+  function dayVote(s,mine){
+    if(!mine||mine.alive===false)return '<p class="on-note">أنت ميت — تتابع الأحداث فقط.</p>'+votesHtml(s);
+    var targets=(s.players||[]).filter(function(p){return p.alive!==false&&p.pid!==ON.pid;});
+    var sel=(s.votes||[]).filter(function(v){return v.pid===ON.pid;})[0];
+    var selT=sel?sel.target:null;
+    var btns=targets.map(function(p){
+      return '<button class="on-tgt'+(selT===p.pid?' sel':'')+'" data-act="vote_pick" data-pid="'+p.pid+'">'+esc(p.name)+'</button>';
+    }).join('');
+    var abstain='<button class="on-tgt'+(selT===null&&sel?' sel':'')+'" data-act="vote_pick" data-pid="">امتناع</button>';
+    return '<div class="on-targets">'+btns+abstain+'</div>'+
+      '<button class="on-btn" data-act="vote" '+(sel?'':'disabled')+'>تأكيد التصويت</button>'+votesHtml(s)+
+      '<p class="on-note">الأصوات الظاهرة للجميع قد تكشف تحالفات — احذر.</p>';
+  }
+  function votesHtml(s){
+    var vs=s.votes||[];if(!vs.length)return '';
+    return '<div class="on-targets" style="margin-top:10px">'+vs.map(function(v){
+      return '<span class="on-chip">'+esc(v.name)+' ← '+esc(nameOf(s,v.target))+'</span>';
+    }).join('')+'</div>';
+  }
+  function renderLog(s){
+    var log=(s.log||[]).slice(-8);if(!log.length)return '';
+    return '<div class="on-log">'+log.map(function(l){return '<div>'+esc(l)+'</div>';}).join('')+'</div>';
+  }
+  function bindMafia(s,mine){
+    var pick=null;
+    if(s.phase==='night'){pick=(s.my_night&&s.my_night.target)||null;}
+    else{var mv=(s.votes||[]).filter(function(v){return v.pid===ON.pid;})[0];pick=mv?mv.target:null;}
+    document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function(b){
+      b.addEventListener('click',function(){
+        document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function(x){x.classList.remove('sel');});
+        b.classList.add('sel');pick=b.getAttribute('data-pid')||null;
+        var conf=document.querySelector('[data-act="night_action"],[data-act="vote"]');if(conf)conf.disabled=false;
       });
     });
-    var conf = document.querySelector('[data-act="night_action"],[data-act="vote"]');
-    if (conf) {
-      conf.addEventListener('click', function () {
-        if (s.phase === 'night') act({type: 'night_action', target: pick});
-        else act({type: 'vote', target: pick});
-      });
-    }
+    var conf=document.querySelector('[data-act="night_action"],[data-act="vote"]');
+    if(conf){conf.addEventListener('click',function(){
+      if(s.phase==='night')act({type:'night_action',target:pick});else act({type:'vote',target:pick});
+    });}
   }
 
   /* ---------- الأحداث ---------- */
-  function initGameInfo() {
-    var sel = $('onGame');
-    function fill() {
-      var g = GAMES[sel.value] || GAMES.tv_broken;
-      $('onGameDesc').textContent = g.desc;
-      $('onGameLimit').textContent = 'من ' + g.min + ' إلى ' + g.max + ' لاعبين';
+  $('onCreateBtn').addEventListener('click',createRoom);
+  $('onJoinBtn').addEventListener('click',joinRoom);
+  $('onCode').addEventListener('keydown',function(e){if(e.key==='Enter')joinRoom();});
+  $('onLeaveBtn').addEventListener('click',function(){leave(false);});
+  $('onCopyBtn').addEventListener('click',function(){
+    if(navigator.clipboard)navigator.clipboard.writeText(ON.code||'');
+    $('onCopyBtn').textContent='تم النسخ ✓';setTimeout(function(){$('onCopyBtn').textContent='نسخ الرمز';},1500);
+  });
+  $('onShareBtn').addEventListener('click',function(){
+    var url=location.origin+'/online?room='+ON.code;
+    var text='انضم إلى غرفة ألعاب أونلاين 🌐 الرمز: '+ON.code;
+    if(navigator.share){navigator.share({title:'ألعاب أمين أونلاين',text:text,url:url}).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(text+' — '+url);err('تم نسخ رابط الدعوة 🔗');}
+  });
+  $('onChatSend').addEventListener('click',sendChat);
+  $('onChatText').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
+  function sendChat(){var t=$('onChatText').value.trim();if(!t)return;$('onChatText').value='';act({type:'chat',text:t});}
+
+  try{var sn=localStorage.getItem('ameen_online_name')||'';if(sn)$('onName').value=sn;}catch(e){}
+  renderEntryGrid();
+  var q=new URLSearchParams(location.search);
+  var rp=(q.get('room')||'').toUpperCase().trim();
+  if(rp){$('onCode').value=rp;}
+  try{
+    var r=JSON.parse(localStorage.getItem('ameen_online_room')||'null');
+    if(r&&r.code&&r.pid){
+      fetch('/api/rooms/'+r.code+'/state?pid='+encodeURIComponent(r.pid))
+        .then(function(res){return res.json().catch(function(){return {};});})
+        .then(function(d){if(d.ok&&d.state)enterRoom(r.code,r.pid);else clearSave();}).catch(function(){});
     }
-    sel.addEventListener('change', fill);
-    fill();
-    var q = new URLSearchParams(location.search);
-    if (q.get('game') && GAMES[q.get('game')]) { sel.value = q.get('game'); fill(); }
-  }
-
-  $('onCreateBtn').addEventListener('click', createRoom);
-  $('onJoinBtn').addEventListener('click', joinRoom);
-  $('onLeaveBtn').addEventListener('click', function () { leave(false); });
-  $('onCopyBtn').addEventListener('click', function () {
-    var code = $('onRoomCode').textContent;
-    if (navigator.clipboard) navigator.clipboard.writeText(code);
-    $('onCopyBtn').textContent = 'تم النسخ';
-    setTimeout(function () { $('onCopyBtn').textContent = 'نسخ الرمز'; }, 1500);
-  });
-  $('onChatSend').addEventListener('click', function () {
-    var t = $('onChatText').value.trim();
-    if (!t) return;
-    $('onChatText').value = '';
-    act({type: 'chat', text: t});
-  });
-  $('onChatText').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') $('onChatSend').click();
-  });
-  $('onCode').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') joinRoom();
-  });
-
-  try {
-    var savedName = localStorage.getItem('ameen_online_name') || '';
-    if (savedName) $('onName').value = savedName;
-  } catch (e) {}
-  $('onName').addEventListener('change', function () {
-    try { localStorage.setItem('ameen_online_name', $('onName').value.trim()); } catch (e) {}
-  });
-
-  initGameInfo();
-  if (restore()) startPolling();
+  }catch(e){}
 })();
 </script>
 {% endblock %}

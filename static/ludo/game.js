@@ -23,6 +23,7 @@ const CONFIG = {
   MAX_CARDS: 4,        // الحد الأقصى لحيازة الكروت
   TIMER_SECONDS: 20,   // مدة مؤقت السؤال (ثانية)
   RESULT_PAUSE: 2600,  // مدة عرض نتيجة الإجابة قبل الانتقال (مللي ثانية)
+  WRONG_MOVE_RATIO: 0.5, // الإجابة الخاطئة تتحرك نص الرمية (بدل صفر) حتى لا تتجمد اللعبة
   DEFAULT_PLAYERS: 2,  // عدد اللاعبين الافتراضي
 };
 
@@ -149,6 +150,17 @@ function legalStepsMoves(player, n) {
     if (pos === FINISH) return;
     if (pos === -1) { out.push(i); return; }
     if (pos + n <= FINISH) out.push(i);
+  });
+  return out;
+}
+
+// حركات الإجابة الخاطئة: نص الرمية للأحجار على المسار، ورمية 6 تُخرج حجرًا من القاعدة حتى لو غلطت
+function wrongMovePieces(player, dice, half) {
+  const out = [];
+  player.pieces.forEach((pos, i) => {
+    if (pos === FINISH) return;
+    if (pos === -1) { if (dice === 6) out.push(i); return; }
+    if (pos + half <= FINISH) out.push(i);
   });
   return out;
 }
@@ -412,8 +424,16 @@ function reducer(st, a) {
 
     case "answer-continue": {
       if (ph.k !== "answer-result") return st;
-      if (!ph.correct) { advanceTurn(s); return s; }
-      s.phase = { k: "select-piece", dice: s.dice ?? 0, legal: legalPieceMoves(cur, s.dice ?? 0) };
+      const dice = s.dice ?? 0;
+      if (ph.correct) {
+        s.phase = { k: "select-piece", dice, legal: legalPieceMoves(cur, dice) };
+        return s;
+      }
+      // إجابة خاطئة: نص الرمية بدل التجمّد — اللعبة تستمر دائمًا
+      const half = Math.max(1, Math.floor(dice * CONFIG.WRONG_MOVE_RATIO));
+      const legal = wrongMovePieces(cur, dice, half);
+      if (legal.length === 0) { advanceTurn(s); return s; }
+      s.phase = { k: "select-piece", dice: half, legal, wrong: true };
       return s;
     }
 
@@ -423,8 +443,8 @@ function reducer(st, a) {
       const res = applyMove(s, s.current, a.idx ?? 0, dice, false);
       const ns = res.state;
       ns.dice = dice;
-      // فرصة الكرت بعد الإجابة الصحيحة والحركة
-      if (Math.random() * 100 < ns.cardProb * 100) {
+      // فرصة الكرت بعد الإجابة الصحيحة والحركة فقط (الخاطئة بلا كرت)
+      if (!ph.wrong && Math.random() * 100 < ns.cardProb * 100) {
         const card = drawCardType();
         if (ns.players[s.current].cards.length < MAX_CARDS) ns.phase = { k: "card-offer", card };
         else ns.phase = { k: "fifth-choice", card };
@@ -606,7 +626,7 @@ function instrText(ph) {
     case "pre-roll":      return "ارمِ النرد أو استخدم كرتًا";
     case "question":      return "جاوب على السؤال!";
     case "answer-result": return ph.correct ? "إجابة صحيحة!" : "إجابة خاطئة";
-    case "select-piece":  return `اختر حجرًا للتحرك ${ph.dice} خطوات`;
+    case "select-piece":  return ph.wrong ? `إجابة خاطئة — تتحرك ${ph.dice} فقط (نص الرمية) 🐢` : `اختر حجرًا للتحرك ${ph.dice} خطوات`;
     case "card-offer":    return "كرت جديد يصلك!";
     case "fifth-choice":  return "حيازتك ممتلئة — استبدل أو ارفض";
     case "steps-number":  return "اختر عدد الخطوات";
@@ -973,8 +993,8 @@ function renderModal() {
   if (ph.k === "answer-result" && lastQv) {
     const sel = lastSelected, corr = lastQv.correct;
     const bannerText = sel === corr ? "إجابة صحيحة! تتحرك الآن 🎉"
-      : sel === -1 ? "انتهى الوقت! لن تتحرك هذا الدور"
-      : "إجابة خاطئة! لن تتحرك هذا الدور";
+      : sel === -1 ? "انتهى الوقت! تتحرك نص الرمية 🐢"
+      : "إجابة خاطئة! تتحرك نص الرمية 🐢";
     root.innerHTML = `<div class="overlay"><div class="modal qmodal">
       <div class="q-top">
         <span class="q-player" style="background:${COLOR_HEX[cur.color]}">${cur.name}</span>

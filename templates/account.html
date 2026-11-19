@@ -197,6 +197,11 @@
         </div>
 
         <div class="panel">
+            <h2><svg class="ico" aria-hidden="true"><use href="#i-medal"></use></svg>أوسمتي</h2>
+            <div id="trophyList" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+        </div>
+
+        <div class="panel">
             <h2><svg class="ico" aria-hidden="true"><use href="#i-trophy"></use></svg>سجلّ البطولات</h2>
             <div class="hist" id="histList"></div>
         </div>
@@ -262,6 +267,17 @@
         document.getElementById('statGrid').innerHTML = stats.map(function (s) {
             return '<div class="stat"><div class="num">' + s[0] + '</div><div class="lbl">' + s[1] + '</div></div>';
         }).join('');
+
+        var tr = ME.trophies || [];
+        var tl = document.getElementById('trophyList');
+        if (tl) {
+            tl.innerHTML = tr.length ? tr.map(function (t) {
+                return '<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 12px">' +
+                    '<span style="font-size:1.6rem">' + (t.icon || '🏅') + '</span>' +
+                    '<div><b style="display:block;font-size:.9rem">' + (t.title || 'وسام') + '</b>' +
+                    '<small style="color:var(--text-secondary)">' + (t.game || '') + (t.date ? ' · ' + t.date : '') + '</small></div></div>';
+            }).join('') : '<p class="hint" style="margin:0">لا أوسمة بعد — فز ببطولة لتحصل على أول وسام 🏆</p>';
+        }
 
         buildPicks();
         loadHistory();

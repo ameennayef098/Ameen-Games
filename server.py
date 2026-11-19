@@ -3966,6 +3966,14 @@ def offline_page():
     from flask import send_from_directory
     return send_from_directory(os.path.join(os.path.dirname(__file__)), 'ألعاب-بدون-إنترنت.html')
 
+@app.route('/online')
+def online_page():
+    return render_template('online.html', title='ألعاب أونلاين')
+
+@app.route('/api/rooms/games')
+def rooms_games():
+    return jsonify({'games': [{'id': k, **v} for k, v in ROOM_GAMES.items()]})
+
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -4126,6 +4134,18 @@ def _bump_account(acc_id, **kw):
             save_accounts(accounts)
             return a
     return None
+
+
+def _award_trophy(acc_id, trophy):
+    """يمنح وسامًا للحساب (يُعرض بصفحة الحساب) — يُحفظ آخر 50 وسامًا."""
+    accounts = load_accounts()
+    for a in accounts:
+        if a.get('id') == acc_id:
+            tr = a.get('trophies', [])
+            tr.append(trophy)
+            a['trophies'] = tr[-50:]
+            save_accounts(accounts)
+            return
 
 
 @app.route('/api/accounts/register', methods=['POST'])
@@ -4406,6 +4426,8 @@ def tournament_save():
         credited.add(aid)
         won = 1 if (champion.get('accountId') and champion['accountId'] == aid) else 0
         _bump_account(aid, tournamentsPlayed=1, tournamentsWon=won)
+        if won:
+            _award_trophy(aid, {'icon': '🏆', 'title': 'بطل بطولة', 'game': game, 'date': now()[:10]})
 
     for m in record.get('matches', []):
         for key, delta in (('winner', 'matchesWon'),):
@@ -4479,6 +4501,54 @@ ROOM_MAX_PLAYERS = 8
 ROOM_MAX_TEXT = 200
 ROOM_MAX_DRAW = 2 * 1024 * 1024
 
+# ── حفظ الغرف على القرص حتى لا تضيع عند إعادة تشغيل السيرفر (Render ينام ويعيد التشغيل) ──
+ROOMS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'rooms.json')
+_ROOMS_LAST_SAVE = [0.0]
+
+
+def _save_rooms(force=False):
+    now = time.time()
+    if not force and now - _ROOMS_LAST_SAVE[0] < 2.0:
+        return
+    _ROOMS_LAST_SAVE[0] = now
+    try:
+        os.makedirs(os.path.dirname(ROOMS_FILE), exist_ok=True)
+        tmp = ROOMS_FILE + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(ROOMS, f, ensure_ascii=False)
+        os.replace(tmp, ROOMS_FILE)
+    except Exception:
+        pass
+
+
+def _load_rooms():
+    try:
+        if os.path.exists(ROOMS_FILE):
+            with open(ROOMS_FILE, encoding='utf-8') as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                ROOMS.update(data)
+                _clean_rooms()
+    except Exception:
+        pass
+
+
+# ── بنك أسئلة «مبارزة الأسئلة» (اختيار من متعدد) ──
+DUEL_BANK = []
+
+
+def _load_duel_bank():
+    global DUEL_BANK
+    try:
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'duel_questions.json')
+        with open(p, encoding='utf-8') as f:
+            DUEL_BANK = json.load(f)
+    except Exception:
+        DUEL_BANK = []
+
+
+_load_duel_bank()
+
 
 def _room_code():
     for _ in range(16):
@@ -4495,6 +4565,8 @@ def _clean_rooms():
             or (t - max([r['seen'].get(p, r['created']) for p in r['players']] or [r['created']]) > ROOM_STALE)]
     for c in dead:
         ROOMS.pop(c, None)
+    if dead:
+        _save_rooms(True)
 
 
 def _vote_counts(room):
@@ -4633,6 +4705,10 @@ def _room_leave(room, pid):
             gs.setdefault('dead', []).append({'pid': pid, 'name': _pname,
                                               'role': gs.get('roles', {}).get(pid), 'cause': 'leave'})
             _mafia_sweep(room)
+    if room.get('game') == 'quiz_duel':
+        _gs = room.get('gs') or {}
+        if _gs.get('phase') not in ('lobby', 'ended', None):
+            room['gs'] = _duel_new()  # المبارزة تحتاج لاعبين — المغادرة تعيد الغرفة للوبي
     room['chat'] = [c for c in room.get('chat', []) if c.get('pid') != pid]
     if room['host'] == pid and room['players']:
         room['host'] = room['players'][0]
@@ -4952,11 +5028,156 @@ def _mafia_action(room, pid, atype, body):
     return False, 'أمر غير معروف'
 
 
+# ---------- لعبة: مبارزة الأسئلة (أونلاين، لاعبان) ----------
+DUEL_QUESTION_TIME = 15
+DUEL_RESULT_TIME = 4
+DUEL_TARGET = 3
+
+
+def _duel_new():
+    return {'phase': 'lobby', 'round': 0, 'target': DUEL_TARGET, 'scores': {}, 'q': None,
+            'answers': {}, 'deadline': 0, 'round_winner': None, 'last_result': None,
+            'winner': None, 'used': []}
+
+
+def _duel_pick_q(gs):
+    if not DUEL_BANK:
+        return None
+    pool = [q for q in DUEL_BANK if q['id'] not in gs.get('used', [])]
+    if not pool:
+        gs['used'] = []
+        pool = DUEL_BANK
+    q = _rnd.choice(pool)
+    gs.setdefault('used', []).append(q['id'])
+    opts = list(q['options'])
+    correct_text = opts[q['answer']]
+    _rnd.shuffle(opts)
+    return {'text': q['question'], 'options': opts, 'correct': opts.index(correct_text),
+            'category': q.get('category', 'general'), 'difficulty': q.get('difficulty', 1)}
+
+
+def _duel_start_round(gs, rnd):
+    gs['round'] = rnd
+    gs['q'] = _duel_pick_q(gs)
+    gs['answers'] = {}
+    gs['round_winner'] = None
+    gs['phase'] = 'question'
+    gs['deadline'] = time.time() + DUEL_QUESTION_TIME
+
+
+def _duel_resolve(room):
+    gs = room['gs']
+    q = gs.get('q') or {}
+    correct = q.get('correct')
+    best_pid, best_ts = None, None
+    for pid, a in gs.get('answers', {}).items():
+        if a.get('idx') == correct and (best_ts is None or a['ts'] < best_ts):
+            best_pid, best_ts = pid, a['ts']
+    if best_pid:
+        gs['scores'][best_pid] = gs['scores'].get(best_pid, 0) + 1
+        gs['round_winner'] = best_pid
+        gs['last_result'] = '⚡ ' + room['names'].get(best_pid, '') + ' فاز بالجولة — أسرع إجابة صحيحة'
+    else:
+        gs['round_winner'] = None
+        gs['last_result'] = '🤷 لا إجابة صحيحة هذه الجولة — لا نقطة لأحد'
+    gs['phase'] = 'round_result'
+    gs['deadline'] = time.time() + DUEL_RESULT_TIME
+    room['updated'] = time.time()
+
+
+def _duel_sweep(room):
+    gs = room.get('gs') or {}
+    ph = gs.get('phase')
+    if ph == 'question':
+        if len(gs.get('answers', {})) >= len(room['players']) or time.time() > gs.get('deadline', 0):
+            _duel_resolve(room)
+    elif ph == 'round_result':
+        if time.time() > gs.get('deadline', 0):
+            winner = None
+            for pid, sc in gs.get('scores', {}).items():
+                if sc >= gs.get('target', DUEL_TARGET):
+                    winner = pid
+                    break
+            if winner:
+                gs['winner'] = winner
+                gs['phase'] = 'ended'
+                gs['last_result'] = '🏆 ' + room['names'].get(winner, '') + ' فاز بالمباراة!'
+            else:
+                _duel_start_round(gs, gs.get('round', 0) + 1)
+            room['updated'] = time.time()
+
+
+def _duel_state(room, pid):
+    _duel_sweep(room)
+    gs = room['gs']
+    players = [{'pid': p, 'name': room['names'].get(p, p), 'is_host': p == room['host'],
+                'score': gs.get('scores', {}).get(p, 0),
+                'answered': p in gs.get('answers', {}),
+                'online': (time.time() - room['seen'].get(p, 0)) < 20} for p in room['players']]
+    q = gs.get('q') or {}
+    reveal = gs.get('phase') in ('round_result', 'ended')
+    st = {'code': room['code'], 'phase': gs.get('phase'), 'round': gs.get('round', 0),
+          'target': gs.get('target', DUEL_TARGET), 'players': players,
+          'deadline': gs.get('deadline', 0), 'round_winner': gs.get('round_winner'),
+          'winner': gs.get('winner'), 'last_result': gs.get('last_result'),
+          'my_answer': (gs.get('answers', {}).get(pid) or {}).get('idx'),
+          'host': room['host'], 'me': pid}
+    if q:
+        st['question'] = {'text': q.get('text'), 'options': q.get('options'),
+                          'category': q.get('category'), 'difficulty': q.get('difficulty')}
+        if reveal:
+            st['question']['correct'] = q.get('correct')
+    return st
+
+
+def _duel_action(room, pid, atype, body):
+    gs = room['gs']
+    if atype == 'start':
+        if pid != room['host']:
+            return False, 'فقط صاحب الغرفة يبدأ اللعبة'
+        if gs.get('phase') != 'lobby':
+            return False, 'اللعبة بدأت بالفعل'
+        if len(room['players']) < 2:
+            return False, 'تحتاج لاعبين اثنين على الأقل'
+        if not DUEL_BANK:
+            return False, 'بنك الأسئلة غير متوفر'
+        gs['scores'] = {p: 0 for p in room['players']}
+        gs['used'] = []
+        gs['winner'] = None
+        _duel_start_round(gs, 1)
+        room['updated'] = time.time()
+        return True, None
+    if atype == 'answer':
+        if gs.get('phase') != 'question':
+            return False, 'ليس وقت السؤال الآن'
+        if pid in gs.get('answers', {}):
+            return False, 'أجبت بالفعل — بانتظار الخصم'
+        try:
+            idx = int(body.get('idx', -1))
+        except (TypeError, ValueError):
+            idx = -1
+        q = gs.get('q') or {}
+        if not (0 <= idx < len(q.get('options', []))):
+            return False, 'اختيار غير صالح'
+        gs['answers'][pid] = {'idx': idx, 'ts': time.time()}
+        _duel_sweep(room)
+        return True, None
+    if atype == 'play_again':
+        if pid != room['host']:
+            return False, 'فقط صاحب الغرفة يبدأ اللعبة'
+        room['gs'] = _duel_new()
+        room['updated'] = time.time()
+        return True, None
+    return False, 'أمر غير معروف'
+
+
 ROOM_GAMES = {
-    'tv_broken': {'name': 'تلفزيون خربان', 'min': 3, 'max': 8,
+    'tv_broken': {'name': 'تلفزيون خربان', 'min': 3, 'max': 8, 'icon': '📺',
                   'desc': 'جملة ← رسم ← تخمين، مع تصويت على أفضل رسم'},
-    'mafia': {'name': 'مافيا', 'min': 5, 'max': 12,
+    'mafia': {'name': 'مافيا', 'min': 5, 'max': 12, 'icon': '🔪',
               'desc': 'أدوار مخفية: مافيا وأهالٍ في ليل ونهار'},
+    'quiz_duel': {'name': 'مبارزة الأسئلة', 'min': 2, 'max': 2, 'icon': '⚡',
+                  'desc': 'سؤال واحد للاثنين — الأسرع بالإجابة الصحيحة يفوز بالجولة. أول من يجمع 3 جولات يفوز'},
 }
 
 
@@ -4966,11 +5187,14 @@ def _room_view_any(room, pid):
     h = ROOM_GAMES.get(game) or ROOM_GAMES['tv_broken']
     if game == 'mafia':
         st = _mafia_state(room, pid)
+    elif game == 'quiz_duel':
+        st = _duel_state(room, pid)
     else:
         st = _room_state(room, pid)
     st['game'] = game
     st['game_name'] = h['name']
     st['game_desc'] = h['desc']
+    st['game_icon'] = h.get('icon', '🎮')
     st['min_players'] = h['min']
     st['max_players'] = h['max']
     st['chat'] = room.get('chat', [])[-100:]
@@ -4996,8 +5220,9 @@ def room_create():
         'phase': 'lobby', 'round': 0, 'max_rounds': 2,
         'players': [pid], 'names': {pid: name}, 'seen': {pid: time.time()},
         'phrases': {}, 'drawings': {}, 'guesses': {}, 'votes': {}, 'totals': {},
-        'gs': _mafia_new(0) if game == 'mafia' else {},
+        'gs': _mafia_new(0) if game == 'mafia' else (_duel_new() if game == 'quiz_duel' else {}),
     }
+    _save_rooms(True)
     return jsonify({'ok': True, 'code': code, 'pid': pid,
                     'state': _room_view_any(ROOMS[code], pid)})
 
@@ -5009,7 +5234,8 @@ def room_join(code):
     if not room:
         return jsonify({'error': 'الغرفة غير موجودة — تأكد من الرمز'}), 404
     _hg = ROOM_GAMES.get(room.get('game', 'tv_broken'), ROOM_GAMES['tv_broken'])
-    _in_game = ((room.get('gs') or {}).get('phase') != 'lobby') if room.get('game') == 'mafia' else (room['phase'] != 'lobby')
+    _g = room.get('game', 'tv_broken')
+    _in_game = ((room.get('gs') or {}).get('phase', 'lobby') != 'lobby') if _g in ('mafia', 'quiz_duel') else (room['phase'] != 'lobby')
     if _in_game:
         return jsonify({'error': 'اللعبة بدأت بالفعل في هذه الغرفة'}), 400
     if len(room['players']) >= _hg['max']:
@@ -5026,6 +5252,7 @@ def room_join(code):
     room['names'][pid] = name
     room['seen'][pid] = time.time()
     room['updated'] = time.time()
+    _save_rooms(True)
     return jsonify({'ok': True, 'code': room['code'], 'pid': pid,
                     'state': _room_view_any(room, pid)})
 
@@ -5068,6 +5295,36 @@ def room_action(code):
         if len(room['chat']) > 200:
             room['chat'] = room['chat'][-200:]
         room['updated'] = time.time()
+        _save_rooms()
+        return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
+
+    if atype == 'change_game':
+        if pid != room['host']:
+            return jsonify({'error': 'فقط صاحب الغرفة يغيّر اللعبة'}), 403
+        ng = str(body.get('game', '') or '')
+        if ng not in ROOM_GAMES:
+            return jsonify({'error': 'لعبة غير مدعومة'}), 400
+        cur = room.get('game', 'tv_broken')
+        _in_game = ((room.get('gs') or {}).get('phase', 'lobby') != 'lobby') if cur in ('mafia', 'quiz_duel') else (room.get('phase', 'lobby') != 'lobby')
+        if _in_game:
+            return jsonify({'error': 'لا يمكن تغيير اللعبة أثناء اللعب — أنهِ الجولة أولًا'}), 400
+        if ng != cur:
+            room['game'] = ng
+            room['phase'] = 'lobby'
+            room['round'] = 0
+            room['phrases'] = {}; room['drawings'] = {}; room['guesses'] = {}; room['votes'] = {}; room['totals'] = {}
+            room['gs'] = _mafia_new(0) if ng == 'mafia' else (_duel_new() if ng == 'quiz_duel' else {})
+            room['updated'] = time.time()
+            _save_rooms(True)
+        return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
+
+    if room.get('game') == 'quiz_duel':
+        _ok, _err = _duel_action(room, pid, atype, body)
+        if not _ok:
+            return jsonify({'error': _err or 'إجراء غير صالح'}), 400
+        if not room['players']:
+            ROOMS.pop(room['code'], None)
+        _save_rooms()
         return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
 
     if room.get('game') == 'mafia':
@@ -5076,6 +5333,7 @@ def room_action(code):
             return jsonify({'error': _err or 'إجراء غير صالح'}), 400
         if not room['players']:
             ROOMS.pop(room['code'], None)
+        _save_rooms()
         return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
 
     if atype == 'start':
@@ -5154,6 +5412,7 @@ def room_action(code):
 
     if not room['players']:
         ROOMS.pop(room['code'], None)
+    _save_rooms()
     return jsonify({'ok': True, 'state': _room_view_any(room, pid)})
 
 
@@ -5167,10 +5426,12 @@ def room_leave(code):
     _room_leave(room, pid)
     if not room['players']:
         ROOMS.pop(room['code'], None)
+    _save_rooms(True)
     return jsonify({'ok': True})
 
 
 if __name__ == '__main__':
+    _load_rooms()
     port = int(os.environ.get('PORT', 5555))
     debug = os.environ.get('AMEEN_DEBUG', '0') == '1'
     print('ألعاب أمين — http://localhost:' + str(port))
