@@ -4642,13 +4642,23 @@ def _room_leave(room, pid):
 
 
 # ---------- لعبة: مافيا (أونلاين) ----------
+def _room_log(room, text):
+    """سجل أحداث غرفة المافيا — نصوص قصيرة تُعرض للجميع."""
+    gs = room.setdefault('gs', {})
+    log = gs.setdefault('log', [])
+    log.append(str(text))
+    if len(log) > 120:
+        gs['log'] = log[-120:]
+    room['updated'] = time.time()
+
+
 MAFIA_NIGHT = 45
 MAFIA_DAY = 90
 MAFIA_REVEAL = 8
 MAFIA_ROLE_NAMES = {'mafia': 'مافيا', 'doctor': 'الطبيب', 'detective': 'المحقق', 'host': 'الهوست', 'citizen': 'مواطن'}
 MAFIA_ROLE_DESC = {
     'mafia': 'تختار ليلاً ضحية للقضاء عليها. وإن كان معك شركاء فأنتم تقررون معاً.',
-    'doctor': 'تختار ليلاً شخصاً تحميه من القتل — ولا تستطيع حماية نفسك مرتين متتاليتين.',
+    'doctor': 'تختار ليلاً شخصاً تحميه من القتل — ويمكنك حماية نفسك مرة واحدة فقط في اللعبة.',
     'detective': 'تختار ليلاً شخصاً تفحصه لتعرف إن كان مافيا أم لا.',
     'host': 'دور خاص: تشارك في المناقشات وتصوّت، ولك إجراء ليلي رمزي.',
     'citizen': 'مواطن عادي: شارك في النقاش وصوّت لإخراج المشتبه بهم.',
@@ -4703,18 +4713,31 @@ def _mafia_need(room):
 
 def _mafia_resolve_night(room):
     gs = room['gs']
-    kill = None
+    # المافيا تصوت بالأغلبية على الضحية (مع تعدد المافيا) — التعادل = لا قتل
+    kill_votes = {}
     save = None
     for p in _mafia_alive(room):
         r = gs['roles'].get(p)
         act = gs['night'].get(p) or {}
-        if r == 'mafia' and act.get('target') and kill is None:
-            kill = act['target']
+        if r == 'mafia' and act.get('target'):
+            t = act['target']
+            kill_votes[t] = kill_votes.get(t, 0) + 1
         if r == 'doctor' and act.get('target') and save is None:
             save = act['target']
+    kill = None
+    split = False
+    if kill_votes:
+        best = max(kill_votes.values())
+        tops = [t for t, c in kill_votes.items() if c == best]
+        if len(tops) == 1:
+            kill = tops[0]
+        else:
+            split = True
     if kill and kill == save:
         kill = None
     msg = '☀️ لم يمت أحد هذه الليلة'
+    if split:
+        msg = '🌙 المافيا لم تتفق على ضحية — لم يمت أحد'
     if kill and gs['alive'].get(kill):
         gs['alive'][kill] = False
         gs['dead'].append({'pid': kill, 'name': room['names'].get(kill), 'role': gs['roles'].get(kill), 'cause': 'night'})
@@ -4784,7 +4807,7 @@ def _mafia_sweep(room):
             _mafia_resolve_night(room)
     elif gs['phase'] == 'day':
         alive = _mafia_alive(room)
-        if (alive and all(gs['votes'].get(p) for p in alive)) or time.time() > gs.get('phase_until', 0):
+        if (alive and all(p in gs['votes'] for p in alive)) or time.time() > gs.get('phase_until', 0):
             _mafia_tally(room)
     elif gs['phase'] == 'reveal':
         if time.time() > gs.get('phase_until', 0):
@@ -4794,17 +4817,32 @@ def _mafia_sweep(room):
 def _mafia_state(room, pid):
     _mafia_sweep(room)
     gs = room['gs']
+    my_role = gs.get('roles', {}).get(pid)
     players = []
     for p in room['players']:
+        online = (time.time() - room['seen'].get(p, 0)) < 20
         if p not in gs.get('roles', {}):
             players.append({'pid': p, 'name': room['names'].get(p, p), 'is_host': p == room['host'],
-                            'alive': True, 'role': None, 'self_healed': False})
+                            'alive': True, 'role': None, 'self_healed': False, 'online': online})
             continue
-        show_role = (p == pid or not gs['alive'].get(p, True) or gs['phase'] == 'ended')
+        # المافيا تعرف شركاءها الأحياء — بقية الأدوار مخفية حتى الموت/النهاية
+        show_role = (p == pid or not gs['alive'].get(p, True) or gs['phase'] == 'ended'
+                     or (my_role == 'mafia' and gs['roles'].get(p) == 'mafia'))
+        acted = False
+        if gs.get('phase') == 'night' and gs['alive'].get(p):
+            act = gs['night'].get(p) or {}
+            r = gs['roles'].get(p)
+            if r in ('mafia', 'doctor', 'detective'):
+                acted = bool(act.get('target'))
+            elif r == 'host':
+                acted = bool(act.get('host_done'))
+        elif gs.get('phase') == 'day' and gs['alive'].get(p):
+            acted = p in gs.get('votes', {})
         players.append({'pid': p, 'name': room['names'].get(p, p), 'is_host': p == room['host'],
                         'alive': gs['alive'].get(p, False),
                         'role': gs['roles'].get(p) if show_role else None,
-                        'self_healed': gs['self_healed'].get(p, False)})
+                        'self_healed': gs['self_healed'].get(p, False),
+                        'acted': acted, 'online': online})
     votes = [{'pid': v, 'name': room['names'].get(v), 'target': t} for v, t in gs.get('votes', {}).items() if t]
     return {
         'code': room['code'], 'phase': gs.get('phase'), 'day': gs.get('day', 0),
@@ -4878,6 +4916,8 @@ def _mafia_action(room, pid, atype, body):
             if not gs['alive'].get(tgt, False):
                 return False, 'الهدف ميت'
             act['target'] = tgt
+            if role == 'detective':
+                act['result'] = 'mafia' if gs['roles'].get(tgt) == 'mafia' else 'town'
         elif role == 'host':
             act['host_done'] = True
         else:
@@ -5019,6 +5059,10 @@ def room_action(code):
         text = str(body.get('text', '') or '').strip()[:ROOM_MAX_TEXT]
         if not text:
             return jsonify({'error': 'الرسالة فارغة'}), 400
+        if room.get('game') == 'mafia':
+            _gs = room.get('gs') or {}
+            if _gs.get('phase') in ('night', 'day', 'reveal') and not _gs.get('alive', {}).get(pid, False):
+                return jsonify({'error': '💀 الموتى لا يتكلمون في القرية — تابع الأحداث بصمت'}), 400
         room.setdefault('chat', []).append({'pid': pid, 'name': room['names'].get(pid, pid),
                                             'text': text, 'ts': time.time()})
         if len(room['chat']) > 200:

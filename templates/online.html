@@ -412,7 +412,14 @@
   }
 
   function bindMafia(s, mine) {
+    // استرجاع الاختيار المحفوظ من الحالة حتى لا يضيع التأكيد بعد إعادة الرسم
     var pick = null;
+    if (s.phase === 'night') {
+      pick = (s.my_night && s.my_night.target) || null;
+    } else {
+      var mv = (s.votes || []).filter(function (v) { return v.pid === ON.pid; })[0];
+      pick = mv ? mv.target : null;
+    }
     document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function (b) {
       b.addEventListener('click', function () {
         document.querySelectorAll('[data-act="night_pick"],[data-act="vote_pick"]').forEach(function (x) { x.classList.remove('sel'); });

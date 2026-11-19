@@ -45,6 +45,18 @@ const CARD_INFO = {
 const MAX_CARDS = CONFIG.MAX_CARDS;
 const FINISH = 56;
 
+/* تصنيفات الأسئلة — تطابق بنك questions-data.js */
+const CATEGORIES = {
+  all:     { name: "كل الأسئلة", emoji: "🎯" },
+  general: { name: "ثقافة عامة", emoji: "🌍" },
+  math:    { name: "رياضيات", emoji: "🔢" },
+  science: { name: "علوم وطبيعة", emoji: "🔬" },
+  sports:  { name: "رياضة", emoji: "⚽" },
+  tech:    { name: "تقنية وذكاء اصطناعي", emoji: "🤖" },
+  islamic: { name: "إسلاميات", emoji: "🕌" },
+};
+let selectedCategory = "all";
+
 // خلايا انطلاق كل لون على مسار الـ 52 خلية
 const STARTS = { red: 0, green: 13, yellow: 26, blue: 39 };
 // الخلايا الآمنة: 4 بدايات + 4 نجوم
@@ -259,14 +271,18 @@ function shuffle(arr) {
 }
 
 // يسحب سؤالًا جديدًا للاعب (بلا تكرار حتى استنفاد البنك) ويخلط الخيارات
+// يحترم التصنيف المختار في شاشة الإعداد؛ إذا نفدت أسئلة التصنيف يعيد استخدامها
 function drawQuestion(state, playerIdx) {
   const used = new Set(state.usedQuestions[playerIdx] || []);
-  let pool = QUESTION_BANK.filter((q) => !used.has(q.id));
+  const inCat = (q) => selectedCategory === "all" || q.category === selectedCategory;
+  let pool = QUESTION_BANK.filter((q) => inCat(q) && !used.has(q.id));
+  if (pool.length === 0) pool = QUESTION_BANK.filter(inCat);
   if (pool.length === 0) pool = QUESTION_BANK;
   const q = pool[Math.floor(Math.random() * pool.length)];
   const correctText = q.options[q.answer];
   const options = shuffle(q.options);
-  return { text: q.question, options, correct: options.indexOf(correctText), sourceId: q.id };
+  return { text: q.question, options, correct: options.indexOf(correctText), sourceId: q.id,
+           category: q.category, difficulty: q.difficulty };
 }
 
 function markQuestionUsed(state, playerIdx, qid) {
@@ -615,10 +631,54 @@ function offsets(count, index) {
 }
 
 function diceFaceHtml(value) {
+  return `<div class="dice" aria-label="${value ? "النرد يظهر " + value : "النرد — ارمِ لتظهر النتيجة"}">${pipsHtml(value)}</div>`;
+}
+
+function pipsHtml(value) {
   const dots = PIPS[value] || [];
   let cells = "";
   for (let i = 0; i < 9; i++) cells += dots.includes(i) ? "<i></i>" : "<span></span>";
-  return `<div class="dice" aria-label="${value ? "النرد يظهر " + value : "النرد — ارمِ لتظهر النتيجة"}">${cells}</div>`;
+  return cells;
+}
+
+/* كونفيتي احتفالي — قطع ملونة تتساقط ثم تُزال تلقائيًا */
+function confettiBurst(n) {
+  n = n || 70;
+  const colors = ["#f6a714", "#4f8cff", "#17c38f", "#f0524f", "#a16bff", "#18c8e6", "#ffffff"];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement("span");
+    p.className = "lu-confetti";
+    p.style.left = (Math.random() * 100) + "vw";
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (2.2 + Math.random() * 1.8) + "s";
+    p.style.animationDelay = (Math.random() * 0.5) + "s";
+    p.style.width = (6 + Math.random() * 7) + "px";
+    p.style.height = (8 + Math.random() * 8) + "px";
+    document.body.appendChild(p);
+    p.addEventListener("animationend", function () { this.remove(); });
+  }
+}
+
+/* رمية النرد بحركة تقليب سريعة قبل النتيجة */
+let diceRolling = false;
+function rollWithAnimation(btn) {
+  if (diceRolling) return;
+  const diceEl = document.querySelector(".dice");
+  if (!diceEl) { dispatch({ t: "roll" }); return; }
+  diceRolling = true;
+  if (btn) btn.disabled = true;
+  diceEl.classList.add("rolling");
+  let ticks = 0;
+  const iv = setInterval(() => {
+    ticks++;
+    diceEl.innerHTML = pipsHtml(1 + Math.floor(Math.random() * 6));
+    if (ticks >= 8) {
+      clearInterval(iv);
+      diceEl.classList.remove("rolling");
+      diceRolling = false;
+      dispatch({ t: "roll" });
+    }
+  }, 70);
 }
 
 // خريطة أنواع خلايا الرقعة 15×15 — تُبنى مرة واحدة
@@ -882,10 +942,13 @@ function renderModal() {
         <span class="q-player" style="background:${COLOR_HEX[cur.color]}">${cur.name}</span>
         ${state.timerOn ? `<span id="q-timer" class="timer"><i class="tbar"><b id="q-tbar"></b></i><b id="q-tnum">${CONFIG.TIMER_SECONDS}</b></span>` : ""}
       </div>
-      <div class="q-badge"><span class="q-ico">؟</span><span>جاوب لتتحرك</span></div>
+      <div class="q-meta">
+        <span class="q-cat">${(CATEGORIES[ph.qv.category] || CATEGORIES.all).emoji} ${(CATEGORIES[ph.qv.category] || CATEGORIES.all).name}</span>
+        <span class="q-diff" title="الصعوبة">${"★".repeat(ph.qv.difficulty || 1)}${"☆".repeat(3 - (ph.qv.difficulty || 1))}</span>
+      </div>
       <p class="q-text">${ph.qv.text}</p>
       <div class="q-grid">${ph.qv.options.map((op, i) =>
-        `<button class="option-btn" data-idx="${i}"><span class="opt-key">${["أ", "ب", "ج", "د"][i] || (i + 1)}</span><span class="opt-txt">${op}</span></button>`).join("")}</div>
+        `<button class="option-btn opt-in" data-idx="${i}" style="animation-delay:${i * 0.06}s"><span class="opt-key">${["أ", "ب", "ج", "د"][i] || (i + 1)}</span><span class="opt-txt">${op}</span></button>`).join("")}</div>
     </div></div>`;
 
     if (state.timerOn) {
@@ -926,6 +989,7 @@ function renderModal() {
       }).join("")}</div>
       <div class="result-banner ${sel === corr ? "good" : "bad"}">${bannerText}</div>
     </div></div>`;
+    if (sel === corr) confettiBurst(36);
     return;
   }
 
@@ -1029,6 +1093,7 @@ function renderModal() {
       <p class="win-name" style="color:${COLOR_HEX[w.color]}">${w.name}</p>
       <button class="btn wfull" data-act="new-game">لعبة جديدة 🎲</button>
     </div></div>`;
+    confettiBurst(110);
     return;
   }
 
@@ -1039,6 +1104,16 @@ function renderSetup() {
   document.querySelectorAll("#count-seg button").forEach((b) => {
     b.classList.toggle("on", Number(b.dataset.n) === playerCount);
   });
+  document.querySelectorAll("#cat-seg button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.cat === selectedCategory);
+  });
+  const note = $("cat-note");
+  if (note) {
+    const count = selectedCategory === "all"
+      ? QUESTION_BANK.length
+      : QUESTION_BANK.filter((q) => q.category === selectedCategory).length;
+    note.textContent = count + " سؤالًا في هذا التصنيف — تُخلط الخيارات في كل مرة";
+  }
   $("timer-toggle").className = "toggle" + (timerOn ? " on" : "");
   $("timer-toggle").setAttribute("aria-pressed", timerOn ? "true" : "false");
 }
@@ -1100,13 +1175,19 @@ function init() {
     renderSetup();
   });
   $("timer-toggle").addEventListener("click", () => { timerOn = !timerOn; renderSetup(); });
+  $("cat-seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-cat]");
+    if (!b) return;
+    selectedCategory = b.dataset.cat;
+    renderSetup();
+  });
   $("start-btn").addEventListener("click", () => dispatch({ t: "start", count: playerCount, timerOn }));
 
   // شاشة اللعب
   $("new-game-btn").addEventListener("click", () => dispatch({ t: "new-game" }));
   $("turn-box").addEventListener("click", (e) => {
     const b = e.target.closest("#roll-btn");
-    if (b && !b.disabled) dispatch({ t: "roll" });
+    if (b && !b.disabled) rollWithAnimation(b);
   });
   $("cards-box").addEventListener("click", (e) => {
     const b = e.target.closest(".card-btn");
